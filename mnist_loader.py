@@ -15,20 +15,21 @@ def load_data():
     return (training_data, validation_data, test_data)
 
 
-td, vd, td1 = load_data()
+# td, vd, td1 = load_data()
 
-some_digit = td[0][0]
-some_digit_image = some_digit.reshape(28, 28)
+# some_digit = td[0][1]
+# some_digit_image = some_digit.reshape(28, 28)
 
-plt.imshow(some_digit_image, cmap=matplotlib.cm.binary,
-           interpolation='nearest')
-plt.axis('off')
-plt.show()
+# plt.imshow(some_digit_image, cmap=matplotlib.cm.binary,
+#            interpolation='nearest')
+# plt.axis('off')
+# plt.show()
 
-print(td)
-print(len(td))
-print(len(td[0]))
-print(len(td[0][0]))
+# print(td)
+# print(len(td))
+# print(len(td[0]))
+# print(len(td[0][0]))
 
-print(vd)
-print(td1)
+# print(vd)
+# print(td1)
+
