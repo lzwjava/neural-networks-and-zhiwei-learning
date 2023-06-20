@@ -3,6 +3,9 @@ import gzip
 
 import numpy as np
 
+import matplotlib
+import matplotlib.pyplot as plt
+
 
 def load_data():
     f = gzip.open('mnist.pkl.gz', 'rb')
@@ -14,6 +17,18 @@ def load_data():
 
 td, vd, td1 = load_data()
 
+some_digit = td[0][0]
+some_digit_image = some_digit.reshape(28, 28)
+
+plt.imshow(some_digit_image, cmap=matplotlib.cm.binary,
+           interpolation='nearest')
+plt.axis('off')
+plt.show()
+
 print(td)
+print(len(td))
+print(len(td[0]))
+print(len(td[0][0]))
+
 print(vd)
 print(td1)
