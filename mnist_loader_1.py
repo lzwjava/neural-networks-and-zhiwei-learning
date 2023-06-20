@@ -29,9 +29,12 @@ def load_data_wrapper():
     print(len(training_inputs))
 
     training_results = [vectorized_result(y) for y in tr_d[1]]
+
     print(training_results[0])
     print_shape(training_results)
     print(tr_d[1])
+    print('shape:', end='')
+    print_shape(tr_d[1])
     print(tr_d[1][0])
     print('vectorized_result', vectorized_result(tr_d[1][0]))
 
