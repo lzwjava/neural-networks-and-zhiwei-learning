@@ -1,2 +1,3 @@
 # neural-networks-and-zhiwei-learning
-My implementation of http://neuralnetworksanddeeplearning.com
+
+My implementation of the book *Neural Networks and Deep Learning*. 
