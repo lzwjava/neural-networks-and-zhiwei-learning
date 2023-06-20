@@ -15,14 +15,19 @@ def load_data():
     return (training_data, validation_data, test_data)
 
 
+def print_shape(array):
+    arr = np.array(array)
+    print(arr.shape)
+
+
 def load_data_wrapper():
     tr_d, va_d, te_d = load_data()
     training_inputs = [np.reshape(x, (784, 1)) for x in tr_d[0]]
     print(len(training_inputs))
 
     training_results = [vectorized_result(y) for y in tr_d[1]]
-    print(len(training_results))
     print(training_results[0])
+    print_shape(training_results)
 
     training_data = zip(training_inputs, training_results)
     validation_inputs = [np.reshape(x, (784, 1)) for x in va_d[0]]
