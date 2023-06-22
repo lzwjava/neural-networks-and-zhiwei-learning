@@ -31,9 +31,9 @@ def load_data_wrapper():
     training_inputs = [np.reshape(x, (784, 1)) for x in tr_d[0]]
     print_shape(training_inputs)
 
-    # print(training_inputs[0])
-    # print_shape(training_inputs[0])
-    # print(training_inputs[0])
+    print(training_inputs[0])
+    print_shape(training_inputs[0])
+    print(training_inputs[0])
 
     training_results = [vectorized_result(y) for y in tr_d[1]]
     training_data = zip(training_inputs, training_results)
