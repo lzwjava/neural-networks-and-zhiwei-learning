@@ -28,8 +28,9 @@ print(vd)
 print(td1)
 
 some_digit = td[0][1]
-# some_digit_image = some_digit.reshape(28, 28)
-some_digit_image = some_digit
+some_digit_image = some_digit.reshape(28, 28)
+
+# some_digit_image = some_digit
 
 print(some_digit)
 print_shape(some_digit_image)
