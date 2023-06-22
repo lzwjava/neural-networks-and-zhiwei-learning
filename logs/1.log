@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "mnist_loader_2.py", line 37, in <module>
+    plt.imshow(some_digit_image)
+  File "/Users/lzwjava/anaconda3/envs/june/lib/python3.8/site-packages/matplotlib/pyplot.py", line 2695, in imshow
+    __ret = gca().imshow(
+  File "/Users/lzwjava/anaconda3/envs/june/lib/python3.8/site-packages/matplotlib/__init__.py", line 1442, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/Users/lzwjava/anaconda3/envs/june/lib/python3.8/site-packages/matplotlib/axes/_axes.py", line 5665, in imshow
+    im.set_data(X)
+  File "/Users/lzwjava/anaconda3/envs/june/lib/python3.8/site-packages/matplotlib/image.py", line 710, in set_data
+    raise TypeError("Invalid shape {} for image data"
+TypeError: Invalid shape (784,) for image data
+
