@@ -23,19 +23,22 @@ def print_shape(array):
 def load_data_wrapper():
     tr_d, va_d, te_d = load_data()
 
-    print(tr_d[0])
-    print_shape(tr_d[0])
-    print(tr_d[0][1])
-    print_shape(tr_d[0][1])
+    # print(tr_d[0])
+    # print_shape(tr_d[0])
+    # print(tr_d[0][1])
+    # print_shape(tr_d[0][1])
 
     training_inputs = [np.reshape(x, (784, 1)) for x in tr_d[0]]
-    print_shape(training_inputs)
+    # print_shape(training_inputs)
 
-    print(training_inputs[0])
-    print_shape(training_inputs[0])
-    print(training_inputs[0])
+    # print(training_inputs[0])
+    # print_shape(training_inputs[0])
+    # print(training_inputs[0])
 
+    # print(tr_d[1])
+    # print_shape(tr_d[1])
     training_results = [vectorized_result(y) for y in tr_d[1]]
+
     training_data = zip(training_inputs, training_results)
     validation_inputs = [np.reshape(x, (784, 1)) for x in va_d[0]]
     validation_data = zip(validation_inputs, va_d[1])
