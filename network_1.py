@@ -17,6 +17,8 @@ class Network(object):
         training_data = list(training_data)
         n = len(training_data)
 
+        print(mini_batch_size)
+
         if test_data:
             test_data = list(test_data)
             n_test = len(test_data)
