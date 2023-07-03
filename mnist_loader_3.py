@@ -44,6 +44,8 @@ def load_data_wrapper():
     print_shape(training_inputs[0])
     print_shape(training_results[0])
 
+    print(type(training_inputs))
+
     validation_inputs = [np.reshape(x, (784, 1)) for x in va_d[0]]
     validation_data = zip(validation_inputs, va_d[1])
 
