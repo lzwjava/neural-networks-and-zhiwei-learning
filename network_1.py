@@ -18,6 +18,7 @@ class Network(object):
         n = len(training_data)
 
         print(mini_batch_size)
+        print(epochs)
 
         if test_data:
             test_data = list(test_data)
