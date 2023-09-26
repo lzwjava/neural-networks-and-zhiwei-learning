@@ -24,7 +24,6 @@ def draw(some_digit):
     plt.axis('off')
     plt.show()
 
-
 def load_data_wrapper():
     tr_d, va_d, te_d = load_data()
     
