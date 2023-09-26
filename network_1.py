@@ -76,7 +76,7 @@ class Network(object):
                 print('w:', w)
                 print('a:', a)
             i += 1
-        print(a)
+        # print(a)
         quit()
         return a
 
