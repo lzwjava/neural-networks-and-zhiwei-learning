@@ -68,16 +68,17 @@ class Network(object):
         return sum(int(x == y) for (x, y) in test_results)
 
     def feedforward(self, a):
-        i = 0
+        # i = 0
         for b, w in zip(self.biases, self.weights):
-            a = sigmoid(np.dot(w, a) + b)
-            if (i < 5):                
-                print('b:', b)
-                print('w:', w)
-                print('a:', a)
-            i += 1
+            # if (i < 5):                
+            #     print('b:', b)
+            #     print('w:', w)
+            #     print('a:', a)
+            #     print('dot:', np.dot(w, a))
+            # i += 1
+            a = sigmoid(np.dot(w, a) + b)      
         # print(a)
-        quit()
+        # quit()
         return a
 
 
