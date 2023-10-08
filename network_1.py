@@ -103,9 +103,12 @@ class Network(object):
         
         zs = []
         
-        # for b,w in zip(self.biases, self.weights):
-                    
-        
+        for b,w in zip(self.biases, self.weights):                
+            z = np.dot(w, activation)+b
+            
+            print_shape(z)
+            
+            zs.append(z)
                             
         return (nabla_b, nabla_w)
     
