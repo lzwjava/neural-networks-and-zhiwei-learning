@@ -11,8 +11,8 @@ class Network(object):
         self.num_layers = len(sizes)
         self.sizes = sizes
 
-        print(sizes)
-        print(sizes[1:])
+        # print(sizes)
+        # print(sizes[1:])
 
         # print(np.random.randn(30, 1))
 
@@ -24,16 +24,16 @@ class Network(object):
 
         # print(self.weights)
         print('weights:', self.weights)
-        print('shape:')
-        print_shape(self.weights[0])
+        # print('shape:')
+        # print_shape(self.weights[0])
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             test_data=None):
         training_data = list(training_data)
         n = len(training_data)
 
-        print(mini_batch_size)
-        print(epochs)
+        # print(mini_batch_size)
+        # print(epochs)
 
         if test_data:
             test_data = list(test_data)
@@ -52,15 +52,71 @@ class Network(object):
                 print("Epoch {} complete".format(j))
 
     def update_mini_batch(self, mini_batch, eta):
-        pass
+        # print(self.biases)
+        # print(self.weights)         
+        # print(len(self.biases))       
+        # print(len(self.weights))
+        # print_shape(self.biases[0])
+        # print_shape(self.biases[1])
+        # print_shape(self.weights[0])
+        # print_shape(self.weights[1])     
+        
+        nabla_b = [np.zeros(b.shape) for b in self.biases]        
+        
+        # print_shape(nabla_b[0])
+        # print_shape(nabla_b[1])
+        
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        
+        # print_shape(nabla_w[0])
+        # print_shape(nabla_w[1])    
+        
+        # print(mini_batch)
+        # print(mini_batch[0])
+        # print_shape(mini_batch[0][0])        
+        # print_shape(mini_batch[0][1])
+        
+        for (x, y) in mini_batch:
+            # print('x:', x)
+            # print('y:', y)
+            # print_shape(x)
+            # print_shape(y)
+            delta_nabla_b, delta_nabla_w = self.backprop(x, y)
+            # print(delta_nabla_b)
+            # print(delta_nabla_w) 
+            
+            nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+            nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+            
+        self.weights = [w-(eta/len(mini_batch))*nw 
+                        for w,nw in zip(self.weights, nabla_w)]
+        
+        self.biases = [b-(eta/len(mini_batch))*nb 
+                        for b,nb in zip(self.biases, nabla_b)]
+        
+    def backprop(self, x, y):
+        nabla_b = [np.zeros(b.shape) for b in self.biases]        
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        
+        activation = x
+        activations = [x]
+        
+        zs = []
+        
+        # for b,w in zip(self.biases, self.weights):
+                    
+        
+                            
+        return (nabla_b, nabla_w)
+    
 
     def evalute(self, test_data):
-        print('test_data', test_data[0])
+        # print('test_data', test_data[0])
         # draw(test_data[0][0])
-        print('shape of test_data[0][0]:')
-        print_shape(test_data[0][0])
+        # print('shape of test_data[0][0]:')
+        # print_shape(test_data[0][0])
         
-        print(type(test_data))
+        # print(type(test_data))
         # print_shape(test_data[1])
 
         test_results = [(np.argmax(self.feedforward(x)), y)
