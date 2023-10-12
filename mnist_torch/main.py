@@ -22,20 +22,23 @@ class Net(nn.Module):
         x = self.fc1(x)     
         
         # print(x)
-        # x = F.relu(x)
+        # x = F.sigmoid(x)
+        
         x = self.dropout(x)
         
         x = self.fc2(x)
         # print(x)
-        output = F.sigmoid(x)
+        # output = F.sigmoid(x)
         # print(output)
         # exit()
-        return output
+        return x
     
 def train(model, train_loader, optimizer):
-    model.train()
-    optimizer.zero_grad()    
+    model.train()    
     for batch_idx, (data, target) in enumerate(train_loader):
+        if (batch_idx > 5000):
+            break
+        optimizer.zero_grad()
         output = model(data)
         loss = nn.CrossEntropyLoss()
         loss = loss(output, target)
@@ -45,7 +48,13 @@ def train(model, train_loader, optimizer):
         optimizer.step()
         print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
         
+        # for name, param in model.named_parameters():
+        #     if param.requires_grad:
+        #         print(f'Parameter name: {name}, Shape: {param.shape}')
+        #         print(param)
+        
 def test(model, test_loader):
+    model.eval()
     correct = 0 
     with torch.no_grad():
         for data, target in test_loader:
@@ -53,13 +62,13 @@ def test(model, test_loader):
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
             
-    print('Accuracy:{}', 100. * correct / len(test_loader.dataset))
+    print('Accuracy:{}'.format(100. * correct / len(test_loader.dataset)))
             
 
 def main():
     transform=transforms.Compose([
-        transforms.ToTensor()
-        # transforms.Normalize((0.1307,), (0.3081,))
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
     ])
     dataset1 = datasets.MNIST('../data', train = True, download=True, transform = transform)
     # print(dataset1)
@@ -69,7 +78,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(dataset2)
     
     model = Net()
-    optimizer = optim.SGD(model.parameters(), lr = 1e-5)
+    optimizer = optim.SGD(model.parameters(), lr = 1e-3)
     
     train(model, train_loader, optimizer)
     test(model, test_loader)
