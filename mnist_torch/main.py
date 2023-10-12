@@ -13,14 +13,19 @@ class Net(nn.Module):
     def forward(self, x):
         # print(x.size())
         x = torch.flatten(x, 1) 
-        print(x.size())
-        print(x[0][0])
-        # print(x[])
-        exit()        
-        x = self.fc1(x)
-        x = F.relu(x)
+        # print(x.size())
+        # print(x[0][0])
+        # print(x)
+        # exit()       
+        # print(x) 
+        x = self.fc1(x)        
+        # print(x)
+        # x = F.relu(x)
         x = self.fc2(x)
+        # print(x)
         output = F.sigmoid(x)
+        # print(output)
+        # exit()
         return output
     
 def train(model, train_loader, optimizer):
@@ -28,17 +33,18 @@ def train(model, train_loader, optimizer):
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
         output = model(data)
-        loss = F.nll_loss(output, target)
-        print(loss)
-        print(output)
+        loss = nn.CrossEntropyLoss()
+        loss = loss(output, target)
+        # print(loss)
+        # print(output)
         loss.backward()
         optimizer.step()
         print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
 
 def main():
     transform=transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Lambda(lambda x: (x - 0.1307) / 0.3081)
+        transforms.ToTensor()
+        # transforms.Normalize((0.1307,), (0.3081,))
     ])
     dataset1 = datasets.MNIST('../data', train = True, download=True, transform = transform)
     print(dataset1)
@@ -46,7 +52,7 @@ def main():
     train_loader = torch.utils.data.DataLoader(dataset1)
     
     model = Net()
-    optimizer = optim.SGD(model.parameters(), lr = 1.0)
+    optimizer = optim.SGD(model.parameters(), lr = 1e-5)
     
     train(model, train_loader, optimizer)
 
