@@ -14,6 +14,9 @@ class Net(nn.Module):
         # print(x.size())
         x = torch.flatten(x, 1) 
         print(x.size())
+        print(x[0][0])
+        # print(x[])
+        exit()        
         x = self.fc1(x)
         x = F.relu(x)
         x = self.fc2(x)
@@ -33,7 +36,7 @@ def train(model, train_loader, optimizer):
         print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
 
 def main():
-    transform = transforms.Compose([
+    transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
