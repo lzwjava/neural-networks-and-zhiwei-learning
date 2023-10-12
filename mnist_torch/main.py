@@ -49,6 +49,7 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr = 1.0)
     
     train(model, train_loader, optimizer)
+
     
 
 if __name__ == '__main__':
