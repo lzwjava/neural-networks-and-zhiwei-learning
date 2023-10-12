@@ -19,7 +19,9 @@ class Net(nn.Module):
         # exit()       
         # print(x) 
         x = self.fc1(x)        
-        output = F.sigmoid(x)        
+        
+        x = F.sigmoid(x)
+        
         # print(x)
         # x = F.relu(x)
         x = self.fc2(x)
@@ -41,6 +43,17 @@ def train(model, train_loader, optimizer):
         loss.backward()
         optimizer.step()
         print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
+        
+def test(model, test_loader):
+    correct = 0 
+    with torch.no_grad():
+        for data, target in test_loader:
+            output = model(data)
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
+            
+    print('Accuracy:{}', 100. * correct / len(test_loader.dataset))
+            
 
 def main():
     transform=transforms.Compose([
@@ -48,14 +61,17 @@ def main():
         # transforms.Normalize((0.1307,), (0.3081,))
     ])
     dataset1 = datasets.MNIST('../data', train = True, download=True, transform = transform)
-    print(dataset1)
+    # print(dataset1)
+    dataset2 = datasets.MNIST('../data', train = False, transform = transform)
     
     train_loader = torch.utils.data.DataLoader(dataset1)
+    test_loader = torch.utils.data.DataLoader(dataset2)
     
     model = Net()
     optimizer = optim.SGD(model.parameters(), lr = 1e-5)
     
     train(model, train_loader, optimizer)
+    test(model, test_loader)
 
     
 
