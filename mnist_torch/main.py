@@ -34,8 +34,8 @@ class Net(nn.Module):
     
 def train(model, train_loader, optimizer):
     model.train()
+    optimizer.zero_grad()    
     for batch_idx, (data, target) in enumerate(train_loader):
-        optimizer.zero_grad()
         output = model(data)
         loss = nn.CrossEntropyLoss()
         loss = loss(output, target)
