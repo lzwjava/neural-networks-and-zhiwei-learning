@@ -19,6 +19,7 @@ class Net(nn.Module):
         # exit()       
         # print(x) 
         x = self.fc1(x)        
+        output = F.sigmoid(x)        
         # print(x)
         # x = F.relu(x)
         x = self.fc2(x)
