@@ -6,16 +6,17 @@ from torchvision import datasets, transforms
 
 class Net(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
-        self.fc1 = nn.Linear(9216, 128)
+        super(Net, self).__init__()                
+        self.fc1 = nn.Linear(784, 128)
         self.fc2 = nn.Linear(128, 10)
         
     def forward(self, x):
-        print(x.size())
-        
+        # print(x.size())
+        x = torch.flatten(x, 1)        
         x = self.fc1(x)
+        x = F.relu(x)
         x = self.fc2(x)
-        output = F.log_softmax(x, dim=1)
+        output = F.sigmoid(x)
         return output
     
 def train(model, train_loader, optimizer):
@@ -24,6 +25,8 @@ def train(model, train_loader, optimizer):
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
+        print(loss)
+        print(output)
         loss.backward()
         optimizer.step()
         print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
