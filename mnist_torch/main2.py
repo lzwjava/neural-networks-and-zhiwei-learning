@@ -11,7 +11,8 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(32, 64, 3, 1)
         self.fc_input_size = self.calculate_conv_output_size()             
         print(self.fc_input_size)
-        self.fc1 = nn.Linear(self.fc_input_size, 128)
+        # self.fc1 = nn.Linear(self.fc_input_size, 128)
+        self.fc1 = nn.Linear(9216, 128)        
         self.fc2 = nn.Linear(128, 10)
         self.dropout = nn.Dropout(0.25)
         
@@ -30,8 +31,12 @@ class Net(nn.Module):
                 
         x = self.conv2(x)        
         x = F.relu(x)
+        
+        x = F.max_pool2d(x, 2)
                 
-        x = x.view(-1, self.fc_input_size)
+        # x = x.view(-1, self.fc_input_size)
+        
+        x = torch.flatten(x, 1)
                 
         x = self.fc1(x)     
         
