@@ -1,6 +1,7 @@
 import os
 import requests
 import numpy as np
+import pickle
 
 input_file_path = os.path.join(os.path.dirname(__file__), 'input.txt')
 
@@ -50,3 +51,13 @@ val_ids = np.array(val_ids, dtype=np.uint16)
 train_ids.tofile(os.path.join(os.path.dirname(__file__), 'train.bin'))
 val_ids.tofile(os.path.join(os.path.dirname(__file__), 'val.bin'))
 
+meta = {
+    'vocab_size': vocab_size,
+    'itos': itos,
+    'stoi': stoi
+}
+
+with (open(os.path.join(os.path.dirname(__file__), 'meta.pkl'), 'wb')) as f:
+    pickle.dump(meta, f)
+    
+    
