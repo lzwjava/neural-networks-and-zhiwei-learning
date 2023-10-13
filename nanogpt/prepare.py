@@ -1,5 +1,6 @@
 import os
 import requests
+import numpy as np
 
 input_file_path = os.path.join(os.path.dirname(__file__), 'input.txt')
 
@@ -37,4 +38,15 @@ val_data = data[int(n*0.9):]
 train_ids = encode(train_data)
 val_ids = encode(val_data)
 
-print(train_ids)
+# print(train_ids)
+# print(val_ids)
+
+print(f'train ids length {len(train_ids)}')
+print(f'val ids length {len(val_ids)}')
+
+train_ids = np.array(train_ids, dtype=np.uint16)
+val_ids = np.array(val_ids, dtype=np.uint16)
+
+train_ids.tofile(os.path.join(os.path.dirname(__file__), 'train.bin'))
+val_ids.tofile(os.path.join(os.path.dirname(__file__), 'val.bin'))
+
