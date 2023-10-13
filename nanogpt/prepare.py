@@ -29,3 +29,12 @@ def decode(l):
 
 print(encode('abc'))
 print(decode([2, 3, 4]))
+
+n = len(data)
+train_data = data[:int(n*0.9)]
+val_data = data[int(n*0.9):]
+
+train_ids = encode(train_data)
+val_ids = encode(val_data)
+
+print(train_ids)
