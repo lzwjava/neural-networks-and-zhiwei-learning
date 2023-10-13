@@ -14,7 +14,8 @@ class Net(nn.Module):
         # self.fc1 = nn.Linear(self.fc_input_size, 128)
         self.fc1 = nn.Linear(9216, 128)        
         self.fc2 = nn.Linear(128, 10)
-        self.dropout = nn.Dropout(0.25)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
         
     def calculate_conv_output_size(self):
         # Create a dummy input tensor to calculate the output size of conv1
@@ -35,18 +36,21 @@ class Net(nn.Module):
         x = F.max_pool2d(x, 2)
                 
         # x = x.view(-1, self.fc_input_size)
+        x = self.dropout1(x)        
         
         x = torch.flatten(x, 1)
                 
-        x = self.fc1(x)     
+        x = self.fc1(x)             
         
-        x = self.dropout(x)
+        x = F.relu(x)
+        
+        x = self.dropout2(x)        
         
         x = self.fc2(x)
         # print(x)
-        # output = F.log_softmax(x, dim=1)
+        output = F.log_softmax(x, dim=1)
 
-        return x
+        return output
     
 def train(model, train_loader, optimizer):
     model.train()    
@@ -55,8 +59,8 @@ def train(model, train_loader, optimizer):
             break
         optimizer.zero_grad()
         output = model(data)
-        loss = nn.CrossEntropyLoss()
-        loss = loss(output, target)
+        loss = F.nll_loss(output, target)
+        # loss = loss(output, target)
         # print(loss)
         # print(output)
         loss.backward()
