@@ -12,7 +12,9 @@ if os.path.exists(meta_path):
     meta_vocab_size = meta['vocab_size']
     print(f"found vocab_size = {meta_vocab_size} (inside {meta_path})")
     
-with open("input.txt", "r", encoding="utf-8") as f:
+input_path = os.path.join(os.path.dirname(__file__), 'input.txt')            
+    
+with open(input_path, "r", encoding="utf-8") as f:
     text = f.read()    
 
 chars = sorted(list(set(text)))
@@ -65,8 +67,21 @@ class GPT(nn.Module):
         
         self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
         
+        print('token_embedding_table')
+        print(self.token_embedding_table)
+        
+        # embedding_matrix = self.token_embedding_table.weight.data
+        # print(embedding_matrix)
+        # print(embedding_matrix.size())
+        
     def forward(self, idx, targets=None):
+        print('forward')        
+        print(idx)        
+        print(idx.size())
         logits = self.token_embedding_table(idx)
+        print(logits)
+        print(logits.size())
+        # exit()
         
         if targets == None:
             loss = None
