@@ -1,8 +1,13 @@
+import inspect
+import math
+import time
 import torch
 import torch.nn as nn
 import pickle
 from torch.nn import functional as F
 import os
+from contextlib import nullcontext
+import numpy as np
 
 meta_path = os.path.join(os.path.dirname(__file__), 'meta.pkl')
 meta_vocab_size = None
@@ -32,9 +37,16 @@ data = torch.tensor(encode(text), dtype=torch.long)
 # Split ratio for train and val set
 split_ratio: float = 0.9
 # Training batch size, number of sequences in a mini batch
-batch_size: int = 4
+batch_size: int = 12
 # Maximum context length
-block_size: int = 8
+block_size: int = 64
+
+n_layer = 6
+n_head = 4
+n_embd = 128
+dropout = 0.2
+
+bias = True
 
 n = int(split_ratio * len(data))
 train_data = data[: n]
@@ -61,59 +73,206 @@ print("targets:")
 print(yb.shape)
 print(yb)        
 
+class LayerNorm(nn.Module):
+    """ LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False """
+
+    def __init__(self, ndim, bias):
+        super().__init__()
+        self.weight = nn.Parameter(torch.ones(ndim))
+        self.bias = nn.Parameter(torch.zeros(ndim)) if bias else None
+
+    def forward(self, input):
+        return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
+
+class CausalSelfAttention(nn.Module):
+    
+    def __init__(self):
+        super().__init__()
+        self.c_attn = nn.Linear(n_embd, 3 * n_embd, bias=bias)
+        self.c_proj = nn.Linear(n_embd, n_embd, bias=bias)
+        self.attn_dropout = nn.Dropout(dropout)
+        self.resid_dropout = nn.Dropout(dropout)
+        self.n_head = n_head
+        self.n_embd = n_embd
+        self.dropout = dropout  
+        self.register_buffer("bias", torch.tril(torch.ones(block_size, block_size))
+                                        .view(1, 1, block_size, block_size))
+        
+    def forward(self, x):
+        B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
+
+        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
+        q, k, v  = self.c_attn(x).split(self.n_embd, dim=2)
+        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
+        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
+        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
+              
+            # manual implementation of attention
+        att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+        att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
+        att = F.softmax(att, dim=-1)
+        att = self.attn_dropout(att)
+        y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
+        
+        y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
+
+        # output projection
+        y = self.resid_dropout(self.c_proj(y))
+        return y
+
+class MLP(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.c_fc    = nn.Linear(n_embd, 4 * n_embd, bias=bias)
+        self.gelu    = nn.GELU()
+        self.c_proj  = nn.Linear(4 * n_embd, n_embd, bias=bias)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        x = self.c_fc(x)
+        x = self.gelu(x)
+        x = self.c_proj(x)
+        x = self.dropout(x)
+        return x
+    
+
+class Block(nn.Module):
+
+    def __init__(self,):
+        super().__init__()
+        self.ln_1 = LayerNorm(n_embd, bias=bias)
+        self.attn = CausalSelfAttention()
+        self.ln_2 = LayerNorm(n_embd, bias=bias)
+        self.mlp = MLP()
+
+    def forward(self, x):
+        x = x + self.attn(self.ln_1(x))
+        x = x + self.mlp(self.ln_2(x))
+        return x    
+        
 class GPT(nn.Module):
     
-    def __init__(self, vocab_size):
+    def __init__(self):
         super().__init__()
         
-        self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
+        self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
+        self.position_embedding_table = nn.Embedding(block_size, n_embd)
         
         print('token_embedding_table')
         print(self.token_embedding_table)
         
-        embedding_matrix = self.token_embedding_table.weight.data
-        print('embedding_matrix')
-        print(embedding_matrix)
-        print(embedding_matrix.size())
+        # embedding_matrix = self.token_embedding_table.weight.data
+        # print('embedding_matrix')
+        # print(embedding_matrix)
+        # print(embedding_matrix.size())
+        
+        self.transformer = nn.ModuleDict(dict(
+            wte = nn.Embedding(vocab_size, n_embd),
+            wpe = nn.Embedding(block_size, n_embd),
+            drop = nn.Dropout(dropout),
+            h = nn.ModuleList([Block() for _ in range(n_layer)]),
+            ln_f = LayerNorm(n_embd, bias=bias),
+        ))
+        
+        self.lm_head = nn.Linear(n_embd, vocab_size)
+        
+        self.transformer.wte.weight = self.lm_head.weight
+        
+        for pn, p in self.named_parameters():
+            if pn.endswith('c_proj.weight'):
+                torch.nn.init.normal_(p, mean=0.0, std=0.02/math.sqrt(2 * n_layer))
+                
+        print("number of parameters: %.2fM" % (self.get_num_params()/1e6,))
+        
+    def get_num_params(self, non_embedding=True):
+        n_params = sum(p.numel() for p in self.parameters())
+        if non_embedding:
+            n_params -= self.transformer.wpe.weight.numel()
+        return n_params        
         
     def forward(self, idx, targets=None):
-        # print('forward')        
-        # print(idx)        
-        # print(idx.size())
-        logits = self.token_embedding_table(idx)
-        # print('logits')
-        # print(logits)
-        # print(logits.size())
-        # exit()
-        
-        if targets == None:
-            loss = None
-        else:
-            # reshape for loss, loss needs BxCxT instead
-            B, T, C = logits.shape
-            logits = logits.view(B*T, C)
-            targets = targets.view(B*T)
-            loss = F.cross_entropy(logits, targets) 
-        
-        return logits, loss 
-    
-    def generate(self, idx, max_new_tokens):
-        for _ in range(max_new_tokens):
-            logits, loss = self(idx)
-            print('logits')
-            print(logits.size())                                 
-            print(logits)
-            logits = logits[:, -1, :] # becomes (B,C)    
-            probs = F.softmax(logits, dim=-1) # (B, C)      
-            idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)                
-            idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)        
-        
-        return idx
-    
-    
-m = GPT(vocab_size=meta_vocab_size)
+        device = idx.device
+        b, t = idx.size()
+        assert t <= block_size, f"Cannot forward sequence of length {t}, block size is only {block_size}"
+        pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
 
-logits, loss = m(xb, yb)
+        # forward the GPT model itself
+        tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
+        pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
+        
+        print(tok_emb.size())
+        print(pos_emb.size())
+                
+        x = self.transformer.drop(tok_emb + pos_emb)
+        for block in self.transformer.h:
+            x = block(x)
+        x = self.transformer.ln_f(x)
+
+        if targets is not None:
+            # if we are given some desired targets also calculate the loss
+            logits = self.lm_head(x)
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+        else:
+            # inference-time mini-optimization: only forward the lm_head on the very last position
+            logits = self.lm_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
+            loss = None
+
+        return logits, loss
+    
+    def configure_optimizers(self, weight_decay, learning_rate, betas, device_type):
+        # start with all of the candidate parameters
+        param_dict = {pn: p for pn, p in self.named_parameters()}
+        # filter out those that do not require grad
+        param_dict = {pn: p for pn, p in param_dict.items() if p.requires_grad}
+        # create optim groups. Any parameters that is 2D will be weight decayed, otherwise no.
+        # i.e. all weight tensors in matmuls + embeddings decay, all biases and layernorms don't.
+        decay_params = [p for n, p in param_dict.items() if p.dim() >= 2]
+        nodecay_params = [p for n, p in param_dict.items() if p.dim() < 2]
+        optim_groups = [
+            {'params': decay_params, 'weight_decay': weight_decay},
+            {'params': nodecay_params, 'weight_decay': 0.0}
+        ]
+        num_decay_params = sum(p.numel() for p in decay_params)
+        num_nodecay_params = sum(p.numel() for p in nodecay_params)
+        print(f"num decayed parameter tensors: {len(decay_params)}, with {num_decay_params:,} parameters")
+        print(f"num non-decayed parameter tensors: {len(nodecay_params)}, with {num_nodecay_params:,} parameters")
+        # Create AdamW optimizer and use the fused version if it is available
+        fused_available = 'fused' in inspect.signature(torch.optim.AdamW).parameters
+        use_fused = fused_available and device_type == 'cuda'
+        extra_args = dict(fused=True) if use_fused else dict()
+        optimizer = torch.optim.AdamW(optim_groups, lr=learning_rate, betas=betas, **extra_args)
+        print(f"using fused AdamW: {use_fused}")
+
+        return optimizer
+    
+    @torch.no_grad()
+    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):   
+        for _ in range(max_new_tokens):
+            # if the sequence context is growing too long we must crop it at block_size
+            idx_cond = idx if idx.size(1) <= block_size else idx[:, -block_size:]
+            # forward the model to get the logits for the index in the sequence
+            logits, _ = self(idx_cond)
+            # pluck the logits at the final step and scale by desired temperature
+            logits = logits[:, -1, :] / temperature
+            # optionally crop the logits to only the top k options
+            if top_k is not None:
+                v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+                logits[logits < v[:, [-1]]] = -float('Inf')
+            # apply softmax to convert logits to (normalized) probabilities
+            probs = F.softmax(logits, dim=-1)
+            # sample from the distribution
+            idx_next = torch.multinomial(probs, num_samples=1)
+            # append sampled index to the running sequence and continue
+            idx = torch.cat((idx, idx_next), dim=1)
+
+        return idx
+
+
+    
+model = GPT()
+
+# logits, loss = m(xb, yb)
 # print(logits.shape)
 # print(loss)
 
@@ -122,28 +281,79 @@ logits, loss = m(xb, yb)
 
 
 batch_sieze = 32
-optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
 
 print('begin to train...')
 
-for steps in range(10000):
+t0 = time.time()
+
+iter_num = 0
+
+ctx = nullcontext()
+
+gradient_accumulation_steps = 5 * 8 # used to simulate larger batch sizes
+
+scaler = torch.cuda.amp.GradScaler(enabled=(np.dtype == 'float16'))
+
+grad_clip = 1.0 # clip gradients at this value, or disable if == 0.0
+
+max_iters = 2000
+
+eval_iters = 20
+
+@torch.no_grad()
+def estimate_loss():
+    out = {}
+    model.eval()
+    for split in ['train', 'val']:
+        losses = torch.zeros(eval_iters)
+        for k in range(eval_iters):
+            X, Y = get_batch(split)
+            with ctx:
+                logits, loss = model(X, Y)
+            losses[k] = loss.item()
+        out[split] = losses.mean()
+    model.train()
+    return out
+
+eval_interval = 2000
+
+master_process = True
+
+while True:
+
+    # determine and set the learning rate for this iteration
+    lr = 6e-4 # max learning rate
     
-    # sample a batch of data
-    xb, yb = get_batch("train")
     
-    # print('xb')
-    # print(xb)
-    # print('yb')
-    # print(yb)
-    
-    # evaluate the loss
-    logits, loss = m(xb, yb)
+    if iter_num % eval_interval == 0 and master_process:
+        losses = estimate_loss()
+
+    # and using the GradScaler if data type is float16
+    for micro_step in range(gradient_accumulation_steps):
+        with ctx:
+            logits, loss = model(X, Y)
+            loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation  
+        X, Y = get_batch('train')
+        scaler.scale(loss).backward()
+    # clip the gradient
+    if grad_clip != 0.0:
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+    # step the optimizer and scaler if training in fp16
+    scaler.step(optimizer)
+    scaler.update()
+    # flush the gradients as soon as we can, no need for this memory anymore
     optimizer.zero_grad(set_to_none=True)
-    loss.backward()
-    optimizer.step()
+    
+    iter_num += 1
+    
+    if iter_num > max_iters:
+        break
     
 print(loss.item())
 
 print('training finished')
 
 print(decode(m.generate(idx=torch.zeros((1, 1), dtype=torch.long), max_new_tokens=500)[0].tolist()))
+
