@@ -159,8 +159,8 @@ class GPT(nn.Module):
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
         
-        print('token_embedding_table')
-        print(self.token_embedding_table)
+        # print('token_embedding_table')
+        # print(self.token_embedding_table)
         
         # embedding_matrix = self.token_embedding_table.weight.data
         # print('embedding_matrix')
@@ -201,8 +201,8 @@ class GPT(nn.Module):
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
         pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
         
-        print(tok_emb.size())
-        print(pos_emb.size())
+        # print(tok_emb.size())
+        # print(pos_emb.size())
                 
         x = self.transformer.drop(tok_emb + pos_emb)
         for block in self.transformer.h:
@@ -320,6 +320,8 @@ eval_interval = 2000
 
 master_process = True
 
+X, Y = get_batch('train')
+
 while True:
 
     # determine and set the learning rate for this iteration
@@ -328,6 +330,7 @@ while True:
     
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
+        print(losses)
 
     # and using the GradScaler if data type is float16
     for micro_step in range(gradient_accumulation_steps):
@@ -336,6 +339,7 @@ while True:
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation  
         X, Y = get_batch('train')
         scaler.scale(loss).backward()
+        
     # clip the gradient
     if grad_clip != 0.0:
         scaler.unscale_(optimizer)
@@ -351,9 +355,9 @@ while True:
     if iter_num > max_iters:
         break
     
-print(loss.item())
+# print(loss.item())
 
 print('training finished')
 
-print(decode(m.generate(idx=torch.zeros((1, 1), dtype=torch.long), max_new_tokens=500)[0].tolist()))
+# print(decode(model.generate(idx=torch.zeros((1, 1), dtype=torch.long), max_new_tokens=500)[0].tolist()))
 
