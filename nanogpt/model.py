@@ -295,9 +295,19 @@ gradient_accumulation_steps = 5 * 8 # used to simulate larger batch sizes
 
 scaler = torch.cuda.amp.GradScaler(enabled=(np.dtype == 'float16'))
 
+learning_rate = 6e-4
+
+weight_decay = 1e-1
+
+beta1 = 0.9
+
+beta2 = 0.95
+
+optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta2), 'cpu')
+
 grad_clip = 1.0 # clip gradients at this value, or disable if == 0.0
 
-max_iters = 2000
+max_iters = 100
 
 eval_iters = 20
 
@@ -316,17 +326,18 @@ def estimate_loss():
     model.train()
     return out
 
-eval_interval = 2000
+eval_interval = 1
 
 master_process = True
 
 X, Y = get_batch('train')
 
 while True:
+    
+    print(f'iter num: {iter_num}')
 
     # determine and set the learning rate for this iteration
-    lr = 6e-4 # max learning rate
-    
+    lr = learning_rate # max learning rate    
     
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
@@ -359,5 +370,5 @@ while True:
 
 print('training finished')
 
-# print(decode(model.generate(idx=torch.zeros((1, 1), dtype=torch.long), max_new_tokens=500)[0].tolist()))
+print(decode(model.generate(idx=torch.zeros((1, 1), dtype=torch.long), max_new_tokens=100)[0].tolist()))
 
