@@ -120,10 +120,13 @@ logits, loss = m(xb, yb)
 batch_sieze = 32
 optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
 
-for steps in range(10000):
+for steps in range(1):
     
     # sample a batch of data
     xb, yb = get_batch("train")
+    
+    print(xb)
+    print(yb)
     
     # evaluate the loss
     logits, loss = m(xb, yb)
