@@ -42,8 +42,8 @@ val_data = data[n:]
 
 print(len(train_data), len(val_data))
 
-# torch.manual_seed(1337)
-torch.manual_seed(1338)
+torch.manual_seed(1337)
+# torch.manual_seed(1338)
 
 def get_batch(split):
     # generate a small batch of data of input x and targets y
