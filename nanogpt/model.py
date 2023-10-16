@@ -100,6 +100,9 @@ class GPT(nn.Module):
     def generate(self, idx, max_new_tokens):
         for _ in range(max_new_tokens):
             logits, loss = self(idx)
+            print('logits')
+            print(logits.size())                                 
+            print(logits)
             logits = logits[:, -1, :] # becomes (B,C)    
             probs = F.softmax(logits, dim=-1) # (B, C)      
             idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)                
@@ -142,3 +145,5 @@ for steps in range(10000):
 print(loss.item())
 
 print('training finished')
+
+print(decode(m.generate(idx=torch.zeros((1, 1), dtype=torch.long), max_new_tokens=500)[0].tolist()))
