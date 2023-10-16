@@ -71,9 +71,10 @@ class GPT(nn.Module):
         print('token_embedding_table')
         print(self.token_embedding_table)
         
-        # embedding_matrix = self.token_embedding_table.weight.data
-        # print(embedding_matrix)
-        # print(embedding_matrix.size())
+        embedding_matrix = self.token_embedding_table.weight.data
+        print('embedding_matrix')
+        print(embedding_matrix)
+        print(embedding_matrix.size())
         
     def forward(self, idx, targets=None):
         # print('forward')        
@@ -120,13 +121,17 @@ logits, loss = m(xb, yb)
 batch_sieze = 32
 optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
 
-for steps in range(1):
+print('begin to train...')
+
+for steps in range(10000):
     
     # sample a batch of data
     xb, yb = get_batch("train")
     
-    print(xb)
-    print(yb)
+    # print('xb')
+    # print(xb)
+    # print('yb')
+    # print(yb)
     
     # evaluate the loss
     logits, loss = m(xb, yb)
@@ -134,4 +139,6 @@ for steps in range(1):
     loss.backward()
     optimizer.step()
     
-# print(loss.item())
+print(loss.item())
+
+print('training finished')
