@@ -42,7 +42,8 @@ val_data = data[n:]
 
 print(len(train_data), len(val_data))
 
-torch.manual_seed(1337)
+# torch.manual_seed(1337)
+torch.manual_seed(1338)
 
 def get_batch(split):
     # generate a small batch of data of input x and targets y
@@ -75,12 +76,13 @@ class GPT(nn.Module):
         # print(embedding_matrix.size())
         
     def forward(self, idx, targets=None):
-        print('forward')        
-        print(idx)        
-        print(idx.size())
+        # print('forward')        
+        # print(idx)        
+        # print(idx.size())
         logits = self.token_embedding_table(idx)
-        print(logits)
-        print(logits.size())
+        # print('logits')
+        # print(logits)
+        # print(logits.size())
         # exit()
         
         if targets == None:
@@ -95,18 +97,12 @@ class GPT(nn.Module):
         return logits, loss 
     
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices i nthe current context
         for _ in range(max_new_tokens):
-            # get the predictions
             logits, loss = self(idx)
-            # focus only on the last time steop
-            logits = logits[:, -1, :] # becomes (B,C)
-            # apply softmax to get probabilities
-            probs = F.softmax(logits, dim=-1) # (B, C)
-            # sample from the distribution
-            idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
-            # appends sampled index to the running index
-            idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
+            logits = logits[:, -1, :] # becomes (B,C)    
+            probs = F.softmax(logits, dim=-1) # (B, C)      
+            idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)                
+            idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)        
         
         return idx
     
@@ -114,8 +110,25 @@ class GPT(nn.Module):
 m = GPT(vocab_size=meta_vocab_size)
 
 logits, loss = m(xb, yb)
-print(logits.shape)
-print(loss)
+# print(logits.shape)
+# print(loss)
 
-idx = torch.zeros((1, 1), dtype=torch.long)
-print(decode(m.generate(idx, max_new_tokens=100)[0].tolist()))
+# idx = torch.zeros((1, 1), dtype=torch.long)
+# print(decode(m.generate(idx, max_new_tokens=100)[0].tolist()))
+
+
+batch_sieze = 32
+optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
+
+for steps in range(10000):
+    
+    # sample a batch of data
+    xb, yb = get_batch("train")
+    
+    # evaluate the loss
+    logits, loss = m(xb, yb)
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
+    
+# print(loss.item())
