@@ -107,7 +107,7 @@ class CausalSelfAttention(nn.Module):
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
               
-            # manual implementation of attention
+        # manual implementation of attention
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
         att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
         att = F.softmax(att, dim=-1)
@@ -195,6 +195,13 @@ class GPT(nn.Module):
         device = idx.device
         b, t = idx.size()
         assert t <= block_size, f"Cannot forward sequence of length {t}, block size is only {block_size}"
+        
+        print('idx')
+        print(idx)
+        # exit()
+        print(idx.size())
+        # exit()
+        
         pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
 
         # forward the GPT model itself
