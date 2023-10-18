@@ -131,9 +131,11 @@ class MLP(nn.Module):
 
     def forward(self, x):
         x = self.c_fc(x)
-        x = self.gelu(x)
+        x = self.gelu(x)        
         x = self.c_proj(x)
         x = self.dropout(x)
+        # print('x.size()')
+        # print(x.size())
         return x
     
 
@@ -203,8 +205,11 @@ class GPT(nn.Module):
         # exit()
         
         pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
+        
+        print('pos')
+        print(pos)
+        # exit()
 
-        # forward the GPT model itself
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
         pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
         
