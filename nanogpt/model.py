@@ -198,17 +198,17 @@ class GPT(nn.Module):
         b, t = idx.size()
         assert t <= block_size, f"Cannot forward sequence of length {t}, block size is only {block_size}"
         
-        print('idx')
-        print(idx)
+        # print('idx')
+        # print(idx)
         # exit()
-        print(idx.size())
+        # print(idx.size())
         # exit()
         
         pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
         
-        print('pos')
-        print(pos)
-        # exit()
+        # print('pos')
+        # print(pos)
+        # exit()       
 
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
         pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
