@@ -57,12 +57,26 @@ print(len(train_data), len(val_data))
 torch.manual_seed(1337)
 # torch.manual_seed(1338)
 
+device = 'cuda'
+dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
+torch.backends.cuda.matmul.allow_tf32 = True # allow tf32 on matmul
+torch.backends.cudnn.allow_tf32 = True # allow tf32 on cudnn
+device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.autocast
+# note: float16 data type will automatically use a GradScaler
+ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
+ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
+
 def get_batch(split):
     # generate a small batch of data of input x and targets y
     data = train_data if split == "train" else val_data
     ix = torch.randint(len(data) - block_size, (batch_size,)) # because last will start from -8 and go until the end of text
     x = torch.stack([data[i:i+block_size] for i in ix])
     y = torch.stack([data[i+1:i+block_size+1] for i in ix])
+    if device_type == 'cuda':
+        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+        x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
     return x, y
 
 xb, yb = get_batch("train")
@@ -72,6 +86,7 @@ print(xb)
 print("targets:")
 print(yb.shape)
 print(yb)        
+
 
 class LayerNorm(nn.Module):
     """ LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False """
@@ -315,7 +330,9 @@ beta1 = 0.9
 
 beta2 = 0.95
 
-optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta2), 'cpu')
+model.to(device)
+
+optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta2), device)
 
 grad_clip = 1.0 # clip gradients at this value, or disable if == 0.0
 
@@ -382,5 +399,8 @@ while True:
 
 print('training finished')
 
-print(decode(model.generate(idx=torch.zeros((1, 1), dtype=torch.long), max_new_tokens=100)[0].tolist()))
+idx = torch.zeros((1, 1), dtype=torch.long)
+idx = idx.to(device)
+
+print(decode(model.generate(idx=idx, max_new_tokens=100)[0].tolist()))
 
