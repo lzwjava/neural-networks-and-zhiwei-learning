@@ -65,6 +65,8 @@ device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.aut
 # note: float16 data type will automatically use a GradScaler
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
+print('ctx')
+print(ctx)
 
 def get_batch(split):
     # generate a small batch of data of input x and targets y
@@ -316,7 +318,7 @@ t0 = time.time()
 
 iter_num = 0
 
-ctx = nullcontext()
+# ctx = nullcontext()
 
 gradient_accumulation_steps = 5 * 8 # used to simulate larger batch sizes
 
