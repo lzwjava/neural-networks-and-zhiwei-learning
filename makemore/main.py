@@ -25,6 +25,10 @@ def create_datasets(input_file):
     
     test_size = int(word_count * 0.1)
     
+    rp = torch.randperm(word_count).to_list()
+    
+    print(rp)
+    
     train_words = lines[0:word_count-test_size]
     test_words = lines[word_count-test_size:]
     
