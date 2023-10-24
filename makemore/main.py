@@ -11,9 +11,15 @@ def create_datasets(input_file):
     
     word_count = len(lines)
     
-    print(word_count)
+    test_size = int(word_count * 0.1)
     
-    print(lines)
+    train_words = lines[0:word_count-test_size]
+    test_words = lines[word_count-test_size:]
+    
+    print(word_count)
+    print(test_size)
+    print(len(train_words))
+    print(len(test_words))
     
     return [], []
 
