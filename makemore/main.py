@@ -9,6 +9,10 @@ def create_datasets(input_file):
         
     lines = [l.strip() for l in lines]
     
+    word_count = len(lines)
+    
+    print(word_count)
+    
     print(lines)
     
     return [], []
