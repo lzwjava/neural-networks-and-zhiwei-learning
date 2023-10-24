@@ -1,6 +1,18 @@
 import argparse
-import torch
 import os
+import torch
+from torch.utils.data import Dataset
+
+class CharDataset(Dataset):
+    
+    def __init__(self, words):
+        self.words = words
+    
+    def __len__(self) -> int:
+        return len(self.words)
+    
+    def __getitem__(self, index) -> str:
+        return self.words[index]
 
 def create_datasets(input_file):
     
@@ -21,7 +33,7 @@ def create_datasets(input_file):
     print(len(train_words))
     print(len(test_words))
     
-    return [], []
+    return CharDataset(train_words), CharDataset(test_words)
 
 if __name__ == '__main__':
     print('main')
