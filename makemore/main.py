@@ -5,14 +5,37 @@ from torch.utils.data import Dataset
 
 class CharDataset(Dataset):
     
-    def __init__(self, words):
+    def __init__(self, words, chars, max_len):
         self.words = words
+        self.chars = chars
+        self.max_len = max_len
+        self.stoi = {ch:i+1 for i,ch in enumerate(chars)}
+        # print(self.stoi)
+        self.itos = {i:ch for ch, i in self.stoi.items()}
+        # print(self.itos)
     
     def __len__(self) -> int:
         return len(self.words)
     
     def __getitem__(self, index) -> str:
         return self.words[index]
+    
+    def contains(self, word):
+        return word in self.words
+    
+    def get_vocab_size(self):
+        return len(self.chars) + 1
+    
+    def get_output_length(self):
+        return self.max_len + 1
+    
+    def encode(self, word):
+        ix = torch.tensor([self.stoi[w]  for w in word], dtype=torch.long)
+        return ix
+    
+    def decode(self, ix):
+        word = ''.join(self.itos[i]  for i in ix)
+        return word
 
 def create_datasets(input_file):
     
@@ -25,19 +48,31 @@ def create_datasets(input_file):
     
     test_size = int(word_count * 0.1)
     
-    rp = torch.randperm(word_count).to_list()
+    rp = torch.randperm(word_count).tolist()
     
-    print(rp)
-    
-    train_words = lines[0:word_count-test_size]
-    test_words = lines[word_count-test_size:]
+    # print(rp)    
+    train_words = [lines[i]   for i in rp[:-test_size]]
+                        
+    test_words = [lines[i]   for i in rp[-test_size:]]
     
     print(word_count)
     print(test_size)
     print(len(train_words))
     print(len(test_words))
     
-    return CharDataset(train_words), CharDataset(test_words)
+    # print(test_words)
+    
+    chars = sorted(set(''.join(lines)))
+    
+    max_len = len(max(lines, key = len))
+    
+    print(f'chars:{chars}')
+    print(f'max_len={max_len}')
+    
+    train_dataset = CharDataset(train_words, chars, max_len)
+    test_dataset = CharDataset(test_words, chars, max_len)
+    
+    return train_dataset, test_dataset
 
 if __name__ == '__main__':
     print('main')
@@ -55,3 +90,12 @@ if __name__ == '__main__':
     os.makedirs(args.work_dir, exist_ok=True)
 
     train_dataset, test_dataset = create_datasets(args.input_file)
+    
+    contains = train_dataset.contains('jack')
+    print(contains)
+    test_contains = test_dataset.contains('jack')
+    print(test_contains)
+    
+    ix = train_dataset.encode('jack')
+    print(ix)
+    
