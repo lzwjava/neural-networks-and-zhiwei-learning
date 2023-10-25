@@ -17,9 +17,6 @@ class CharDataset(Dataset):
     def __len__(self) -> int:
         return len(self.words)
     
-    def __getitem__(self, index) -> str:
-        return self.words[index]
-    
     def contains(self, word):
         return word in self.words
     
@@ -36,6 +33,16 @@ class CharDataset(Dataset):
     def decode(self, ix):
         word = ''.join(self.itos[i]  for i in ix)
         return word
+    
+    def __getitem__(self, idx):
+        word = self.words[idx]
+        ix = self.encode(word)
+        x = torch.zeros(self.max_len + 1, dtype=torch.long)
+        y = torch.zeros(self.max_len + 1, dtype=torch.long)
+        x[1:1+len(ix)] = ix
+        y[:len(ix)] = ix
+        y[len(ix)+1:] = -1 
+        return x, y    
 
 def create_datasets(input_file):
     
@@ -98,4 +105,11 @@ if __name__ == '__main__':
     
     ix = train_dataset.encode('jack')
     print(ix)
+    word = train_dataset.decode(ix.tolist())
+    print(word)
+    
+    x0, y0 = train_dataset[0]
+    print(f'x0={x0}')
+    print(f'y0={y0}')
+    
     
