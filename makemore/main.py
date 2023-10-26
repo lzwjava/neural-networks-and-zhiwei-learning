@@ -201,6 +201,31 @@ class InfiniteDataLoader:
             
         return batch
 
+@torch.no_grad()
+
+def generate(model, idx, max_new_tokens, temperature=1.0, do_sample = False, top_k = None):
+    
+    block_size = model.get_block_size()
+    
+    for _ in range(max_new_tokens):
+        idx_cond = idx if idx.size(1) <= block_size else idx[:, -block_size:]        
+        print(idx_cond)
+        print(f"{idx_cond.size()=}")
+        
+        logits, _ = model(idx_cond)
+        
+        print('logits')
+        print(logits)
+        print(f"{logits.size()=}")
+        
+        nlogits = logits[:, -1, :]
+        print(f"{nlogits.size()=}")
+        
+        if top_k is not None:
+            v, _ = torch.topk(logits, top_k)
+            print(f"{v=}")
+            
+
     
 if __name__ == '__main__':
     print('main')
@@ -242,7 +267,7 @@ if __name__ == '__main__':
     n_head = 4
     n_embd = 64
     n_embd2 = 64
-    device = 'cpu'
+    device = 'cuda'
     learning_rate = 5e-4
     weight_decay = 0.01
     batch_size = 32
@@ -254,7 +279,7 @@ if __name__ == '__main__':
                          n_embd=n_embd, n_embd2=n_embd2)
     
     bow = CausalBow(config)
-    print(bow)
+    # print(bow)
     
     model = Bow(config)
     
@@ -269,7 +294,7 @@ if __name__ == '__main__':
         
     optimizer = torch.optim.AdamW(model.parameters(), lr = learning_rate, weight_decay=weight_decay, betas=(0.9, 0.99), eps= 1e-8)
     
-    batch_loader = InfiniteDataLoader(train_dataset, batch_size = batch_size, pin_memory=True, num_workers= 4)
+    batch_loader = InfiniteDataLoader(train_dataset, batch_size = batch_size, pin_memory=False, num_workers= 4)
     
     best_loss = None
     step = 0
@@ -297,5 +322,12 @@ if __name__ == '__main__':
         step += 1
         if step >= max_steps:
             break
-                
+    
+    X_init = torch.zeros(10, 1, dtype=torch.long).to(device)
+    
+    output_len = train_dataset.get_output_length() - 1
+    
+    result = generate(model, X_init, output_len, top_k= 2, do_sample= True)
+    
+    print(result)
         
