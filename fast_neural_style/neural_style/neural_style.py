@@ -6,6 +6,7 @@ import torch.cuda
 import numpy as np
 from torchvision import transforms
 from torchvision import datasets
+from torch.utils.data import DataLoader
 
 def check_paths(args):
     try:
@@ -35,6 +36,8 @@ def train(args):
 
     train_dataset = datasets.ImageFolder(args.dataset, transform)
     print(train_dataset)
+
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
 
 def stylize(args):
     pass
