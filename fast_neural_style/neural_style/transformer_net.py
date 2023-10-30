@@ -72,7 +72,7 @@ class ResidualBlock(torch.nn.Module):
         residual = x
         out = self.relu(self.in1(self.conv1(x)))
         out = self.in2(self.conv2(out))
-        out = out + residual
+        out = out + residual 
         return out
 
 
