@@ -7,7 +7,10 @@ import numpy as np
 from torchvision import transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader
-
+from transformer_net import TransformerNet
+from torch.optim import Adam
+from vgg import Vgg16
+import utils
 def check_paths(args):
     try:
         if not os.path.exists(args.save_model_dir):
@@ -36,8 +39,26 @@ def train(args):
 
     train_dataset = datasets.ImageFolder(args.dataset, transform)
     print(train_dataset)
-
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
+
+    transformer = TransformerNet().to(device)
+    total_params = sum(p.numel() for p in transformer.parameters())
+    print(total_params)
+
+    optimizer = Adam(transformer.parameters(), args.lr)
+    mse_loss = torch.nn.MSELoss()
+
+    vgg = Vgg16().to(device)
+
+    style_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255))
+    ])
+
+    style = utils.load_image(args.style_image, size = args.style_size)
+    style = style_transform(style)
+    style = style.repeat(args.batch_size, 1, 1, 1).to(device)
+
 
 def stylize(args):
     pass
