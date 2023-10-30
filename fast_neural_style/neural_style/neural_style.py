@@ -1,9 +1,43 @@
 import argparse
+import os.path
 import sys
 
 import torch.cuda
+import numpy as np
+from torchvision import transforms
+from torchvision import datasets
 
+def check_paths(args):
+    try:
+        if not os.path.exists(args.save_model_dir):
+            os.makedirs(args.save_model_dir)
 
+        if args.checkpoint_model_dir is not None and not (os.path.exists(args.checkpoint_model_dir)):
+            os.makedirs(args.checkpoint_model_dir)
+    except OSError as e:
+        sys.exit(1)
+
+def train(args):
+    if args.cuda:
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
+
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
+    transform = transforms.Compose([
+        transforms.Resize(args.image_size),
+        transforms.CenterCrop(args.image_size),
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255))
+    ])
+
+    train_dataset = datasets.ImageFolder(args.dataset, transform)
+    print(train_dataset)
+
+def stylize(args):
+    pass
 def main():
     main_arg_parser = argparse.ArgumentParser(description="parser")
     subparsers = main_arg_parser.add_subparsers(title="subcommands", dest="subcommand")
@@ -63,4 +97,13 @@ def main():
         
     if args.cuda and not torch.cuda.is_available():
         print("ERROR: cuda is not available, try running on CPU")
-    
+
+    if args.subcommand == "train":
+        check_paths(args)
+        train(args)
+    else:
+        stylize(args)
+
+if __name__ == "__main__":
+    main()
+
