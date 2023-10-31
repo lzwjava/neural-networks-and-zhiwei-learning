@@ -17,3 +17,10 @@ def normalize_batch(batch: torch.Tensor):
     batch = batch.div_(255.0)
     return (batch - mean) / std
 
+
+def gram_matrix(y: torch.Tensor):
+    (b, ch, h, w) = y.size()
+    features = y.view(b, ch, w * h)
+    features_t = features.transpose(1, 2)
+    gram = features.bmm(features_t) / (ch * h * w)
+    return gram

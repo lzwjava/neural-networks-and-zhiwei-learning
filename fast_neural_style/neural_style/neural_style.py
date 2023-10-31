@@ -11,6 +11,8 @@ from transformer_net import TransformerNet
 from torch.optim import Adam
 from vgg import Vgg16
 import utils
+
+
 def check_paths(args):
     try:
         if not os.path.exists(args.save_model_dir):
@@ -20,6 +22,7 @@ def check_paths(args):
             os.makedirs(args.checkpoint_model_dir)
     except OSError as e:
         sys.exit(1)
+
 
 def train(args):
     if args.cuda:
@@ -55,17 +58,27 @@ def train(args):
         transforms.Lambda(lambda x: x.mul(255))
     ])
 
-    style = utils.load_image(args.style_image, size = args.style_size)
+    style = utils.load_image(args.style_image, size=args.style_size)
     style = style_transform(style)
     style = style.repeat(args.batch_size, 1, 1, 1).to(device)
+
+    features_style = vgg(utils.normalize_batch(style))
+    # print(features_style)
+    print(features_style[0].size())
+    print(features_style[1].size())
+    # print(features_style.size())
+    gram_style = [utils.gram_matrix(y) for y in features_style]
+
 
 
 def stylize(args):
     pass
+
+
 def main():
     main_arg_parser = argparse.ArgumentParser(description="parser")
     subparsers = main_arg_parser.add_subparsers(title="subcommands", dest="subcommand")
-    
+
     train_arg_parser = subparsers.add_parser("train", help="parser for training arguments")
     train_arg_parser.add_argument("--epochs", type=int, default=2,
                                   help="number of training epochs, default is 2")
@@ -112,13 +125,13 @@ def main():
                                  help="set it to 1 for running on cuda, 0 for CPU")
     eval_arg_parser.add_argument("--export_onnx", type=str,
                                  help="export ONNX model to a given file")
-    
+
     args = main_arg_parser.parse_args()
-    
+
     if args.subcommand is None:
         print("ERROR: specify either train or eval")
         sys.exit(1)
-        
+
     if args.cuda and not torch.cuda.is_available():
         print("ERROR: cuda is not available, try running on CPU")
 
@@ -128,6 +141,6 @@ def main():
     else:
         stylize(args)
 
+
 if __name__ == "__main__":
     main()
-
