@@ -64,11 +64,14 @@ def train(args):
 
     features_style = vgg(utils.normalize_batch(style))
     # print(features_style)
-    print(features_style[0].size())
-    print(features_style[1].size())
+    for i in range(4):
+        print(features_style[i].size())
     # print(features_style.size())
     gram_style = [utils.gram_matrix(y) for y in features_style]
 
+    print('gram_style')
+    for i in range(4):
+        print(gram_style[i].size())
 
 
 def stylize(args):
