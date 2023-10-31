@@ -1,6 +1,7 @@
 import argparse
 import os.path
 import sys
+import time
 
 import torch.cuda
 import numpy as np
@@ -73,6 +74,64 @@ def train(args):
     for i in range(4):
         print(gram_style[i].size())
 
+    for e in range(args.epochs):
+        transformer.train()
+        agg_content_loss = 0.
+        agg_style_loss = 0.
+        count = 0
+
+        for batch_id, (x, _) in enumerate(train_loader):
+            n_batch = len(x)
+            count += n_batch
+            optimizer.zero_grad()
+
+            x = x.to(device)
+            y = transformer(x)
+
+            y = utils.normalize_batch(y)
+            x = utils.normalize_batch(x)
+
+            features_y = vgg(y)
+            features_x = vgg(x)
+
+            content_loss = args.content_weight * mse_loss(features_y.relu2_2, features_x.relu2_2)
+
+            style_loss = 0.
+            for ft_y, gm_s in zip(features_y, gram_style):
+                gm_y = utils.gram_matrix(ft_y)
+                style_loss += mse_loss(gm_y, gm_s[:n_batch, :, :])
+            style_loss *= args.style_weight
+
+            total_loss = content_loss + style_loss
+            total_loss.backward()
+            optimizer.step()
+
+            agg_content_loss += content_loss.item()
+            agg_style_loss += style_loss.item()
+
+            batch_n = batch_id +1
+            if batch_n % args.log_interval == 0:
+                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\t style: {:.6f}\t total: {:.6f}".format(
+                    time.ctime(), e+1, count, len(train_dataset),
+                    agg_content_loss / batch_n,
+                    agg_style_loss / batch_n,
+                    (agg_content_loss+agg_style_loss)/batch_n
+                )
+                print(mesg)
+
+            if args.checkpoint_model_dir is not None and batch_n % args.checkpoint_interval == 0:
+                transformer.eval().cpu()
+                ckpt_model_filename = "ckpt_epoch_" + str(e) + "_batch_id_" + str(batch_n) + ".pth"
+                ckpt_model_path = os.path.join(args.checkpoint_model_dir, ckpt_model_filename)
+                torch.save(transformer.state_dict(), ckpt_model_path)
+                transformer.to(device).train()
+
+    transformer.eval().cpu()
+    save_model_filename = "epoch.model"
+    save_model_path = os.path.join(args.save_model_dir, save_model_filename)
+    torch.save(transformer.state_dict(), save_model_path)
+
+    print("\nDone, trained model saved at", save_model_path)
 
 def stylize(args):
     pass
