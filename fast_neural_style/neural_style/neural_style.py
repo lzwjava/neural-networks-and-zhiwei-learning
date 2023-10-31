@@ -1,5 +1,6 @@
 import argparse
 import os.path
+import re
 import sys
 import time
 
@@ -151,12 +152,15 @@ def stylize(args):
     with torch.no_grad():
         style_model = TransformerNet()
         state_dict = torch.load(args.model)
+        for k in list(state_dict.keys()):
+            if re.search(r'in\d+\.running_(mean|var)$', k):
+                del state_dict[k]
         style_model.load_state_dict(state_dict)
         style_model.to(device)
         style_model.eval()
         output = style_model(content_image).cpu()
 
-
+    utils.save_image(args.output_image, output[0])
 
 
 def main():
