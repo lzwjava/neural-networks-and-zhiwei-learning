@@ -109,13 +109,13 @@ def train(args):
             agg_content_loss += content_loss.item()
             agg_style_loss += style_loss.item()
 
-            batch_n = batch_id +1
+            batch_n = batch_id + 1
             if batch_n % args.log_interval == 0:
                 mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\t style: {:.6f}\t total: {:.6f}".format(
-                    time.ctime(), e+1, count, len(train_dataset),
-                    agg_content_loss / batch_n,
-                    agg_style_loss / batch_n,
-                    (agg_content_loss+agg_style_loss)/batch_n
+                    time.ctime(), e + 1, count, len(train_dataset),
+                                  agg_content_loss / batch_n,
+                                  agg_style_loss / batch_n,
+                                  (agg_content_loss + agg_style_loss) / batch_n
                 )
                 print(mesg)
 
@@ -133,8 +133,30 @@ def train(args):
 
     print("\nDone, trained model saved at", save_model_path)
 
+
 def stylize(args):
-    pass
+    if args.cuda:
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
+
+    content_image = utils.load_image(args.content_image, scale=args.content_scale)
+    content_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255))
+    ])
+    content_image = content_transform(content_image)
+    content_image = content_image.unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        style_model = TransformerNet()
+        state_dict = torch.load(args.model)
+        style_model.load_state_dict(state_dict)
+        style_model.to(device)
+        style_model.eval()
+        output = style_model(content_image).cpu()
+
+
 
 
 def main():

@@ -10,6 +10,11 @@ def load_image(filename, size=None, scale=None):
         img = img.resize((int(img.size[0] / scale), int(img.size[1] / scale)), Image.ANTIALIAS)
     return img
 
+def save_image(filename, data):
+    img = data.clone().clamp(0, 255).numpy()
+    img = img.transpose(1, 2, 0).astype('uint8')
+    img = Image.fromarray(img)
+    img.save(filename)
 
 def normalize_batch(batch: torch.Tensor):
     mean = batch.new_tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
