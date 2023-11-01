@@ -39,6 +39,7 @@ def main():
         hidden = model.init_hidden(1)
 
     input = torch.randint(ntokens, (1, 1), dtype=torch.long).to(device)
+    print(ntokens)
     print(input)
 
 
