@@ -38,7 +38,7 @@ class Sequence(nn.Module):
 
 
 def main():
-    steps = 15
+    steps = 1
     np.random.seed(0)
     torch.manual_seed(0)
     data = torch.load('traindata.pt')
