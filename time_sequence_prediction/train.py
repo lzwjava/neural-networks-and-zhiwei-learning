@@ -19,7 +19,7 @@ class Sequence(nn.Module):
         h_t2 = torch.zeros(i0, 51, dtype=torch.double)
         c_t2 = torch.zeros(i0, 51, dtype=torch.double)
 
-        
+
 
         return []
 
