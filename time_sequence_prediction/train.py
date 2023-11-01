@@ -10,6 +10,8 @@ class Sequence(nn.Module):
     def __init__(self):
         super(Sequence, self).__init__()
         self.lstm1 = nn.LSTMCell(1, 51)
+        self.lstm2 = nn.LSTMCell(51, 51)
+        self.linear = nn.Linear(51, 1)
 
     def forward(self, input, future=0):
         outputs = []
@@ -19,9 +21,20 @@ class Sequence(nn.Module):
         h_t2 = torch.zeros(i0, 51, dtype=torch.double)
         c_t2 = torch.zeros(i0, 51, dtype=torch.double)
 
+        for input_t in input.split(1, dim=1):
+            h_t, c_t = self.lstm1(input_t, (h_t, c_t))
+            h_t2, c_t2 = self.lstm2(h_t, (h_t2, c_t2))
+            output = self.linear(h_t2)
+            outputs += [output]
 
+        for i in range(future):
+            h_t, c_t = self.lstm1(output, (h_t, c_t))
+            h_t2, c_t2 = self.lstm2(h_t, (h_t2, c_t2))
+            output = self.linear(h_t2)
+            outputs += [output]
 
-        return []
+        outputs = torch.cat(outputs, dim=1)
+        return outputs
 
 
 def main():
@@ -45,13 +58,15 @@ def main():
     for i in range(steps):
         print('STEP: ', i)
 
-        optimizer.zero_grad()
-        out = seq(input)
-        loss = loss_fn(out, target)
-        print('loss: ', loss.item())
-        loss.backward()
+        def closure():
+            optimizer.zero_grad()
+            out = seq(input)
+            loss = loss_fn(out, target)
+            print('loss: ', loss.item())
+            loss.backward()
+            return loss
 
-        optimizer.step()
+        optimizer.step(closure)
 
         with torch.no_grad():
             future = 1000
