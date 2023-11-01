@@ -31,6 +31,10 @@ class Args:
     dry_run: bool = True
 
 
+def batchify(data: torch.Tensor, bsz):
+    nbatch = data.size(0) // bsz
+
+
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Wikitext-2 RNN/LSTM/GRU/Transformer Language Model')
     parser.add_argument('--data', type=str, default=Args.data)
