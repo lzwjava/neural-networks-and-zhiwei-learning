@@ -131,27 +131,27 @@ def work(args: Args):
     test(args, corpus, eval_batch_size)
 
 
-def export_onnx(args: Args, model: nn.Module, batch_size):
+def export_onnx(args: Args, tmodel: nn.Module, batch_size):
     path = args.onnx_export
     seq_len = args.bptt
     device = get_device(args)
 
     print('export onnx at {}.'.format(os.path.realpath(path)))
-    model.eval()
+    tmodel.eval()
     dummy_input = torch.LongTensor(seq_len * batch_size).zero_().view(-1, batch_size).to(device)
-    hidden = model.init_hidden(batch_size)
-    torch.onnx.export(model, (dummy_input, hidden), path)
+    hidden = tmodel.init_hidden(batch_size)
+    torch.onnx.export(tmodel, (dummy_input, hidden), path)
 
 
 def test(args: Args, corpus: data.Corpus, eval_batch_size):
-    test_data = batchify(corpus.test, eval_batch_size)
+    test_data = batchify(corpus.test, eval_batch_size, get_device(args))
 
     with open(args.save, 'rb') as f:
-        model = torch.load(f)
+        tmodel = torch.load(f)
         if args.model in ['RNN_TANH', 'RNN_RELU', 'LSTM', 'GRU']:
-            model.rnn.flatten_parameters()
+            tmodel.rnn.flatten_parameters()
 
-    test_loss = evaluate(args, test_data)
+    test_loss = evaluate(args, tmodel, test_data)
     print('=' * 89)
     print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
         test_loss,
@@ -160,19 +160,19 @@ def test(args: Args, corpus: data.Corpus, eval_batch_size):
     print('=' * 89)
 
     if len(args.onnx_export) > 0:
-        export_onnx(args, model, batch_size=1)
+        export_onnx(args, tmodel, batch_size=1)
 
 
-def train(args: Args, model: nn.Module, corpus: data.Corpus):
+def train(args: Args, tmodel: nn.Module, corpus: data.Corpus):
     device = get_device(args)
 
     train_data = batchify(corpus.train, args.batch_size, device)
 
-    model.train()
+    tmodel.train()
     total_loss = 0
     start_time = time.time()
     if args.model != 'Transformer':
-        hidden = model.init_hidden(args.batch_size)
+        hidden = tmodel.init_hidden(args.batch_size)
 
     for batch, i in enumerate(range(0, train_data.size(0) - 1, args.bptt)):
         pass
