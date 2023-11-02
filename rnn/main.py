@@ -181,3 +181,79 @@ print(f'Our one-hot encoding of \'a\' has shape {test_word.shape}.')
 
 test_sentence = one_hot_encode_sequence(['a', 'b'], vocab_size)
 print(f'Our one-hot encoding of \'a b\' has shape {test_sentence.shape}.')
+
+hidden_size = 50  # Number of dimensions in the hidden state
+vocab_size = len(word_to_idx)  # Size of the vocabulary used
+
+
+def init_orthogonal(param):
+    """
+    Initializes weight parameters orthogonally.
+
+    Refer to this paper for an explanation of this initialization:
+    https://arxiv.org/abs/1312.6120
+    """
+    if param.ndim < 2:
+        raise ValueError("Only parameters with 2 or more dimensions are supported.")
+
+    rows, cols = param.shape
+
+    new_param = np.random.randn(rows, cols)
+
+    if rows < cols:
+        new_param = new_param.T
+
+    # Compute QR factorization
+    q, r = np.linalg.qr(new_param)
+
+    # Make Q uniform according to https://arxiv.org/pdf/math-ph/0609050.pdf
+    d = np.diag(r, 0)
+    ph = np.sign(d)
+    q *= ph
+
+    if rows < cols:
+        q = q.T
+
+    new_param = q
+
+    return new_param
+
+
+def init_rnn(hidden_size, vocab_size):
+    """
+    Initializes our recurrent neural network.
+
+    Args:
+     `hidden_size`: the dimensions of the hidden state
+     `vocab_size`: the dimensions of our vocabulary
+    """
+    # Weight matrix (input to hidden state)
+    # YOUR CODE HERE!
+    U = np.zeros((hidden_size, vocab_size))
+
+    # Weight matrix (recurrent computation)
+    # YOUR CODE HERE!
+    V = np.zeros((hidden_size, hidden_size))
+
+    # Weight matrix (hidden state to output)
+    # YOUR CODE HERE!
+    W = np.zeros((vocab_size, hidden_size))
+
+    # Bias (hidden state)
+    # YOUR CODE HERE!
+    b_hidden = np.zeros((hidden_size, 1))
+
+    # Bias (output)
+    # YOUR CODE HERE!
+    b_out = np.zeros((vocab_size, 1))
+
+    # Initialize weights
+    U = init_orthogonal(U)
+    V = init_orthogonal(V)
+    W = init_orthogonal(W)
+
+    # Return parameters as a tuple
+    return U, V, W, b_hidden, b_out
+
+
+params = init_rnn(hidden_size=hidden_size, vocab_size=vocab_size)
