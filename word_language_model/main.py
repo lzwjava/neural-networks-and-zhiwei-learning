@@ -108,7 +108,7 @@ def work(args: Args):
     try:
         for epoch in range(1, args.epochs + 1):
             epoch_start_time = time.time()
-            train(args, tmodel, corpus)
+            train(args, tmodel, corpus, epoch)
             val_loss = evaluate(args, tmodel, val_data, corpus, eval_batch_size)
             print('-' * 89)
             print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | valid ppl {:8.2f}'.format(
@@ -151,7 +151,7 @@ def test(args: Args, corpus: data.Corpus, eval_batch_size):
         if args.model in ['RNN_TANH', 'RNN_RELU', 'LSTM', 'GRU']:
             tmodel.rnn.flatten_parameters()
 
-    test_loss = evaluate(args, tmodel, test_data)
+    test_loss = evaluate(args, tmodel, test_data, corpus, eval_batch_size)
     print('=' * 89)
     print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
         test_loss,
@@ -163,10 +163,19 @@ def test(args: Args, corpus: data.Corpus, eval_batch_size):
         export_onnx(args, tmodel, batch_size=1)
 
 
-def train(args: Args, tmodel: nn.Module, corpus: data.Corpus):
+def repackage_hidden(h):
+    if isinstance(h, torch.Tensor):
+        return h.detach()
+    else:
+        return tuple(repackage_hidden(v) for v in h)
+
+
+def train(args: Args, tmodel: nn.Module, corpus: data.Corpus, epoch):
     device = get_device(args)
 
     train_data = batchify(corpus.train, args.batch_size, device)
+
+    ntokens = len(corpus.dictionary)
 
     tmodel.train()
     total_loss = 0
@@ -175,7 +184,40 @@ def train(args: Args, tmodel: nn.Module, corpus: data.Corpus):
         hidden = tmodel.init_hidden(args.batch_size)
 
     for batch, i in enumerate(range(0, train_data.size(0) - 1, args.bptt)):
-        pass
+        data, targets = get_batch(train_data, i, args.bptt)
+        tmodel.zero_grad()
+        if args.model == 'Transformer':
+            output = tmodel(data)
+            output = output.view(-1, ntokens)
+        else:
+            hidden = repackage_hidden(hidden)
+            output, hidden = tmodel(data, hidden)
+
+        loss = loss_fn(output, targets)
+        loss.backward()
+
+        torch.nn.utils.clip_grad_norm_(tmodel.parameters(), args.clip)
+        for p in tmodel.parameters():
+            p.data.add_(p.grad, alpha=-args.lr)
+
+        total_loss += loss.item()
+
+        if batch % args.log_interval == 0 and batch > 0:
+            cur_loss = total_loss / args.log_interval
+            elapsed = time.time() - start_time
+            print('| epoch {:3d} | {:5d}/{:5d} batches| lr {:02.2f}|ms/batch {:5.2f}|loss {5.2f}|ppl{:8.2f}'.format(
+                epoch,
+                batch,
+                len(train_data) // args.bptt,
+                args.lr,
+                elapsed * 1000 / args.log_interval,
+                cur_loss,
+                math.exp(cur_loss)
+            ))
+            total_loss = 0
+            start_time = time.time()
+        if args.dry_run:
+            break
 
 
 def get_batch(source, i, bptt):
