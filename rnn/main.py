@@ -2,7 +2,7 @@ import numpy as np
 from collections import defaultdict
 from torch.utils import data
 
-np.random.seed(43)
+np.random.seed(42)
 
 
 def generate_dataset(num_sequences=100):
@@ -363,3 +363,271 @@ print(test_target_sequence)
 
 print('\nPredicted sequence:')
 print([idx_to_word[np.argmax(output)] for output in outputs])
+
+
+def clip_gradient_norm(grads, max_norm=0.25):
+    """
+    Clips gradients to have a maximum norm of `max_norm`.
+    This is to prevent the exploding gradients problem.
+    """
+    # Set the maximum of the norm to be of type float
+    max_norm = float(max_norm)
+    total_norm = 0
+
+    # Calculate the L2 norm squared for each gradient and add them to the total norm
+    for grad in grads:
+        grad_norm = np.sum(np.power(grad, 2))
+        total_norm += grad_norm
+
+    total_norm = np.sqrt(total_norm)
+
+    # Calculate clipping coeficient
+    clip_coef = max_norm / (total_norm + 1e-6)
+
+    # If the total norm is larger than the maximum allowable norm, then clip the gradient
+    if clip_coef < 1:
+        for grad in grads:
+            grad *= clip_coef
+
+    return grads
+
+
+def backward_pass(inputs, outputs, hidden_states, targets, params):
+    """
+    Computes the backward pass of a vanilla RNN.
+
+    Args:
+     `inputs`: sequence of inputs to be processed
+     `outputs`: sequence of outputs from the forward pass
+     `hidden_states`: sequence of hidden_states from the forward pass
+     `targets`: sequence of targets
+     `params`: the parameters of the RNN
+    """
+    # First we unpack our parameters
+    U, V, W, b_hidden, b_out = params
+
+    # Initialize gradients as zero
+    d_U, d_V, d_W = np.zeros_like(U), np.zeros_like(V), np.zeros_like(W)
+    d_b_hidden, d_b_out = np.zeros_like(b_hidden), np.zeros_like(b_out)
+
+    # Keep track of hidden state derivative and loss
+    d_h_next = np.zeros_like(hidden_states[0])
+    loss = 0
+
+    # For each element in output sequence
+    # NB: We iterate backwards s.t. t = N, N-1, ... 1, 0
+    for t in reversed(range(len(outputs))):
+        # Compute cross-entropy loss (as a scalar)
+        # YOUR CODE HERE!
+        loss += -np.mean(np.log(outputs[t] + 1e-12) * targets[t])
+
+        # Backpropagate into output (derivative of cross-entropy)
+        # if you're confused about this step, see this link for an explanation:
+        # http://cs231n.github.io/neural-networks-case-study/#grad
+        # YOUR CODE HERE!
+        d_o = outputs[t].copy()
+        d_o[np.argmax(targets[t])] -= 1
+
+        # Backpropagate into W
+        # YOUR CODE HERE!
+        d_W += np.dot(d_o, hidden_states[t].T)
+        d_b_out += d_o
+
+        # Backpropagate into h
+        # YOUR CODE HERE!
+        d_h = np.dot(W.T, d_o) + d_h_next
+
+        # Backpropagate through non-linearity
+        d_f = tanh(hidden_states[t], derivative=True) * d_h
+        d_b_hidden += d_f
+
+        # Backpropagate into U
+        # YOUR CODE HERE!
+        d_U += np.dot(d_f, inputs[t].T)
+
+        # Backpropagate into V
+        # YOUR CODE HERE!
+        d_V += np.dot(d_f, hidden_states[t - 1].T)
+        d_h_next = np.dot(V.T, d_f)
+
+    # Pack gradients
+    grads = d_U, d_V, d_W, d_b_hidden, d_b_out
+
+    # Clip gradients
+    grads = clip_gradient_norm(grads)
+
+    return loss, grads
+
+
+loss, grads = backward_pass(test_input, outputs, hidden_states, test_target, params)
+
+print('We get a loss of:')
+print(loss)
+
+
+def update_parameters(params, grads, lr=1e-3):
+    # Take a step
+    for param, grad in zip(params, grads):
+        param -= lr * grad
+
+    return params
+
+
+import matplotlib.pyplot as plt
+
+# Hyper-parameters
+num_epochs = 1000
+
+# Initialize a new network
+params = init_rnn(hidden_size=hidden_size, vocab_size=vocab_size)
+
+# Initialize hidden state as zeros
+hidden_state = np.zeros((hidden_size, 1))
+
+# Track loss
+training_loss, validation_loss = [], []
+
+# For each epoch
+for i in range(num_epochs):
+
+    # Track loss
+    epoch_training_loss = 0
+    epoch_validation_loss = 0
+
+    # For each sentence in validation set
+    for inputs, targets in validation_set:
+        # One-hot encode input and target sequence
+        inputs_one_hot = one_hot_encode_sequence(inputs, vocab_size)
+        targets_one_hot = one_hot_encode_sequence(targets, vocab_size)
+
+        # Re-initialize hidden state
+        hidden_state = np.zeros_like(hidden_state)
+
+        # Forward pass
+        # YOUR CODE HERE!
+        outputs, hidden_states = forward_pass(inputs_one_hot, hidden_state, params)
+
+        # Backward pass
+        # YOUR CODE HERE!
+        loss, _ = backward_pass(inputs_one_hot, outputs, hidden_states, targets_one_hot, params)
+
+        # Update loss
+        epoch_validation_loss += loss
+
+    # For each sentence in training set
+    for inputs, targets in training_set:
+
+        # One-hot encode input and target sequence
+        inputs_one_hot = one_hot_encode_sequence(inputs, vocab_size)
+        targets_one_hot = one_hot_encode_sequence(targets, vocab_size)
+
+        # Re-initialize hidden state
+        hidden_state = np.zeros_like(hidden_state)
+
+        # Forward pass
+        # YOUR CODE HERE!
+        outputs, hidden_states = forward_pass(inputs_one_hot, hidden_state, params)
+
+        # Backward pass
+        # YOUR CODE HERE!
+        loss, grads = backward_pass(inputs_one_hot, outputs, hidden_states, targets_one_hot, params)
+
+        if np.isnan(loss):
+            raise ValueError('Gradients have vanished!')
+
+        # Update parameters
+        params = update_parameters(params, grads, lr=3e-4)
+
+        # Update loss
+        epoch_training_loss += loss
+
+    # Save loss for plot
+    training_loss.append(epoch_training_loss / len(training_set))
+    validation_loss.append(epoch_validation_loss / len(validation_set))
+
+    # Print loss every 100 epochs
+    if i % 100 == 0:
+        print(f'Epoch {i}, training loss: {training_loss[-1]}, validation loss: {validation_loss[-1]}')
+
+# Get first sentence in test set
+inputs, targets = test_set[1]
+
+# One-hot encode input and target sequence
+inputs_one_hot = one_hot_encode_sequence(inputs, vocab_size)
+targets_one_hot = one_hot_encode_sequence(targets, vocab_size)
+
+# Initialize hidden state as zeros
+hidden_state = np.zeros((hidden_size, 1))
+
+# Forward pass
+outputs, hidden_states = forward_pass(inputs_one_hot, hidden_state, params)
+output_sentence = [idx_to_word[np.argmax(output)] for output in outputs]
+print('Input sentence:')
+print(inputs)
+
+print('\nTarget sequence:')
+print(targets)
+
+print('\nPredicted sequence:')
+print([idx_to_word[np.argmax(output)] for output in outputs])
+
+# Plot training and validation loss
+epoch = np.arange(len(training_loss))
+plt.figure()
+plt.plot(epoch, training_loss, 'r', label='Training loss', )
+plt.plot(epoch, validation_loss, 'b', label='Validation loss')
+plt.legend()
+plt.xlabel('Epoch'), plt.ylabel('NLL')
+plt.show()
+
+
+def freestyle(params, sentence='', num_generate=4):
+    """
+    Takes in a sentence as a string and outputs a sequence
+    based on the predictions of the RNN.
+
+    Args:
+     `params`: the parameters of the network
+     `sentence`: string with whitespace-separated tokens
+     `num_generate`: the number of tokens to generate
+    """
+    sentence = sentence.split(' ')
+
+    sentence_one_hot = one_hot_encode_sequence(sentence, vocab_size)
+
+    # Initialize hidden state as zeros
+    hidden_state = np.zeros((hidden_size, 1))
+
+    # Generate hidden state for sentence
+    outputs, hidden_states = forward_pass(sentence_one_hot, hidden_state, params)
+
+    # Output sentence
+    output_sentence = sentence
+
+    # Append first prediction
+    word = idx_to_word[np.argmax(outputs[-1])]
+    output_sentence.append(word)
+
+    # Forward pass
+    for i in range(num_generate):
+        # Get the latest prediction and latest hidden state
+        output = outputs[-1]
+        hidden_state = hidden_states[-1]
+
+        # Reshape our output to match the input shape of our forward pass
+        output = output.reshape(1, output.shape[0], output.shape[1])
+
+        # Forward pass
+        outputs, hidden_states = forward_pass(output, hidden_state, params)
+
+        # Compute the index the most likely word and look up the corresponding word
+        word = idx_to_word[np.argmax(outputs)]
+
+        output_sentence.append(word)
+
+    return output_sentence
+
+
+# Perform freestyle
+print('Example:')
+print(freestyle(params, sentence='a a a a a b'))
