@@ -1,11 +1,16 @@
 import argparse
+import math
+import os.path
+import time
 
 import torch
+from torch import nn
 
 from word_language_model import data
 
 from dataclasses import dataclass
 import argparse
+import model
 
 
 @dataclass
@@ -31,8 +36,11 @@ class Args:
     dry_run: bool = True
 
 
-def batchify(data: torch.Tensor, bsz):
+def batchify(data: torch.Tensor, bsz, device):
     nbatch = data.size(0) // bsz
+    data = data.narrow(0, 0, nbatch * bsz)
+    data = data.view(bsz, -1).t().contiguous()
+    return data.to(device)
 
 
 def main():
@@ -64,14 +72,120 @@ def main():
     print(args)
     print(args.nhid)
 
-    torch.manual_seed(args.seed)
+    work(args)
 
+
+def get_device(args: Args):
     if args.cuda:
         device = torch.device('cuda')
     else:
         device = torch.device('cpu')
+    return device
+
+
+def work(args: Args):
+    torch.manual_seed(args.seed)
 
     corpus = data.Corpus(args.data)
+
+    eval_batch_size = 10
+
+    device = get_device(args)
+
+    val_data = batchify(corpus.valid, eval_batch_size, device)
+
+    lr = args.lr
+    best_val_loss = None
+    try:
+        for epoch in range(1, args.epochs + 1):
+            epoch_start_time = time.time()
+            train(args)
+            val_loss = evaluate(val_data)
+            print('-' * 89)
+            print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | valid ppl {:8.2f}'.format(
+                epoch,
+                (time.time() - epoch_start_time),
+                val_loss,
+                math.exp(val_loss)
+            ))
+            print('-' * 89)
+            if not best_val_loss or val_loss < best_val_loss:
+                with open(args.save, 'wb') as f:
+                    torch.save(model, f)
+                best_val_loss = val_loss
+            else:
+                lr /= 4.0
+    except KeyboardInterrupt:
+        print('-' * 89)
+        print('Exit early')
+
+    test(args, corpus, device, eval_batch_size)
+
+
+def export_onnx(args: Args, model: nn.Module, batch_size):
+    path = args.onnx_export
+    seq_len = args.bptt
+    device = get_device(args)
+
+    print('export onnx at {}.'.format(os.path.realpath(path)))
+    model.eval()
+    dummy_input = torch.LongTensor(seq_len * batch_size).zero_().view(-1, batch_size).to(device)
+    hidden = model.init_hidden(batch_size)
+    torch.onnx.export(model, (dummy_input, hidden), path)
+
+
+def test(args: Args, corpus: data.Corpus, , eval_batch_size):
+    test_data = batchify(corpus.test, eval_batch_size)
+
+    with open(args.save, 'rb') as f:
+        model = torch.load(f)
+        if args.model in ['RNN_TANH', 'RNN_RELU', 'LSTM', 'GRU']:
+            model.rnn.flatten_parameters()
+
+    test_loss = evaluate(args, test_data)
+    print('=' * 89)
+    print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
+        test_loss,
+        math.exp(test_loss)
+    ))
+    print('=' * 89)
+
+    if len(args.onnx_export) > 0:
+        export_onnx(args, model, batch_size=1)
+
+
+def train(args: Args, corpus: data.Corpus):
+    device = get_device(args)
+
+    train_data = batchify(corpus.train, args.batch_size, device)
+
+    ntokens = len(corpus.dictionary)
+
+    if args.model == 'Transformer':
+        tmodel = model.TransformerModel(ntokens, args.emsize, args.nhead, args.nhid, args.nlayers, args.dropout).to(
+            device)
+    else:
+        tmodel = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.nlayers, args.dropout, args.tied).to(
+            device)
+
+    loss_fn = nn.NLLLoss()
+
+    model.train()
+    total_loss = 0
+    start_time = time.time()
+    if args.model != 'Transformer':
+        hidden = model.init_hidden(args.batch_size)
+
+    for batch, i in enumerate(range(0, train_data.size(0) - 1, args.bptt)):
+        pass
+
+
+def get_batch(source, i):
+    pass
+
+
+def evaluate(args: Args, data_source):
+    pass
 
 
 if __name__ == '__main__':
