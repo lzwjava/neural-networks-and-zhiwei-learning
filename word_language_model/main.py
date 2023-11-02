@@ -28,12 +28,12 @@ class Args:
     dropout: float = 0.2
     tied: bool = True
     seed: int = 1111
-    cuda: bool = True
+    cuda: bool = False
     log_interval: int = 200
     save: str = 'model.pt'
     onnx_export: str = ''
     nhead: int = 2
-    dry_run: bool = True
+    dry_run: bool = False
 
 
 def batchify(data: torch.Tensor, bsz, device):
@@ -58,12 +58,12 @@ def main():
     parser.add_argument('--dropout', type=float, default=Args.dropout)
     parser.add_argument('--tied', default=Args.tied)
     parser.add_argument('--seed', type=int, default=Args.seed)
-    parser.add_argument('--cuda', type=bool, default=Args.cuda)
+    parser.add_argument('--cuda', action='store_true')
     parser.add_argument('--log-interval', type=int, default=Args.log_interval)
     parser.add_argument('--save', type=str, default=Args.save)
     parser.add_argument('--onnx-export', type=str, default=Args.onnx_export)
     parser.add_argument('--nhead', type=int, default=Args.nhead)
-    parser.add_argument('--dry-run', type=bool, default=Args.dry_run)
+    parser.add_argument('--dry-run', action='store_true')
 
     args = parser.parse_args()
 
@@ -205,7 +205,7 @@ def train(args: Args, tmodel: nn.Module, corpus: data.Corpus, epoch):
         if batch % args.log_interval == 0 and batch > 0:
             cur_loss = total_loss / args.log_interval
             elapsed = time.time() - start_time
-            print('| epoch {:3d} | {:5d}/{:5d} batches| lr {:02.2f}|ms/batch {:5.2f}|loss {5.2f}|ppl{:8.2f}'.format(
+            print('| epoch {:3d} | {:5d}/{:5d} batches| lr {:2.2f}| ms/batch {:5.2f}| loss {:5.2f}| ppl{:8.2f}'.format(
                 epoch,
                 batch,
                 len(train_data) // args.bptt,

@@ -3,18 +3,35 @@ import torch
 
 import data
 
+from dataclasses import dataclass
+
+
+@dataclass
+class Args:
+    data: str = './data/wikitext-2'
+    checkpoint: str = './model.pt'
+    outf: str = 'generated.txt'
+    words: int = 1000
+    seed: int = 1111
+    cuda: bool = True
+    temperature: float = 1.0
+    log_interval: int = 100
+
 
 def main():
     parser = argparse.ArgumentParser('PyTorch Word Language Model')
-    parser.add_argument('--data', type=str, default='./data/wikitext-2', help='location of data')
-    parser.add_argument('--checkpoint', type=str, default='./model.pt', help='checkpoint')
-    parser.add_argument('--outf', type=str, default='generated.txt', help='output file')
-    parser.add_argument('--words', type=int, default=1000, help='words')
-    parser.add_argument('--seed', type=int, default=1111, help='seed')
-    parser.add_argument('--cuda', type=bool, default=True, help='cuda')
-    parser.add_argument('--temperature', type=float, default=1.0, help='temperature')
-    parser.add_argument('--log-interval', type=int, default=100, help='log interval')
+    parser.add_argument('--data', type=str, default=Args.data, help='location of data')
+    parser.add_argument('--checkpoint', type=str, default=Args.checkpoint, help='checkpoint')
+    parser.add_argument('--outf', type=str, default=Args.outf, help='output file')
+    parser.add_argument('--words', type=int, default=Args.words, help='words')
+    parser.add_argument('--seed', type=int, default=Args.seed, help='seed')
+    parser.add_argument('--cuda', type=bool, default=Args.cuda, help='cuda')
+    parser.add_argument('--temperature', type=float, default=Args.temperature, help='temperature')
+    parser.add_argument('--log-interval', type=int, default=Args.log_interval, help='log interval')
+
     args = parser.parse_args()
+
+    args = Args(**vars(args))
 
     torch.manual_seed(args.seed)
 
@@ -58,7 +75,7 @@ def main():
                     input.fill_(word_idx)
 
                 word = corpus.dictionary.idx2word[word_idx]
-                outf.write(word + ('\n' if i % 20 == 19 else ''))
+                outf.write(word + ('\n' if i % 20 == 19 else ' '))
 
                 if i % args.log_interval == 0:
                     print(' | Generated {}/{} words'.format(i, args.words))
