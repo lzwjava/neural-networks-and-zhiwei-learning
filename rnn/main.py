@@ -405,7 +405,7 @@ def update_parameters(params, grads, lr=1e-3):
 
 import matplotlib.pyplot as plt
 
-num_epochs = 1000
+num_epochs = 200
 
 params = init_rnn(hidden_size=hidden_size, vocab_size=vocab_size)
 
