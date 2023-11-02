@@ -94,13 +94,22 @@ def work(args: Args):
 
     val_data = batchify(corpus.valid, eval_batch_size, device)
 
+    ntokens = len(corpus.dictionary)
+
+    if args.model == 'Transformer':
+        tmodel = model.TransformerModel(ntokens, args.emsize, args.nhead, args.nhid, args.nlayers, args.dropout).to(
+            device)
+    else:
+        tmodel = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.nlayers, args.dropout, args.tied).to(
+            device)
+
     lr = args.lr
     best_val_loss = None
     try:
         for epoch in range(1, args.epochs + 1):
             epoch_start_time = time.time()
-            train(args)
-            val_loss = evaluate(val_data)
+            train(args, tmodel, corpus)
+            val_loss = evaluate(args, tmodel, val_data, corpus, eval_batch_size)
             print('-' * 89)
             print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | valid ppl {:8.2f}'.format(
                 epoch,
@@ -111,7 +120,7 @@ def work(args: Args):
             print('-' * 89)
             if not best_val_loss or val_loss < best_val_loss:
                 with open(args.save, 'wb') as f:
-                    torch.save(model, f)
+                    torch.save(tmodel, f)
                 best_val_loss = val_loss
             else:
                 lr /= 4.0
@@ -119,7 +128,7 @@ def work(args: Args):
         print('-' * 89)
         print('Exit early')
 
-    test(args, corpus, device, eval_batch_size)
+    test(args, corpus, eval_batch_size)
 
 
 def export_onnx(args: Args, model: nn.Module, batch_size):
@@ -134,7 +143,7 @@ def export_onnx(args: Args, model: nn.Module, batch_size):
     torch.onnx.export(model, (dummy_input, hidden), path)
 
 
-def test(args: Args, corpus: data.Corpus, , eval_batch_size):
+def test(args: Args, corpus: data.Corpus, eval_batch_size):
     test_data = batchify(corpus.test, eval_batch_size)
 
     with open(args.save, 'rb') as f:
@@ -154,21 +163,10 @@ def test(args: Args, corpus: data.Corpus, , eval_batch_size):
         export_onnx(args, model, batch_size=1)
 
 
-def train(args: Args, corpus: data.Corpus):
+def train(args: Args, model: nn.Module, corpus: data.Corpus):
     device = get_device(args)
 
     train_data = batchify(corpus.train, args.batch_size, device)
-
-    ntokens = len(corpus.dictionary)
-
-    if args.model == 'Transformer':
-        tmodel = model.TransformerModel(ntokens, args.emsize, args.nhead, args.nhid, args.nlayers, args.dropout).to(
-            device)
-    else:
-        tmodel = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.nlayers, args.dropout, args.tied).to(
-            device)
-
-    loss_fn = nn.NLLLoss()
 
     model.train()
     total_loss = 0
@@ -180,12 +178,33 @@ def train(args: Args, corpus: data.Corpus):
         pass
 
 
-def get_batch(source, i):
-    pass
+def get_batch(source, i, bptt):
+    seq_len = min(bptt, len(source) - 1 - i)
+    data = source[i:i + seq_len]
+    target = source[i + 1:i + 1 + seq_len].view(-1)
+    return data, target
 
 
-def evaluate(args: Args, data_source):
-    pass
+loss_fn = nn.NLLLoss()
+
+
+def evaluate(args: Args, model: nn.Module, data_source, corpus: data.Corpus, eval_batch_size):
+    model.eval()
+    total_loss = 0.
+    ntokens = len(corpus.dictionary)
+    if args.model != 'Transformer':
+        hidden = model.init_hidden(eval_batch_size)
+    with torch.no_grad():
+        for i in range(0, data_source.size(0) - 1, args.bptt):
+            data, targets = get_batch(data_source, i, args.bptt)
+            if args.model == 'Transformer':
+                output = model(data)
+                output = output.view(-1, ntokens)
+            else:
+                output, hidden = model(data, hidden)
+            total_loss += len(data) * loss_fn(output, targets).item()
+
+    return total_loss / (len(data_source) - 1)
 
 
 if __name__ == '__main__':
