@@ -257,3 +257,109 @@ def init_rnn(hidden_size, vocab_size):
 
 
 params = init_rnn(hidden_size=hidden_size, vocab_size=vocab_size)
+
+
+def sigmoid(x, derivative=False):
+    """
+    Computes the element-wise sigmoid activation function for an array x.
+
+    Args:
+     `x`: the array where the function is applied
+     `derivative`: if set to True will return the derivative instead of the forward pass
+    """
+    x_safe = x + 1e-12
+    f = 1 / (1 + np.exp(-x_safe))
+
+    if derivative:  # Return the derivative of the function evaluated at x
+        return f * (1 - f)
+    else:  # Return the forward pass of the function at x
+        return f
+
+
+def tanh(x, derivative=False):
+    """
+    Computes the element-wise tanh activation function for an array x.
+
+    Args:
+     `x`: the array where the function is applied
+     `derivative`: if set to True will return the derivative instead of the forward pass
+    """
+    x_safe = x + 1e-12
+    f = (np.exp(x_safe) - np.exp(-x_safe)) / (np.exp(x_safe) + np.exp(-x_safe))
+
+    if derivative:  # Return the derivative of the function evaluated at x
+        return 1 - f ** 2
+    else:  # Return the forward pass of the function at x
+        return f
+
+
+def softmax(x, derivative=False):
+    """
+    Computes the softmax for an array x.
+
+    Args:
+     `x`: the array where the function is applied
+     `derivative`: if set to True will return the derivative instead of the forward pass
+    """
+    x_safe = x + 1e-12
+    f = np.exp(x_safe) / np.sum(np.exp(x_safe))
+
+    if derivative:  # Return the derivative of the function evaluated at x
+        pass  # We will not need this one
+    else:  # Return the forward pass of the function at x
+        return f
+
+
+def forward_pass(inputs, hidden_state, params):
+    """
+    Computes the forward pass of a vanilla RNN.
+
+    Args:
+     `inputs`: sequence of inputs to be processed
+     `hidden_state`: an already initialized hidden state
+     `params`: the parameters of the RNN
+    """
+    # First we unpack our parameters
+    U, V, W, b_hidden, b_out = params
+
+    # Create a list to store outputs and hidden states
+    outputs, hidden_states = [], []
+
+    # For each element in input sequence
+    for t in range(len(inputs)):
+        # Compute new hidden state
+        # YOUR CODE HERE!
+        hidden_state = tanh(np.dot(U, inputs[t]) + np.dot(V, hidden_state) + b_hidden)
+
+        # Compute output
+        # YOUR CODE HERE!
+        out = softmax(np.dot(W, hidden_state) + b_out)
+
+        # Save results and continue
+        outputs.append(out)
+        hidden_states.append(hidden_state.copy())
+
+    return outputs, hidden_states
+
+
+# Get first sequence in training set
+test_input_sequence, test_target_sequence = training_set[0]
+
+# One-hot encode input and target sequence
+test_input = one_hot_encode_sequence(test_input_sequence, vocab_size)
+test_target = one_hot_encode_sequence(test_target_sequence, vocab_size)
+
+# Initialize hidden state as zeros
+hidden_state = np.zeros((hidden_size, 1))
+
+# Now let's try out our new function
+outputs, hidden_states = forward_pass(test_input, hidden_state, params)
+
+print('Input sequence:')
+print(test_input_sequence)
+
+print('\nTarget sequence:')
+print(test_target_sequence)
+
+print('\nPredicted sequence:')
+print([idx_to_word[np.argmax(output)] for output in outputs])
