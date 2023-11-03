@@ -176,7 +176,7 @@ def init_lstm(hidden_size, vocab_size, z_size):
      `vocab_size`: the dimensions of our vocabulary
      `z_size`: the dimensions of the concatenated input
     """
-    
+
     W_f = np.random.randn(hidden_size, z_size)
 
     b_f = np.zeros((hidden_size, 1))
