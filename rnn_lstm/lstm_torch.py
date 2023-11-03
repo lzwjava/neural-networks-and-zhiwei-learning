@@ -1,16 +1,11 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import torch
 import torch.nn as nn
-import data
+
+from data import *
+from utils import *
 
 np.random.seed(42)
-
-vocab_size = data.vocab_size
-training_set, validation_set, test_set = data.training_set, data.validation_set, data.test_set
-one_hot_encode_sequence = data.one_hot_encode_sequence
-word_to_idx = data.word_to_idx
-idx_to_word = data.idx_to_word
 
 
 class Net(nn.Module):

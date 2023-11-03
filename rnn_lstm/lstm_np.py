@@ -1,47 +1,9 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
-import data
+from data import *
+from utils import *
 
 np.random.seed(42)
-
-vocab_size = data.vocab_size
-training_set, validation_set, test_set = data.training_set, data.validation_set, data.test_set
-one_hot_encode_sequence = data.one_hot_encode_sequence
-word_to_idx = data.word_to_idx
-idx_to_word = data.idx_to_word
-hidden_size = data.hidden_size
-
-
-def sigmoid(x, derivative=False):
-    x_safe = x + 1e-12
-    f = 1 / (1 + np.exp(-x_safe))
-
-    if derivative:
-        return f * (1 - f)
-    else:
-        return f
-
-
-def tanh(x, derivative=False):
-    x_safe = x + 1e-12
-    f = (np.exp(x_safe) - np.exp(-x_safe)) / (np.exp(x_safe) + np.exp(-x_safe))
-
-    if derivative:
-        return 1 - f ** 2
-    else:
-        return f
-
-
-def softmax(x, derivative=False):
-    x_safe = x + 1e-12
-    f = np.exp(x_safe) / np.sum(np.exp(x_safe))
-
-    if derivative:
-        pass
-    else:
-        return f
-
 
 z_size = hidden_size + vocab_size
 

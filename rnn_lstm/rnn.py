@@ -1,15 +1,9 @@
-import numpy as np
-import data
 import matplotlib.pyplot as plt
 
-np.random.seed(42)
+from data import *
+from utils import *
 
-vocab_size = data.vocab_size
-training_set, validation_set, test_set = data.training_set, data.validation_set, data.test_set
-one_hot_encode_sequence = data.one_hot_encode_sequence
-word_to_idx = data.word_to_idx
-idx_to_word = data.idx_to_word
-hidden_size = data.hidden_size
+np.random.seed(42)
 
 
 def init_orthogonal(param):
@@ -190,7 +184,7 @@ def update_parameters(params, grads, lr=1e-3):
     return params
 
 
-num_epochs = 200
+num_epochs = 1000
 
 params = init_rnn(hidden_size=hidden_size, vocab_size=vocab_size)
 
