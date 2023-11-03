@@ -12,12 +12,6 @@ hidden_size = data.hidden_size
 
 
 def init_orthogonal(param):
-    """
-    Initializes weight parameters orthogonally.
-
-    Refer to this paper for an explanation of this initialization:
-    https://arxiv.org/abs/1312.6120
-    """
     if param.ndim < 2:
         raise ValueError("Only parameters with 2 or more dimensions are supported.")
 
@@ -43,14 +37,6 @@ def init_orthogonal(param):
 
 
 def init_rnn(hidden_size, vocab_size):
-    """
-    Initializes our recurrent neural network.
-
-    Args:
-     `hidden_size`: the dimensions of the hidden state
-     `vocab_size`: the dimensions of our vocabulary
-    """
-
     U = np.zeros((hidden_size, vocab_size))
 
     V = np.zeros((hidden_size, hidden_size))
@@ -72,13 +58,6 @@ params = init_rnn(hidden_size=hidden_size, vocab_size=vocab_size)
 
 
 def sigmoid(x, derivative=False):
-    """
-    Computes the element-wise sigmoid activation function for an array x.
-
-    Args:
-     `x`: the array where the function is applied
-     `derivative`: if set to True will return the derivative instead of the forward pass
-    """
     x_safe = x + 1e-12
     f = 1 / (1 + np.exp(-x_safe))
 
@@ -89,13 +68,6 @@ def sigmoid(x, derivative=False):
 
 
 def tanh(x, derivative=False):
-    """
-    Computes the element-wise tanh activation function for an array x.
-
-    Args:
-     `x`: the array where the function is applied
-     `derivative`: if set to True will return the derivative instead of the forward pass
-    """
     x_safe = x + 1e-12
     f = (np.exp(x_safe) - np.exp(-x_safe)) / (np.exp(x_safe) + np.exp(-x_safe))
 
@@ -106,13 +78,6 @@ def tanh(x, derivative=False):
 
 
 def softmax(x, derivative=False):
-    """
-    Computes the softmax for an array x.
-
-    Args:
-     `x`: the array where the function is applied
-     `derivative`: if set to True will return the derivative instead of the forward pass
-    """
     x_safe = x + 1e-12
     f = np.exp(x_safe) / np.sum(np.exp(x_safe))
 
@@ -123,15 +88,6 @@ def softmax(x, derivative=False):
 
 
 def forward_pass(inputs, hidden_state, params):
-    """
-    Computes the forward pass of a vanilla RNN.
-
-    Args:
-     `inputs`: sequence of inputs to be processed
-     `hidden_state`: an already initialized hidden state
-     `params`: the parameters of the RNN
-    """
-
     U, V, W, b_hidden, b_out = params
 
     outputs, hidden_states = [], []
@@ -167,11 +123,6 @@ print([idx_to_word[np.argmax(output)] for output in outputs])
 
 
 def clip_gradient_norm(grads, max_norm=0.25):
-    """
-    Clips gradients to have a maximum norm of `max_norm`.
-    This is to prevent the exploding gradients problem.
-    """
-
     max_norm = float(max_norm)
     total_norm = 0
 
@@ -191,17 +142,6 @@ def clip_gradient_norm(grads, max_norm=0.25):
 
 
 def backward_pass(inputs, outputs, hidden_states, targets, params):
-    """
-    Computes the backward pass of a vanilla RNN.
-
-    Args:
-     `inputs`: sequence of inputs to be processed
-     `outputs`: sequence of outputs from the forward pass
-     `hidden_states`: sequence of hidden_states from the forward pass
-     `targets`: sequence of targets
-     `params`: the parameters of the RNN
-    """
-
     U, V, W, b_hidden, b_out = params
 
     d_U, d_V, d_W = np.zeros_like(U), np.zeros_like(V), np.zeros_like(W)
@@ -328,15 +268,6 @@ plt.show()
 
 
 def freestyle(params, sentence='', num_generate=4):
-    """
-    Takes in a sentence as a string and outputs a sequence
-    based on the predictions of the RNN.
-
-    Args:
-     `params`: the parameters of the network
-     `sentence`: string with whitespace-separated tokens
-     `num_generate`: the number of tokens to generate
-    """
     sentence = sentence.split(' ')
 
     sentence_one_hot = one_hot_encode_sequence(sentence, vocab_size)
