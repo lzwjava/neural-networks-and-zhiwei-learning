@@ -1,5 +1,6 @@
 import numpy as np
 import data
+import matplotlib.pyplot as plt
 
 np.random.seed(42)
 
@@ -188,8 +189,6 @@ def update_parameters(params, grads, lr=1e-3):
 
     return params
 
-
-import matplotlib.pyplot as plt
 
 num_epochs = 200
 
