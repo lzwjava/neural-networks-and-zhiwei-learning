@@ -8,13 +8,6 @@ np.random.seed(42)
 
 
 def sigmoid(x, derivative=False):
-    """
-    Computes the element-wise sigmoid activation function for an array x.
-
-    Args:
-     `x`: the array where the function is applied
-     `derivative`: if set to True will return the derivative instead of the forward pass
-    """
     x_safe = x + 1e-12
     f = 1 / (1 + np.exp(-x_safe))
 
@@ -25,13 +18,6 @@ def sigmoid(x, derivative=False):
 
 
 def tanh(x, derivative=False):
-    """
-    Computes the element-wise tanh activation function for an array x.
-
-    Args:
-     `x`: the array where the function is applied
-     `derivative`: if set to True will return the derivative instead of the forward pass
-    """
     x_safe = x + 1e-12
     f = (np.exp(x_safe) - np.exp(-x_safe)) / (np.exp(x_safe) + np.exp(-x_safe))
 
@@ -42,13 +28,6 @@ def tanh(x, derivative=False):
 
 
 def softmax(x, derivative=False):
-    """
-    Computes the softmax for an array x.
-
-    Args:
-     `x`: the array where the function is applied
-     `derivative`: if set to True will return the derivative instead of the forward pass
-    """
     x_safe = x + 1e-12
     f = np.exp(x_safe) / np.sum(np.exp(x_safe))
 
@@ -59,14 +38,6 @@ def softmax(x, derivative=False):
 
 
 def generate_dataset(num_sequences=100):
-    """
-    Generates a number of sequences as our dataset.
-
-    Args:
-     `num_sequences`: the number of sequences to be generated.
-
-    Returns a list of sequences.
-    """
     samples = []
 
     for _ in range(num_sequences):
@@ -84,10 +55,6 @@ print(sequences[0])
 
 
 def sequences_to_dicts(sequences):
-    """
-    Creates word_to_idx and idx_to_word dictionaries for a list of sequences.
-    """
-
     flatten = lambda l: [item for sublist in l for item in sublist]
 
     all_words = flatten(sequences)
@@ -173,16 +140,6 @@ print(f'We have {len(test_set)} samples in the test set.')
 
 
 def one_hot_encode(idx, vocab_size):
-    """
-    One-hot encodes a single word given its index and the size of the vocabulary.
-
-    Args:
-     `idx`: the index of the given word
-     `vocab_size`: the size of the vocabulary
-
-    Returns a 1-D numpy array of length `vocab_size`.
-    """
-
     one_hot = np.zeros(vocab_size)
 
     one_hot[idx] = 1.0
@@ -191,16 +148,6 @@ def one_hot_encode(idx, vocab_size):
 
 
 def one_hot_encode_sequence(sequence, vocab_size):
-    """
-    One-hot encodes a sequence of words given a fixed vocabulary size.
-
-    Args:
-     `sentence`: a list of words to encode
-     `vocab_size`: the size of the vocabulary
-
-    Returns a 3-D numpy array of shape (num words, vocab size, 1).
-    """
-
     encoding = np.array([one_hot_encode(word_to_idx[word], vocab_size) for word in sequence])
 
     encoding = encoding.reshape(encoding.shape[0], encoding.shape[1], 1)
@@ -221,15 +168,6 @@ z_size = hidden_size + vocab_size
 
 
 def init_lstm(hidden_size, vocab_size, z_size):
-    """
-    Initializes our LSTM network.
-
-    Args:
-     `hidden_size`: the dimensions of the hidden state
-     `vocab_size`: the dimensions of our vocabulary
-     `z_size`: the dimensions of the concatenated input
-    """
-
     W_f = np.random.randn(hidden_size, z_size)
 
     b_f = np.zeros((hidden_size, 1))
@@ -258,12 +196,6 @@ def init_lstm(hidden_size, vocab_size, z_size):
 
 
 def init_orthogonal(param):
-    """
-    Initializes weight parameters orthogonally.
-
-    Refer to this paper for an explanation of this initialization:
-    https://arxiv.org/abs/1312.6120
-    """
     if param.ndim < 2:
         raise ValueError("Only parameters with 2 or more dimensions are supported.")
 
@@ -292,26 +224,6 @@ params = init_lstm(hidden_size=hidden_size, vocab_size=vocab_size, z_size=z_size
 
 
 def forward(inputs, h_prev, C_prev, p):
-    """
-    Arguments:
-    x -- your input data at timestep "t", numpy array of shape (n_x, m).
-    h_prev -- Hidden state at timestep "t-1", numpy array of shape (n_a, m)
-    C_prev -- Memory state at timestep "t-1", numpy array of shape (n_a, m)
-    p -- python list containing:
-                        W_f -- Weight matrix of the forget gate, numpy array of shape (n_a, n_a + n_x)
-                        b_f -- Bias of the forget gate, numpy array of shape (n_a, 1)
-                        W_i -- Weight matrix of the update gate, numpy array of shape (n_a, n_a + n_x)
-                        b_i -- Bias of the update gate, numpy array of shape (n_a, 1)
-                        W_g -- Weight matrix of the first "tanh", numpy array of shape (n_a, n_a + n_x)
-                        b_g --  Bias of the first "tanh", numpy array of shape (n_a, 1)
-                        W_o -- Weight matrix of the output gate, numpy array of shape (n_a, n_a + n_x)
-                        b_o --  Bias of the output gate, numpy array of shape (n_a, 1)
-                        W_v -- Weight matrix relating the hidden-state to the output, numpy array of shape (n_v, n_a)
-                        b_v -- Bias relating the hidden-state to the output, numpy array of shape (n_v, 1)
-    Returns:
-    z_s, f_s, i_s, g_s, C_s, o_s, h_s, v_s -- lists of size m containing the computations in each forward pass
-    outputs -- prediction at timestep "t", numpy array of shape (n_v, m)
-    """
     assert h_prev.shape == (hidden_size, 1)
     assert C_prev.shape == (hidden_size, 1)
 
@@ -377,11 +289,6 @@ print([idx_to_word[np.argmax(output)] for output in outputs])
 
 
 def clip_gradient_norm(grads, max_norm=0.25):
-    """
-    Clips gradients to have a maximum norm of `max_norm`.
-    This is to prevent the exploding gradients problem.
-    """
-
     max_norm = float(max_norm)
     total_norm = 0
 
@@ -408,34 +315,6 @@ def update_parameters(params, grads, lr=1e-3):
 
 
 def backward(z, f, i, g, C, o, h, v, outputs, targets, p=params):
-    """
-    Arguments:
-    z -- your concatenated input data  as a list of size m.
-    f -- your forget gate computations as a list of size m.
-    i -- your input gate computations as a list of size m.
-    g -- your candidate computations as a list of size m.
-    C -- your Cell states as a list of size m+1.
-    o -- your output gate computations as a list of size m.
-    h -- your Hidden state computations as a list of size m+1.
-    v -- your logit computations as a list of size m.
-    outputs -- your outputs as a list of size m.
-    targets -- your targets as a list of size m.
-    p -- python list containing:
-                        W_f -- Weight matrix of the forget gate, numpy array of shape (n_a, n_a + n_x)
-                        b_f -- Bias of the forget gate, numpy array of shape (n_a, 1)
-                        W_i -- Weight matrix of the update gate, numpy array of shape (n_a, n_a + n_x)
-                        b_i -- Bias of the update gate, numpy array of shape (n_a, 1)
-                        W_g -- Weight matrix of the first "tanh", numpy array of shape (n_a, n_a + n_x)
-                        b_g --  Bias of the first "tanh", numpy array of shape (n_a, 1)
-                        W_o -- Weight matrix of the output gate, numpy array of shape (n_a, n_a + n_x)
-                        b_o --  Bias of the output gate, numpy array of shape (n_a, 1)
-                        W_v -- Weight matrix relating the hidden-state to the output, numpy array of shape (n_v, n_a)
-                        b_v -- Bias relating the hidden-state to the output, numpy array of shape (n_v, 1)
-    Returns:
-    loss -- crossentropy loss for all elements in output
-    grads -- lists of gradients of every element in p
-    """
-
     W_f, W_i, W_g, W_o, W_v, b_f, b_i, b_g, b_o, b_v = p
 
     W_f_d = np.zeros_like(W_f)
