@@ -9,7 +9,7 @@ if not os.path.exists(input_file_path):
     data_url = 'https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt'
     with open(input_file_path, 'w') as f:
         f.write(requests.get(data_url).text)
-        
+
 with open(input_file_path, 'r') as f:
     data = f.read()
 
@@ -20,21 +20,24 @@ vocab_size = len(chars)
 print('all the unique characters:', ''.join(chars))
 print(f'vocab_size: {vocab_size}')
 
-stoi = {ch:i for i, ch in enumerate(chars)}
-itos = {i:ch for i, ch in enumerate(chars)}
+stoi = {ch: i for i, ch in enumerate(chars)}
+itos = {i: ch for i, ch in enumerate(chars)}
+
 
 def encode(s):
     return [stoi[c] for c in s]
 
+
 def decode(l):
     return ''.join([itos[i] for i in l])
+
 
 print(encode('abc'))
 print(decode([2, 3, 4]))
 
 n = len(data)
-train_data = data[:int(n*0.9)]
-val_data = data[int(n*0.9):]
+train_data = data[:int(n * 0.9)]
+val_data = data[int(n * 0.9):]
 
 train_ids = encode(train_data)
 val_ids = encode(val_data)
@@ -59,5 +62,3 @@ meta = {
 
 with (open(os.path.join(os.path.dirname(__file__), 'meta.pkl'), 'wb')) as f:
     pickle.dump(meta, f)
-    
-    
