@@ -10,6 +10,7 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import StepLR
+from enum import Enum
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__") and callable(models.__dict__[name]))
@@ -122,6 +123,18 @@ def main():
         val_dataset, batch_size=args.batch_size, shuffle=(val_sampler is None),
         num_workers=args.workers, pin_memory=True, sampler=val_sampler
     )
+
+
+class Summary(Enum):
+    NONE = 0,
+    AVERAGE = 1,
+    SUM = 2,
+    COUNT = 3
+
+
+class AverageMeter(object):
+
+    def __init__(self, name, fmt=':f', summary_type=Summary):
 
 
 def get_device():
