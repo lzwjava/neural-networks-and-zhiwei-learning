@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+import shutil
 import time
 from dataclasses import dataclass
 from enum import Enum
@@ -132,7 +133,27 @@ def main():
         print(f'epoch: {epoch}')
         train(train_loader, model, loss_fn, optimizer, epoch, args)
 
+        acc1 = validate(val_loader, model, loss_fn, args)
+
         scheduler.step()
+
+        is_best = acc1 > best_accl
+        best_accl = max(best_accl, acc1)
+
+        save_checkpoint({
+            'epoch': epoch + 1,
+            'arch': args.arch,
+            'state_dict': model.state_dict(),
+            'best_acc1': best_accl,
+            'optimizer': optimizer.state_dict(),
+            'scheduler': scheduler.state_dict()
+        }, is_best)
+
+
+def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+    torch.save(state, filename)
+    if is_best:
+        shutil.copyfile(filename, 'model_best.pth.tar')
 
 
 def train(train_loader, model, loss_fn, optimizer, epoch, args):
@@ -176,6 +197,48 @@ def train(train_loader, model, loss_fn, optimizer, epoch, args):
 
         if i % args.print_freq == 0:
             progress.display(i + 1)
+
+
+def validate(val_loader, model, loss_fn, args):
+    def run_validate(loader, base_progress=0):
+        device = get_device()
+        with torch.no_grad():
+            end = time.time()
+            for i, (images, target) in enumerate(loader):
+                i = base_progress + i
+
+                images = images.to(device)
+                target = target.to(device)
+
+                output = model(images)
+                loss = loss_fn(output, target)
+
+                acc1, acc5 = accuracy(output, target, topk=(1, 5))
+
+                size = images.size(0)
+                losses.update(loss.item(), size)
+                top1.update(acc1[0], size)
+                top5.update(acc5[0], size)
+
+                batch_time.update(time.time() - end)
+                end = time.time()
+
+                if i % args.print_freq == 0:
+                    progress.display(i + 1)
+
+    batch_time = AverageMeter('Time', ':6.3f', Summary.NONE)
+    losses = AverageMeter('loss', ':6.3f', Summary.AVERAGE)
+    top1 = AverageMeter('Acc@1', ':6.3f', Summary.AVERAGE)
+    top5 = AverageMeter('Acc@5', ':6.2f', Summary.AVERAGE)
+    progress = ProgressMeter(len(val_loader), [batch_time, losses, top1, top5], prefix='Test: ')
+
+    model.eval()
+
+    run_validate(val_loader)
+
+    progress.display_summary()
+
+    return top1.avg
 
 
 class Summary(Enum):
