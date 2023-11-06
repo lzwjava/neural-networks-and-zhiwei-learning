@@ -1,7 +1,15 @@
 import argparse
-
-import torchvision.models as models
+import os
+import random
 from dataclasses import dataclass
+
+import torch
+import torch.nn as nn
+import torch.utils.data
+import torchvision.datasets as datasets
+import torchvision.models as models
+import torchvision.transforms as transforms
+from torch.optim.lr_scheduler import StepLR
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__") and callable(models.__dict__[name]))
@@ -48,6 +56,80 @@ def main():
 
     args = Args(**vars(args))
     print(args)
+
+    if args.seed is not None:
+        random.seed(args.seed)
+        torch.manual_seed(args.seed)
+
+    if args.pretrained:
+        model = models.__dict__[args.arch](pretrained=True)
+    else:
+        model = models.__dict__[args.arch]()
+
+    device = get_device()
+
+    loss_fn = nn.CrossEntropyLoss().to(device)
+    optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
+
+    best_accl = 0
+
+    if args.resume:
+        if os.path.isfile(args.resume):
+            print(f'loading checking point {args.resume}')
+            checkpoint = torch.load(args.resume)
+            args.start_epoch = checkpoint['epoch']
+            best_accl = checkpoint['best_accl']
+            model.load_state_dict(checkpoint['state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            scheduler.load_state_dict(checkpoint['scheduler'])
+            print(f'load checkpoint {args.resume} epoch: {args.start_epoch}')
+        else:
+            print(f'no checkpoint found at {args.resume}')
+
+    traindir = os.path.join(args.data, 'train')
+    valdir = os.path.join(args.data, 'val')
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+
+    train_dataset = datasets.ImageFolder(
+        traindir,
+        transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            normalize,
+        ]))
+
+    val_dataset = datasets.ImageFolder(
+        traindir,
+        transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            normalize,
+        ]))
+
+    train_sampler = None
+    val_sampler = None
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
+        num_workers=args.workers, pin_memory=True, sampler=train_sampler
+    )
+
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=args.batch_size, shuffle=(val_sampler is None),
+        num_workers=args.workers, pin_memory=True, sampler=val_sampler
+    )
+
+
+def get_device():
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+    return device
 
 
 if __name__ == '__main__':
