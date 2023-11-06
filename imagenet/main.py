@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+import time
 from dataclasses import dataclass
 
 import torch
@@ -125,6 +126,27 @@ def main():
         num_workers=args.workers, pin_memory=True, sampler=val_sampler
     )
 
+
+def train(train_loader, model, loss_fn, optimizer, epoch, args):
+    batch_time = AverageMeter('time', ':6.3f')
+    data_time = AverageMeter('data', ':6.3f')
+    losses = AverageMeter('loss', ':6.3f')
+    top1 = AverageMeter('Acc@1', ':6.2f')
+    top5 = AverageMeter('Acc@5', ':6.2f')
+
+    progress = ProgressMeter(
+        len(train_loader),
+        [batch_time, data_time, losses, top1, top5],
+        prefix="Epoch: [{}]".format(epoch)
+    )
+
+    model.train()
+
+    end = time.time()
+
+    for i, (images, target) in enumerate(train_loader):
+        data_time.update(time.time() - end)
+        
 
 class Summary(Enum):
     NONE = 0,
