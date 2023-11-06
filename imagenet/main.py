@@ -154,8 +154,6 @@ def train(train_loader, model, loss_fn, optimizer, epoch, args):
     device = get_device()
 
     for i, (images, target) in enumerate(train_loader):
-        if i % 50 == 0:
-            print(f'train i {i}')
         data_time.update(time.time() - end)
 
         images = images.to(device, non_blocking=True)
@@ -168,6 +166,16 @@ def train(train_loader, model, loss_fn, optimizer, epoch, args):
         losses.update(loss.item(), images.size(0))
         top1.update(acc1[0], images.size(0))
         top5.update(acc5[0], images.size(0))
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        if i % args.print_freq == 0:
+            progress.display(i + 1)
 
 
 class Summary(Enum):
