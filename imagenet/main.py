@@ -78,14 +78,14 @@ def main():
     optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
 
-    best_accl = 0
+    best_acc1 = 0
 
     if args.resume:
         if os.path.isfile(args.resume):
             print(f'loading checking point {args.resume}')
             checkpoint = torch.load(args.resume)
             args.start_epoch = checkpoint['epoch']
-            best_accl = checkpoint['best_accl']
+            best_acc1 = checkpoint['best_acc1']
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             scheduler.load_state_dict(checkpoint['scheduler'])
@@ -137,14 +137,14 @@ def main():
 
         scheduler.step()
 
-        is_best = acc1 > best_accl
-        best_accl = max(best_accl, acc1)
+        is_best = acc1 > best_acc1
+        best_acc1 = max(best_acc1, acc1)
 
         save_checkpoint({
             'epoch': epoch + 1,
             'arch': args.arch,
             'state_dict': model.state_dict(),
-            'best_acc1': best_accl,
+            'best_acc1': best_acc1,
             'optimizer': optimizer.state_dict(),
             'scheduler': scheduler.state_dict()
         }, is_best)
