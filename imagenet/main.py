@@ -3,16 +3,16 @@ import os
 import random
 import time
 from dataclasses import dataclass
+from enum import Enum
 
 import torch
+import torch.distributed as dist
 import torch.nn as nn
 import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import StepLR
-from enum import Enum
-import torch.distributed as dist
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__") and callable(models.__dict__[name]))
@@ -71,6 +71,8 @@ def main():
 
     device = get_device()
 
+    model = model.to(device)
+
     loss_fn = nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
@@ -90,13 +92,13 @@ def main():
         else:
             print(f'no checkpoint found at {args.resume}')
 
-    traindir = os.path.join(args.data, 'train')
-    valdir = os.path.join(args.data, 'val')
+    train_dir = os.path.join(args.data, 'train')
+    val_dir = os.path.join(args.data, 'val')
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
     train_dataset = datasets.ImageFolder(
-        traindir,
+        train_dir,
         transforms.Compose([
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
@@ -105,7 +107,7 @@ def main():
         ]))
 
     val_dataset = datasets.ImageFolder(
-        traindir,
+        val_dir,
         transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
@@ -126,6 +128,12 @@ def main():
         num_workers=args.workers, pin_memory=True, sampler=val_sampler
     )
 
+    for epoch in range(args.start_epoch, args.epochs):
+        print(f'epoch: {epoch}')
+        train(train_loader, model, loss_fn, optimizer, epoch, args)
+
+        scheduler.step()
+
 
 def train(train_loader, model, loss_fn, optimizer, epoch, args):
     batch_time = AverageMeter('time', ':6.3f')
@@ -143,10 +151,18 @@ def train(train_loader, model, loss_fn, optimizer, epoch, args):
     model.train()
 
     end = time.time()
+    device = get_device()
 
     for i, (images, target) in enumerate(train_loader):
+        print(f'train i {i}')
         data_time.update(time.time() - end)
-        
+
+        images = images.to(device, non_blocking=True)
+        target = target.to(device, non_blocking=True)
+
+        output = model(images)
+        loss = loss_fn(output, target)
+
 
 class Summary(Enum):
     NONE = 0,
@@ -223,6 +239,19 @@ class ProgressMeter(object):
         num_digits = len(str(num_batches // 1))
         fmt = '{:' + str(num_digits) + 'd}'
         return '[' + fmt + '/' + fmt.format(num_batches) + ']'
+
+
+def accuracy(output, target, topk=(1,)):
+    with torch.no_grad():
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        _, pred = output.topk(maxk, 1, True, True)
+        pred = pred.t()
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+        res = []
+        return res
 
 
 def get_device():
