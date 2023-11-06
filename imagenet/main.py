@@ -184,9 +184,10 @@ def train(train_loader, model, loss_fn, optimizer, epoch, args):
         loss = loss_fn(output, target)
 
         acc1, acc5 = accuracy(output, target, topk=(1, 5))
-        losses.update(loss.item(), images.size(0))
-        top1.update(acc1[0], images.size(0))
-        top5.update(acc5[0], images.size(0))
+        size = images.size(0)
+        losses.update(loss.item(), size)
+        top1.update(acc1[0], size)
+        top5.update(acc5[0], size)
 
         optimizer.zero_grad()
         loss.backward()
