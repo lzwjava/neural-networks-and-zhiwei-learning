@@ -28,7 +28,7 @@ class Args:
     workers: int = 4
     epochs: int = 90
     start_epoch: int = 0
-    batch_size: int = 256
+    batch_size: int = 64
     lr: float = 0.1
     momentum: float = 0.9
     weight_decay: float = 1e-4
@@ -154,7 +154,8 @@ def train(train_loader, model, loss_fn, optimizer, epoch, args):
     device = get_device()
 
     for i, (images, target) in enumerate(train_loader):
-        print(f'train i {i}')
+        if i % 50 == 0:
+            print(f'train i {i}')
         data_time.update(time.time() - end)
 
         images = images.to(device, non_blocking=True)
@@ -162,6 +163,11 @@ def train(train_loader, model, loss_fn, optimizer, epoch, args):
 
         output = model(images)
         loss = loss_fn(output, target)
+
+        acc1, acc5 = accuracy(output, target, topk=(1, 5))
+        losses.update(loss.item(), images.size(0))
+        top1.update(acc1[0], images.size(0))
+        top5.update(acc5[0], images.size(0))
 
 
 class Summary(Enum):
@@ -251,6 +257,9 @@ def accuracy(output, target, topk=(1,)):
         correct = pred.eq(target.view(1, -1).expand_as(pred))
 
         res = []
+        for k in topk:
+            correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
+            res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
 
