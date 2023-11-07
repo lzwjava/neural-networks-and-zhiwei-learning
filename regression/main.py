@@ -1,5 +1,6 @@
-import torch
 from itertools import count
+
+import torch
 import torch.nn.functional as F
 
 POLY_DEGREE = 4
@@ -25,7 +26,7 @@ def f(x):
 
 
 def get_batch(batch_size=32):
-    random = torch.randn(32)
+    random = torch.randn(batch_size)
     x = make_features(random)
     y = f(x)
     return x, y
