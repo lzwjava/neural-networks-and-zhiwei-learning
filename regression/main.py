@@ -1,5 +1,6 @@
 import torch
 from itertools import count
+import torch.nn.functional as F
 
 POLY_DEGREE = 4
 W_target = torch.randn(POLY_DEGREE, 1) * 5
@@ -34,6 +35,11 @@ def train():
     fc = torch.nn.Linear(W_target.size(0), 1)
     for batch_idx in count(1):
         batch_x, batch_y = get_batch()
+        fc.zero_grad()
+
+        output = fc(batch_x)
+        loss = F.smooth_l1_loss(output, batch_y)
+        loss = output.item()
 
 
 def main():
