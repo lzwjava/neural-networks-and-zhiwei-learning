@@ -10,8 +10,8 @@ b_target = torch.randn(1) * 5
 def poly_desc(W, b):
     result = 'y = '
     for i, w in enumerate(W):
-        result += '{:+.2f}x^{} '.format(w, i + 1)
-    result += '{:+.2f}'.format(b[0])
+        result += '{:+.6f}x^{} '.format(w, i + 1)
+    result += '{:+.6f}'.format(b[0])
     return result
 
 
@@ -37,9 +37,24 @@ def train():
         batch_x, batch_y = get_batch()
         fc.zero_grad()
 
-        output = fc(batch_x)
-        loss = F.smooth_l1_loss(output, batch_y)
+        fout = fc(batch_x)
+        output = F.smooth_l1_loss(fout, batch_y)
         loss = output.item()
+
+        output.backward()
+
+        for param in fc.parameters():
+            param.data.add_(-0.01 * param.grad)
+
+        if loss < 1e-10:
+            break
+
+        if batch_idx % 10000 == 0:
+            print(f'Loss: {loss} after batch {batch_idx}')
+
+    print(f'Loss: {loss} after batch {batch_idx}')
+    print('Learned function:\t' + poly_desc(fc.weight.view(-1), fc.bias))
+    print('Actual function:\t' + poly_desc(W_target.view(-1), b_target))
 
 
 def main():
@@ -49,8 +64,7 @@ def main():
     desc = poly_desc(W_target.view(-1), b_target)
     print(desc)
 
-    batch = get_batch()
-    print(batch)
+    train()
 
 
 if __name__ == '__main__':
