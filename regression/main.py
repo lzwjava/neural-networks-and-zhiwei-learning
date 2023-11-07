@@ -46,10 +46,10 @@ def train():
         for param in fc.parameters():
             param.data.add_(-0.01 * param.grad)
 
-        if loss < 1e-10:
+        if loss < 1e-8:
             break
 
-        if batch_idx % 10000 == 0:
+        if batch_idx % 1000 == 0:
             print(f'Loss: {loss} after batch {batch_idx}')
 
     print(f'Loss: {loss} after batch {batch_idx}')
