@@ -38,4 +38,4 @@ ngrams = [
     for i in range(CONTEXT_SIZE, len(test_sentence))
 ]
 
-print(ngrams)
+print(ngrams[:3])
