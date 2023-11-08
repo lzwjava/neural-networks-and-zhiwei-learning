@@ -4,14 +4,18 @@ import torch.nn as nn
 
 class Polynomial(nn.Module):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self(Polynomial, self).__init__()
-        print(torch.rand())
-        self.a = nn.Parameter(torch.rand())
+    def __init__(self):
+        super().__init__()
+        self.a = nn.Parameter(torch.rand(1))
 
-    def forward(self):
-        pass
+    def forward(self, x):
+        return x
 
 
-model = Polynomial()
+def main():
+    model = Polynomial()
+    loss_fn = nn.MSELoss()
+
+
+if __name__ == '__main__':
+    main()
