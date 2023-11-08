@@ -34,7 +34,7 @@ def main():
     step = 0
     lr = 1e-5
 
-    optimizier = optim.SGD(model.parameters(), lr)
+    optimizer = optim.SGD(model.parameters(), lr)
 
     x = torch.linspace(-math.pi, math.pi, 2000)
     y = torch.sin(x)
