@@ -224,6 +224,18 @@ def generate(model, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k
         if top_k is not None:
             v, _ = torch.topk(logits, top_k)
             print(f"{v=}")
+            logits[logits < v[:, [-1]]] = -float('inf')
+
+        probs = F.softmax(logits, dim=-1)
+
+        if do_sample:
+            idx_next = torch.multinomial(probs, num_samples=1)
+        else:
+            _, idx_next = torch.topk(probs, k=1, dim=-1)
+
+        idx = torch.cat((idx, idx_next), dim=1)
+
+    return idx
 
 
 if __name__ == '__main__':
