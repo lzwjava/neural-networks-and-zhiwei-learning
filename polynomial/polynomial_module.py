@@ -7,7 +7,7 @@ import torch.optim as optim
 
 
 def param_str(v: torch.Tensor):
-    return str(v.data.item())
+    return str(v.item())
 
 
 class Polynomial(nn.Module):
