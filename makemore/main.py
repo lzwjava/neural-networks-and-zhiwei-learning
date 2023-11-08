@@ -237,6 +237,32 @@ def generate(model, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k
     return idx
 
 
+def print_samples(num=10):
+    X_init = torch.zeros(num, 1, dtype=torch.long).to('cuda')
+    top_k = None
+    steps = train_dataset.get_output_length() - 1
+    X_samp = generate(model, X_init, steps, top_k=top_k, do_sample=True).to('cpu')
+    train_samples, test_samples, new_samples = [], [], []
+    for i in range(X_samp.size(0)):
+        row = X_samp[i, 1:].tolist()
+        crop_index = row.index(0) if 0 in row else len(row)
+        row = row[:crop_index]
+        word_samp = train_dataset.decode(row)
+        if train_dataset.contains(word_samp):
+            train_samples.append(word_samp)
+        elif test_dataset.contains(word_samp):
+            test_samples.append(word_samp)
+        else:
+            new_samples.append(word_samp)
+
+    print('-' * 80)
+    for lst, desc in [(train_samples, 'in train'), (test_samples, 'in test'), (new_samples, 'new')]:
+        print(f'{len(lst)} samples that are in {desc}')
+        for word in lst:
+            print(word)
+    print('-' * 80)
+
+
 if __name__ == '__main__':
     print('main')
     parser = argparse.ArgumentParser(description="make more")
@@ -282,7 +308,7 @@ if __name__ == '__main__':
     weight_decay = 0.01
     batch_size = 32
     num_workers = 4
-    max_steps = 100
+    max_steps = 10000
 
     config = ModelConfig(vocab_size=vocab_size, block_size=block_size,
                          n_layer=n_layer, n_head=n_head,
@@ -339,4 +365,7 @@ if __name__ == '__main__':
 
     result = generate(model, X_init, output_len, top_k=2, do_sample=True)
 
+    print('result')
     print(result)
+
+    print_samples(num=10)
