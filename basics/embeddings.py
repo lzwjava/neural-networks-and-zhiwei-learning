@@ -29,5 +29,13 @@ Proving his beauty by succession thine!
 This were to be new made when thou art old,
 And see thy blood warm when thou feel'st it cold.""".split()
 
-
 print(test_sentence)
+
+ngrams = [
+    ([
+         test_sentence[i - j - 1] for j in range(CONTEXT_SIZE)], test_sentence[i]
+    )
+    for i in range(CONTEXT_SIZE, len(test_sentence))
+]
+
+print(ngrams)
