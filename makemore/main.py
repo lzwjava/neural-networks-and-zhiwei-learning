@@ -218,8 +218,7 @@ def generate(model, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k
         print(logits)
         print(f"{logits.size()=}")
 
-        nlogits = logits[:, -1, :]
-        print(f"{nlogits.size()=}")
+        logits = logits[:, -1, :] / temperature
 
         if top_k is not None:
             v, _ = torch.topk(logits, top_k)
