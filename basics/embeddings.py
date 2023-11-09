@@ -99,3 +99,5 @@ for epoch in range(100):
     losses.append(total_loss)
 
 print(losses)
+
+print(model.embeddings.weight[word_to_ix['beauty']])
