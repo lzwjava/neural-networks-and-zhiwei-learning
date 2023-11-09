@@ -77,8 +77,25 @@ loss_fn = nn.NLLLoss()
 model = NGramLanguageModel(len(vocab), EMBEDDING_DIM, CONTEXT_SIZE)
 optimizer = optim.SGD(model.parameters(), lr=1e-4)
 
-for epoch in range(10):
+for epoch in range(100):
     total_loss = 0
     for context, target in ngrams:
-       context_ids = []
-       print(f'{context=}')
+        context_ids = [word_to_ix[word] for word in context]
+        # print(f'{context=}')
+        # print(f'{context_ids}')
+        target_ids = [word_to_ix[target]]
+
+        model.zero_grad()
+
+        output = model(torch.tensor(context_ids))
+        loss = loss_fn(output, torch.tensor(target_ids))
+
+        loss.backward()
+
+        optimizer.step()
+
+        total_loss += loss.item()
+
+    losses.append(total_loss)
+
+print(losses)
