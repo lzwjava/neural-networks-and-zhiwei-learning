@@ -77,9 +77,9 @@ loss_fn = nn.NLLLoss()
 model = NGramLanguageModel(len(vocab), EMBEDDING_DIM, CONTEXT_SIZE)
 optimizer = optim.SGD(model.parameters(), lr=1e-4)
 
-for epoch in range(100):
+for epoch in range(1):
     total_loss = 0
-    for context, target in ngrams:
+    for context, target in ngrams[:1]:
         context_ids = [word_to_ix[word] for word in context]
         # print(f'{context=}')
         # print(f'{context_ids}')
