@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
 word_to_ix = {"hello": 0, "world": 1}
 embeds = nn.Embedding(2, 5)
@@ -39,3 +41,44 @@ ngrams = [
 ]
 
 print(ngrams[:3])
+
+vocab = set(test_sentence)
+word_to_ix = {word: i for i, word in enumerate(vocab)}
+
+print(word_to_ix)
+
+
+class NGramLanguageModel(nn.Module):
+
+    def __init__(self, vocab_size, embedding_dim, context_size):
+        super().__init__()
+        self.embeddings = nn.Embedding(vocab_size, embedding_dim)
+        self.linear1 = nn.Linear(context_size * embedding_dim, 128)
+        self.linear2 = nn.Linear(128, vocab_size)
+
+    def forward(self, inputs):
+        embeds = self.embeddings(inputs).view((1, -1))
+        out = F.relu(self.linear1(embeds))
+        out = self.linear2(out)
+        log_probs = F.log_softmax(out, dim=1)
+        return log_probs
+
+
+x = torch.randn(10)
+print(f'{x=}')
+
+soft = F.softmax(x, 0)
+print(f'{soft=}')
+
+print(F.log_softmax(x, dim=0))
+
+losses = []
+loss_fn = nn.NLLLoss()
+model = NGramLanguageModel(len(vocab), EMBEDDING_DIM, CONTEXT_SIZE)
+optimizer = optim.SGD(model.parameters(), lr=1e-4)
+
+for epoch in range(10):
+    total_loss = 0
+    for context, target in ngrams:
+       context_ids = []
+       print(f'{context=}')
