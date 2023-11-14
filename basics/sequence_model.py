@@ -29,7 +29,7 @@ def prepare_sequence(seq, to_ix):
 
 training_data = [
     ("The dog ate the apple".split(), ['DET', 'NN', 'V', 'DET', 'NN']),
-    (('Everyday read that book').split(), ['NN', 'V', 'DET', 'NN'])
+    ('Everyday read that book'.split(), ['NN', 'V', 'DET', 'NN'])
 ]
 
 print(training_data)
