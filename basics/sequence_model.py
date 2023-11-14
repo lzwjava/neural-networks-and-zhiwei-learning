@@ -48,3 +48,21 @@ tag_to_idx = {'DET': 0, 'NN': 1, 'V': 2}
 EMBEDDING_DIM = 6
 HIDDEN_DIM = 6
 
+
+class LSTMTagger(nn.Module):
+
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size):
+        super().__init__()
+        self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim)
+        self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
+
+    def forward(self, sentence):
+        embeds = self.word_embeddings(sentence)
+        return embeds
+
+
+
+
+model = LSTMTagger(EMBEDDING_DIM, HIDDEN_DIM, len(word_to_idx), len(tag_to_idx))
+loss_fn = nn.NLLLoss()
