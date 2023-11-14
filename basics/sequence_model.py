@@ -14,13 +14,13 @@ print(torch.randn(1, 3))
 hidden = (torch.randn(1, 1, 3),
           torch.randn(1, 1, 3))
 
-print(f'{inputs[0]=}')
+print(f'{inputs[0]}')
 print(f'{inputs[0].view(1, 1, -1)=}')
 
 for i in inputs:
+    print(f'{i.size()}')
+    print(f'{i.view(1, 1, -1)=}')
     out, hidden = lstm(i.view(1, 1, -1), hidden)
-
-print(i.view(1, 1, -1))
 
 
 def prepare_sequence(seq, to_ix):
@@ -60,8 +60,6 @@ class LSTMTagger(nn.Module):
     def forward(self, sentence):
         embeds = self.word_embeddings(sentence)
         return embeds
-
-
 
 
 model = LSTMTagger(EMBEDDING_DIM, HIDDEN_DIM, len(word_to_idx), len(tag_to_idx))
