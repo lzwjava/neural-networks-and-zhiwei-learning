@@ -94,7 +94,7 @@ def plot_specgram(waveform, sample_rate, title="Spectrogram"):
         if num_channels > 1:
             axes[c].set_ylabel(f"Channel {c + 1}")
     figure.suptitle(title)
-    figure.show()
+    plt.show()
 
 
 plot_specgram(waveform, sample_rate)
