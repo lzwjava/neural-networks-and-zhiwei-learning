@@ -23,3 +23,8 @@ print(SAMPLE_WAV)
 metadata = torchaudio.info(SAMPLE_WAV)
 print(metadata)
 
+gsm_metadata = torchaudio.info(SAMPLE_GSM)
+print(gsm_metadata)
+
+wav_8000_metadata = torchaudio.info(SAMPLE_WAV_8000)
+print(wav_8000_metadata)
