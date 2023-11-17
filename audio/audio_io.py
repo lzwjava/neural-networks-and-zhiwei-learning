@@ -74,7 +74,7 @@ def plot_waveform(waveform, sample_rate):
         if num_channels > 1:
             axes[c].set_ylabel(f'Channel {c + 1}')
 
-    figure.subtitle('waveform')
+    figure.suptitle('waveform')
 
 
 plot_waveform(waveform, sample_rate)
