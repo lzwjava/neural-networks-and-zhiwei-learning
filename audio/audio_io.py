@@ -48,3 +48,18 @@ with requests.get(url, stream=True) as response:
 
 print('hide_seek')
 print(metadata)
+
+waveform, sample_rate = torchaudio.load(SAMPLE_WAV)
+
+print(waveform)
+print(sample_rate)
+
+
+def plot_waveform(waveform, sample_rate):
+    waveform = waveform.numpy()
+
+    num_channels, num_frames = waveform.shape
+    print(num_channels, num_frames)
+
+
+plot_waveform(waveform, sample_rate)
