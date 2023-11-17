@@ -75,6 +75,7 @@ def plot_waveform(waveform, sample_rate):
             axes[c].set_ylabel(f'Channel {c + 1}')
 
     figure.suptitle('waveform')
+    plt.show()
 
 
 plot_waveform(waveform, sample_rate)
