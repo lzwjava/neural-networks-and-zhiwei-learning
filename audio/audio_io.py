@@ -28,3 +28,23 @@ print(gsm_metadata)
 
 wav_8000_metadata = torchaudio.info(SAMPLE_WAV_8000)
 print(wav_8000_metadata)
+
+
+def _hide_seek(obj):
+    class _wrapper:
+        def __init__(self, obj):
+            self.obj = obj
+
+        def read(self, n):
+            return self.obj.read(n)
+
+    return _wrapper(obj)
+
+
+url = "https://download.pytorch.org/torchaudio/tutorial-assets/steam-train-whistle-daniel_simon.wav"
+with requests.get(url, stream=True) as response:
+    metadata = torchaudio.info(response.raw)
+    # metadata = torchaudio.info(_hide_seek(response.raw))
+
+print('hide_seek')
+print(metadata)
