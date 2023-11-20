@@ -181,8 +181,8 @@ class GPT(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
-        self.position_embedding_table = nn.Embedding(block_size, n_embd)
+        # self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
+        # self.position_embedding_table = nn.Embedding(block_size, n_embd)
 
         # print('token_embedding_table')
         # print(self.token_embedding_table)
