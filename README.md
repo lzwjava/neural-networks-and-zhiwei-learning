@@ -1,6 +1,6 @@
 # neural-networks-and-zhiwei-learning
 
-Some experiment and replicated projects.
+Some experimental and replicated projects.
 
 * mnist_numpy, http://neuralnetworksanddeeplearning.com
 * mnist_torch, https://github.com/pytorch/examples/tree/main/mnist
