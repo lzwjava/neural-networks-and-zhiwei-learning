@@ -2,10 +2,9 @@ import numpy as np
 
 import initialization_methods as init_methods
 
-
 class KMeans:
 
-    def __init__(self, n_clusters=3, tolerance=0.01, max_iter=100, runs=1, init_method="forgy"):
+    def __init__(self, n_clusters = 3, tolerance = 0.01, max_iter = 100, runs = 1, init_method="forgy"):
         self.n_clusters = n_clusters
         self.tolerance = tolerance
         self.cluster_means = np.zeros(n_clusters)
@@ -27,7 +26,7 @@ class KMeans:
         all_clusterings = []
 
         for i in range(self.runs):
-            cluster_means = self.__initialize_means(X_values, row_count)
+            cluster_means =  self.__initialize_means(X_values, row_count)
 
             for _ in range(self.max_iter):
                 previous_means = np.copy(cluster_means)
@@ -42,9 +41,9 @@ class KMeans:
                 if np.all(clusters_not_changed) != False:
                     break
 
-            X_values_with_labels = np.append(X_values, X_labels[:, np.newaxis], axis=1)
+            X_values_with_labels = np.append(X_values, X_labels[:, np.newaxis], axis = 1)
 
-            all_clusterings.append((cluster_means, X_values_with_labels))
+            all_clusterings.append( (cluster_means, X_values_with_labels) )
             costs[i] = self.__compute_cost(X_values, X_labels, cluster_means)
 
         best_clustering_index = costs.argmin()
@@ -68,27 +67,27 @@ class KMeans:
     def __compute_distances(self, X, cluster_means, row_count):
         distances = np.zeros((row_count, self.n_clusters))
         for cluster_mean_index, cluster_mean in enumerate(cluster_means):
-            distances[:, cluster_mean_index] = np.linalg.norm(X - cluster_mean, axis=1)
+            distances[:, cluster_mean_index] = np.linalg.norm(X - cluster_mean, axis = 1)
 
         return distances
 
     def __label_examples(self, distances):
-        return distances.argmin(axis=1)
+        return distances.argmin(axis = 1)
 
     def __compute_means(self, X, labels, col_count):
         cluster_means = np.zeros((self.n_clusters, col_count))
         for cluster_mean_index, _ in enumerate(cluster_means):
-            cluster_elements = X[labels == cluster_mean_index]
+            cluster_elements = X [ labels == cluster_mean_index ]
             if len(cluster_elements):
-                cluster_means[cluster_mean_index, :] = cluster_elements.mean(axis=0)
+                cluster_means[cluster_mean_index, :] = cluster_elements.mean(axis = 0)
 
         return cluster_means
 
     def __compute_cost(self, X, labels, cluster_means):
         cost = 0
         for cluster_mean_index, cluster_mean in enumerate(cluster_means):
-            cluster_elements = X[labels == cluster_mean_index]
-            cost += np.linalg.norm(cluster_elements - cluster_mean, axis=1).sum()
+            cluster_elements = X [ labels == cluster_mean_index ]
+            cost += np.linalg.norm(cluster_elements - cluster_mean, axis = 1).sum()
 
         return cost
 
@@ -96,3 +95,5 @@ class KMeans:
         if isinstance(X, np.ndarray):
             return X
         return np.array(X)
+
+
