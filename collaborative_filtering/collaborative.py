@@ -82,7 +82,7 @@ my_rated = [i for i in range(len(my_ratings)) if my_ratings[i] > 0]
 print('\nNew user ratings:\n')
 for i in range(len(my_ratings)):
     if my_ratings[i] > 0:
-        print(f'Rated {my_ratings[i]} for  {movieList_df.loc[i, "title"]}');
+        print(f'Rated {my_ratings[i]} for  {movieList_df.loc[i, "title"]}')
 
 Y, R = load_ratings_small()
 
