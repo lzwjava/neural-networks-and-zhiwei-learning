@@ -64,7 +64,7 @@ my_ratings = np.zeros(num_movies)
 
 my_ratings[2700] = 5
 
-my_ratings[2609] = 2;
+my_ratings[2609] = 2
 
 my_ratings[929] = 5
 my_ratings[246] = 5
