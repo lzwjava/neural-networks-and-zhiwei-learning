@@ -35,10 +35,10 @@ b_r = b[0, :num_users_r].reshape(1, -1)
 Y_r = Y[:num_movies_r, :num_users_r]
 R_r = R[:num_movies_r, :num_users_r]
 
-J = cofi_cost_func(X_r, W_r, b_r, Y_r, R_r, 0);
+J = cofi_cost_func(X_r, W_r, b_r, Y_r, R_r, 0)
 print(f"Cost: {J:0.2f}")
 
-J = cofi_cost_func(X_r, W_r, b_r, Y_r, R_r, 1.5);
+J = cofi_cost_func(X_r, W_r, b_r, Y_r, R_r, 1.5)
 print(f"Cost (with regularization): {J:0.2f}")
 
 from public_tests import *
@@ -52,10 +52,10 @@ def cofi_cost_func_v(X, W, b, Y, R, lambda_):
     return J
 
 
-J = cofi_cost_func_v(X_r, W_r, b_r, Y_r, R_r, 0);
+J = cofi_cost_func_v(X_r, W_r, b_r, Y_r, R_r, 0)
 print(f"Cost: {J:0.2f}")
 
-J = cofi_cost_func_v(X_r, W_r, b_r, Y_r, R_r, 1.5);
+J = cofi_cost_func_v(X_r, W_r, b_r, Y_r, R_r, 1.5)
 print(f"Cost (with regularization): {J:0.2f}")
 
 movieList, movieList_df = load_Movie_List_pd()
