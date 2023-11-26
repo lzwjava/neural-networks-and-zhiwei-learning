@@ -1,6 +1,6 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+
 from recsys_utils import *
 
 X, W, b, num_movies, num_features, num_users = load_precalc_params_small()
@@ -21,7 +21,16 @@ print(f"Average rating for movie 1 : {tsmean:0.3f} / 5")
 def cofi_cost_func(X, W, b, Y, R, lambda_):
     nm, nu = Y.shape
     J = 0
-
+    for j in range(nu):
+        w = W[j, :]
+        b_j = b[0, j]
+        for i in range(nm):
+            x = X[i, :]
+            y = Y[i, j]
+            r = R[i, j]
+            J += np.square(r * (np.dot(w, x) + b_j - y))
+    J += lambda_ * (np.sum(np.square(W)) + np.sum(np.square(X)))
+    J = J / 2
     return J
 
 
