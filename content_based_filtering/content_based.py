@@ -206,3 +206,10 @@ for i in range(count):
                  movie_dict[movie2_id]['title'], movie_dict[movie1_id]['genres']]
                 )
 table = tabulate.tabulate(disp, tablefmt='html', headers="firstrow")
+
+file_path = "output_table.html"
+
+with open(file_path, "w") as file:
+    file.write(table)
+
+print(f"HTML table saved to {file_path}")
