@@ -95,7 +95,7 @@ model.compile(optimizer=opt,
               loss=cost_fn)
 
 tf.random.set_seed(1)
-model.fit([user_train[:, u_s:], item_train[:, i_s:]], y_train, epochs=30)
+model.fit([user_train[:, u_s:], item_train[:, i_s:]], y_train, epochs=5)
 
 model.evaluate([user_test[:, u_s:], item_test[:, i_s:]], y_test)
 
