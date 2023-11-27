@@ -11,8 +11,8 @@ def load_data():
     ''' called to load preprepared data for the lab '''
     item_train = genfromtxt('./data/content_item_train.csv', delimiter=',')
     user_train = genfromtxt('./data/content_user_train.csv', delimiter=',')
-    y_train    = genfromtxt('./data/content_y_train.csv', delimiter=',')
-    with open('./data/content_item_train_header.txt', newline='') as f:    #csv reader handles quoted strings better
+    y_train = genfromtxt('./data/content_y_train.csv', delimiter=',')
+    with open('./data/content_item_train_header.txt', newline='') as f:  # csv reader handles quoted strings better
         item_features = list(csv.reader(f))[0]
     with open('./data/content_user_train_header.txt', newline='') as f:
         user_features = list(csv.reader(f))[0]
@@ -20,13 +20,13 @@ def load_data():
 
     movie_dict = defaultdict(dict)
     count = 0
-#    with open('./data/movies.csv', newline='') as csvfile:
+    #    with open('./data/movies.csv', newline='') as csvfile:
     with open('./data/content_movie_list.csv', newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for line in reader:
             if count == 0:
-                count += 1  #skip header
-                #print(line) print
+                count += 1  # skip header
+                # print(line) print
             else:
                 count += 1
                 movie_id = int(line[0])
@@ -36,7 +36,8 @@ def load_data():
     with open('./data/content_user_to_genre.pickle', 'rb') as f:
         user_to_genre = pickle.load(f)
 
-    return(item_train, user_train, y_train, item_features, user_features, item_vecs, movie_dict, user_to_genre)
+    return (item_train, user_train, y_train, item_features, user_features, item_vecs, movie_dict, user_to_genre)
+
 
 def pprint_train(x_train, features, vs, u_s, maxcount=5, user=True):
     """ Prints user_train or item_train nicely """
@@ -44,7 +45,7 @@ def pprint_train(x_train, features, vs, u_s, maxcount=5, user=True):
         flist = [".0f", ".0f", ".1f",
                  ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f", ".1f"]
     else:
-        flist = [".0f", ".0f", ".1f", 
+        flist = [".0f", ".0f", ".1f",
                  ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f", ".0f"]
 
     head = features[:vs]
@@ -62,7 +63,7 @@ def pprint_train(x_train, features, vs, u_s, maxcount=5, user=True):
                      x_train[i, 1].astype(int),
                      x_train[i, 2].astype(float),
                      *x_train[i, 3:].astype(float)
-                    ])
+                     ])
     table = tabulate.tabulate(disp, tablefmt='html', headers="firstrow", floatfmt=flist, numalign='center')
     return table
 
@@ -73,11 +74,11 @@ def split_str(ifeatures, smax):
     for s in ifeatures:
         if not ' ' in s:  # skip string that already have a space
             if len(s) > smax:
-                mid = int(len(s)/2)
+                mid = int(len(s) / 2)
                 s = s[:mid] + " " + s[mid:]
         ofeatures.append(s)
     return ofeatures
-    
+
 
 def print_pred_movies(y_p, item, movie_dict, maxcount=10):
     """ print results of prediction of a new user. inputs are expected to be in
@@ -96,11 +97,13 @@ def print_pred_movies(y_p, item, movie_dict, maxcount=10):
     table = tabulate.tabulate(disp, tablefmt='html', headers="firstrow")
     return table
 
+
 def gen_user_vecs(user_vec, num_items):
     """ given a user vector return:
         user predict maxtrix to match the size of item_vecs """
     user_vecs = np.tile(user_vec, (num_items, 1))
     return user_vecs
+
 
 # predict on  everything, filter on print/use
 def predict_uservec(user_vecs, item_vecs, model, u_s, i_s, scaler):
@@ -113,12 +116,13 @@ def predict_uservec(user_vecs, item_vecs, model, u_s, i_s, scaler):
 
     if np.any(y_pu < 0):
         print("Error, expected all positive predictions")
-    sorted_index = np.argsort(-y_pu, axis=0).reshape(-1).tolist()  #negate to get largest rating first
-    sorted_ypu   = y_pu[sorted_index]
+    sorted_index = np.argsort(-y_pu, axis=0).reshape(-1).tolist()  # negate to get largest rating first
+    sorted_ypu = y_pu[sorted_index]
     sorted_items = item_vecs[sorted_index]
-    sorted_user  = user_vecs[sorted_index]
-    return(sorted_index, sorted_ypu, sorted_items, sorted_user)
-                
+    sorted_user = user_vecs[sorted_index]
+    return (sorted_index, sorted_ypu, sorted_items, sorted_user)
+
+
 def get_user_vecs(user_id, user_train, item_vecs, user_to_genre):
     """ given a user_id, return:
         user train/predict matrix to match the size of item_vecs
@@ -147,7 +151,8 @@ def get_user_vecs(user_id, user_train, item_vecs, user_to_genre):
             else:
                 rating = 0
             y[i] = rating
-    return(user_vecs, y)
+    return (user_vecs, y)
+
 
 def get_item_genres(item_gvec, genre_features):
     ''' takes in the item's genre vector and list of genre names
@@ -174,11 +179,11 @@ def print_existing_user(y_p, y, user, items, ivs, uvs, movie_dict, maxcount=10):
             offsets = np.nonzero(items[i, ivs:] == 1)[0]
             genre_ratings = user[i, uvs + offsets]
             disp.append([y_p[i, 0], y[i, 0],
-                         user[i, 0].astype(int),      # userid
-                         np.array2string(genre_ratings, 
-                                         formatter={'float_kind':lambda x: "%.1f" % x},
+                         user[i, 0].astype(int),  # userid
+                         np.array2string(genre_ratings,
+                                         formatter={'float_kind': lambda x: "%.1f" % x},
                                          separator=',', suppress_small=True),
-                         items[i, 2].astype(float),    # movie average rating
+                         items[i, 2].astype(float),  # movie average rating
                          movie_id,
                          movie_dict[movie_id]['title'],
                          movie_dict[movie_id]['genres']])
