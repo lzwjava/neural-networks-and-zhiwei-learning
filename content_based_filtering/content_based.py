@@ -12,9 +12,7 @@ pd.set_option("display.precision", 1)
 
 top10_df = pd.read_csv("./data/content_top10_df.csv")
 bygenre_df = pd.read_csv("./data/content_bygenre_df.csv")
-top10_df
 
-bygenre_df
 
 item_train, user_train, y_train, item_features, user_features, item_vecs, movie_dict, user_to_genre = load_data()
 
