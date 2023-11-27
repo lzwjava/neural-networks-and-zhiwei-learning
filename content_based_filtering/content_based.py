@@ -13,7 +13,6 @@ pd.set_option("display.precision", 1)
 top10_df = pd.read_csv("./data/content_top10_df.csv")
 bygenre_df = pd.read_csv("./data/content_bygenre_df.csv")
 
-
 item_train, user_train, y_train, item_features, user_features, item_vecs, movie_dict, user_to_genre = load_data()
 
 num_user_features = user_train.shape[1] - 3
@@ -60,11 +59,15 @@ pprint_train(user_train, user_features, uvs, u_s, maxcount=5)
 num_outputs = 32
 tf.random.set_seed(1)
 user_NN = tf.keras.models.Sequential([
-
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(num_outputs),
 ])
 
 item_NN = tf.keras.models.Sequential([
-
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(num_outputs),
 ])
 
 input_user = tf.keras.layers.Input(shape=(num_user_features))
@@ -157,6 +160,9 @@ print_existing_user(sorted_ypu, sorted_y.reshape(-1, 1), sorted_user, sorted_ite
 
 
 def sq_dist(a, b):
+    d = 0.
+    for i in range(len(a)):
+        d += (a[i] - b[i]) ** 2
     return d
 
 
@@ -201,4 +207,3 @@ for i in range(count):
                  movie_dict[movie2_id]['title'], movie_dict[movie1_id]['genres']]
                 )
 table = tabulate.tabulate(disp, tablefmt='html', headers="firstrow")
-table
