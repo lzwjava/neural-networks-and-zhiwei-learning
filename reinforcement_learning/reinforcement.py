@@ -44,14 +44,20 @@ utils.display_table(current_state, action, next_state, reward, done)
 current_state = next_state
 
 q_network = Sequential([
-
+    Input(shape=state_size),
+    Dense(units=64, activation='relu'),
+    Dense(units=64, activation='relu'),
+    Dense(units=num_actions, activation='linear'),
 ])
 
 target_q_network = Sequential([
-
+    Input(shape=state_size),
+    Dense(units=64, activation='relu'),
+    Dense(units=64, activation='relu'),
+    Dense(units=num_actions, activation='linear'),
 ])
 
-optimizer = None
+optimizer = Adam(learning_rate=ALPHA)
 
 from public_tests import *
 
@@ -67,13 +73,13 @@ def compute_loss(experiences, gamma, q_network, target_q_network):
 
     max_qsa = tf.reduce_max(target_q_network(next_states), axis=-1)
 
-    y_targets = None
+    y_targets = rewards + (gamma * max_qsa * (1 - done_vals))
 
     q_values = q_network(states)
     q_values = tf.gather_nd(q_values, tf.stack([tf.range(q_values.shape[0]),
                                                 tf.cast(actions, tf.int32)], axis=1))
 
-    loss = None
+    loss = MSE(y_targets, q_values)
 
     return loss
 
