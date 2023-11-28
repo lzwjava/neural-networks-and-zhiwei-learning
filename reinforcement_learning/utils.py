@@ -333,32 +333,31 @@ def display_table(current_state, action, next_state, reward, done):
         "Fire left engine",
     ]
 
-    display(
-        pd.DataFrame({
-            ('', '', ''): {'Action': action_labels[action], 'Reward': reward, 'Episode Terminated': done},
-            (STATE_VECTOR_COL_NAME, 'Coordinate', 'X (Horizontal)'): get_state(0),
-            (STATE_VECTOR_COL_NAME, 'Coordinate', 'Y (Vertical)'): get_state(1),
-            (STATE_VECTOR_COL_NAME, 'Velocity', 'X (Horizontal)'): get_state(2),
-            (STATE_VECTOR_COL_NAME, 'Velocity', 'Y (Vertical)'): get_state(3),
-            (STATE_VECTOR_COL_NAME, 'Tilting', 'Angle'): get_state(4),
-            (STATE_VECTOR_COL_NAME, 'Tilting', 'Angular Velocity'): get_state(5),
-            (STATE_VECTOR_COL_NAME, 'Ground contact', 'Left Leg?'): get_state(6, np.bool),
-            (STATE_VECTOR_COL_NAME, 'Ground contact', 'Right Leg?'): get_state(7, np.bool),
-            (DERIVED_COL_NAME, 'Distance from landing pad', ''): get_state(8),
-            (DERIVED_COL_NAME, 'Velocity', ''): get_state(9),
-            (DERIVED_COL_NAME, 'Tilting Angle (absolute value)', ''): get_state(10),
-        }) \
-            .fillna('') \
-            .reindex(['Current State', 'Action', 'Next State', 'Reward', 'Episode Terminated']) \
-            .style \
-            .applymap(lambda x: 'background-color : grey' if x == '' else '') \
-            .set_table_styles(
-            [
-                {"selector": "th", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
-                {"selector": "tbody td", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
-            ]
-        )
+    table = pd.DataFrame({
+        ('', '', ''): {'Action': action_labels[action], 'Reward': reward, 'Episode Terminated': done},
+        (STATE_VECTOR_COL_NAME, 'Coordinate', 'X (Horizontal)'): get_state(0),
+        (STATE_VECTOR_COL_NAME, 'Coordinate', 'Y (Vertical)'): get_state(1),
+        (STATE_VECTOR_COL_NAME, 'Velocity', 'X (Horizontal)'): get_state(2),
+        (STATE_VECTOR_COL_NAME, 'Velocity', 'Y (Vertical)'): get_state(3),
+        (STATE_VECTOR_COL_NAME, 'Tilting', 'Angle'): get_state(4),
+        (STATE_VECTOR_COL_NAME, 'Tilting', 'Angular Velocity'): get_state(5),
+        (STATE_VECTOR_COL_NAME, 'Ground contact', 'Left Leg?'): get_state(6, np.bool_),
+        (STATE_VECTOR_COL_NAME, 'Ground contact', 'Right Leg?'): get_state(7, np.bool_),
+        (DERIVED_COL_NAME, 'Distance from landing pad', ''): get_state(8),
+        (DERIVED_COL_NAME, 'Velocity', ''): get_state(9),
+        (DERIVED_COL_NAME, 'Tilting Angle (absolute value)', ''): get_state(10),
+    }) \
+        .fillna('') \
+        .reindex(['Current State', 'Action', 'Next State', 'Reward', 'Episode Terminated']) \
+        .style \
+        .applymap(lambda x: 'background-color : grey' if x == '' else '') \
+        .set_table_styles(
+        [
+            {"selector": "th", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
+            {"selector": "tbody td", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
+        ]
     )
+    # display(table)
 
 
 def embed_mp4(filename):

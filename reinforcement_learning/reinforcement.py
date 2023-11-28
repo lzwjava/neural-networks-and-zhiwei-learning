@@ -51,6 +51,7 @@ target_q_network = Sequential([
 
 ])
 
+
 optimizer = None
 
 from public_tests import *
