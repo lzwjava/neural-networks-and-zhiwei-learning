@@ -22,7 +22,6 @@ TAU = 1e-3  # Soft update parameter.
 E_DECAY = 0.995  # ε-decay rate for the ε-greedy policy.
 E_MIN = 0.01  # Minimum ε value for the ε-greedy policy.
 
-
 random.seed(SEED)
 
 
@@ -171,7 +170,7 @@ def update_target_network(q_network, target_q_network):
     """
 
     for target_weights, q_net_weights in zip(
-        target_q_network.weights, q_network.weights
+            target_q_network.weights, q_network.weights
     ):
         target_weights.assign(TAU * q_net_weights + (1.0 - TAU) * target_weights)
 
@@ -300,29 +299,29 @@ def display_table(current_state, action, next_state, reward, done):
             and done values. This will result in the table being displayed in the
             Jupyter Notebook.
     """
-    
+
     STATE_VECTOR_COL_NAME = 'State Vector'
     DERIVED_COL_NAME = 'Derived from the State Vector (the closer to zero, the better)'
-    
+
     # States
     add_derived_info = lambda state: np.hstack([
-        state, 
-        [(state[0]**2 + state[1]**2)**.5],
-        [(state[2]**2 + state[3]**2)**.5],
+        state,
+        [(state[0] ** 2 + state[1] ** 2) ** .5],
+        [(state[2] ** 2 + state[3] ** 2) ** .5],
         [np.abs(state[4])]
     ])
-    
+
     modified_current_state = add_derived_info(current_state)
     modified_next_state = add_derived_info(next_state)
-    
+
     states = np.vstack([
-        modified_current_state, 
+        modified_current_state,
         modified_next_state,
-        modified_next_state - modified_current_state,        
+        modified_next_state - modified_current_state,
     ]).T
-    
+
     get_state = lambda idx, type=np.float32: dict(zip(
-        ['Current State', 'Next State'], 
+        ['Current State', 'Next State'],
         states[idx].astype(type)
     ))
 
@@ -348,17 +347,17 @@ def display_table(current_state, action, next_state, reward, done):
             (DERIVED_COL_NAME, 'Distance from landing pad', ''): get_state(8),
             (DERIVED_COL_NAME, 'Velocity', ''): get_state(9),
             (DERIVED_COL_NAME, 'Tilting Angle (absolute value)', ''): get_state(10),
-        })\
-            .fillna('')\
-            .reindex(['Current State', 'Action', 'Next State', 'Reward', 'Episode Terminated'])\
-            .style\
-            .applymap(lambda x: 'background-color : grey' if x == '' else '')\
+        }) \
+            .fillna('') \
+            .reindex(['Current State', 'Action', 'Next State', 'Reward', 'Episode Terminated']) \
+            .style \
+            .applymap(lambda x: 'background-color : grey' if x == '' else '') \
             .set_table_styles(
-                [
-                    {"selector": "th", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
-                    {"selector": "tbody td", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
-                ]
-            )
+            [
+                {"selector": "th", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
+                {"selector": "tbody td", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
+            ]
+        )
     )
 
 
