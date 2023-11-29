@@ -1,17 +1,16 @@
 import time
 from collections import deque, namedtuple
 
-import gym
-import numpy as np
 import PIL.Image
+import gym
 import tensorflow as tf
-import utils
-
 from pyvirtualdisplay import Display
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.losses import MSE
 from tensorflow.keras.optimizers import Adam
+
+import utils
 
 Display(visible=0, size=(840, 480)).start()
 
