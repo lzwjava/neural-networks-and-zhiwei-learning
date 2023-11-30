@@ -17,7 +17,7 @@ print("basic_sigmoid(1) = " + str(basic_sigmoid(1)))
 basic_sigmoid_test(basic_sigmoid)
 
 x = [1, 2, 3]
-basic_sigmoid(x)
+# basic_sigmoid(x)
 
 import numpy as np
 
