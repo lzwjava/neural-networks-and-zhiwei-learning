@@ -1,20 +1,12 @@
-import time
-import numpy as np
-import h5py
-import matplotlib.pyplot as plt
-import scipy
 from PIL import Image
-from scipy import ndimage
+
 from dnn_app_utils_v3 import *
 from public_tests import *
 
-get_ipython().run_line_magic('matplotlib', 'inline')
+
 plt.rcParams['figure.figsize'] = (5.0, 4.0)
 plt.rcParams['image.interpolation'] = 'nearest'
 plt.rcParams['image.cmap'] = 'gray'
-
-get_ipython().run_line_magic('load_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
 
 np.random.seed(1)
 
