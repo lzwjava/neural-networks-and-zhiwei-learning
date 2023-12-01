@@ -115,11 +115,11 @@ def gradient_check_n(parameters, gradients, X, Y, epsilon=1e-7, print_msg=False)
     for i in range(num_parameters):
         theta_plus = np.copy(parameters_values)
         theta_plus[i] = theta_plus[i] + epsilon
-        J_plus[i] = forward_propagation_n(X, Y, vector_to_dictionary(theta_plus))
+        J_plus[i], _ = forward_propagation_n(X, Y, vector_to_dictionary(theta_plus))
 
         theta_minus = np.copy(parameters_values)
         theta_minus[i] = theta_minus[i] - epsilon
-        J_minus[i] = forward_propagation_n(X, Y, vector_to_dictionary(theta_minus))
+        J_minus[i], _ = forward_propagation_n(X, Y, vector_to_dictionary(theta_minus))
 
         gradapprox[i] = (J_plus[i] - J_minus[i]) / (2 * epsilon)
 
