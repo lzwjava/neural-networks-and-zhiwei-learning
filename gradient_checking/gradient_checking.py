@@ -2,6 +2,7 @@ from public_tests import *
 
 
 def forward_propagation(x, theta):
+    J = 0
     return J
 
 
