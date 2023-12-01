@@ -1,12 +1,9 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import sklearn
-import sklearn.datasets
-import scipy.io
-from reg_utils import sigmoid, relu, plot_decision_boundary, initialize_parameters, load_2D_dataset, predict_dec
-from reg_utils import compute_cost, predict, forward_propagation, backward_propagation, update_parameters
-from testCases import *
+
 from public_tests import *
+from reg_utils import compute_cost, predict, forward_propagation, backward_propagation, update_parameters
+from reg_utils import sigmoid, relu, plot_decision_boundary, initialize_parameters, load_2D_dataset, predict_dec
+from testCases import *
 
 plt.rcParams['figure.figsize'] = (7.0, 4.0)
 plt.rcParams['image.interpolation'] = 'nearest'
