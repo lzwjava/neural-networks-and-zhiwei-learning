@@ -1,6 +1,6 @@
-from gc_utils import sigmoid, relu, dictionary_to_vector, gradients_to_vector
 from public_tests import *
 from testCases import *
+from gc_utils import *
 
 
 def forward_propagation(x, theta):
@@ -113,7 +113,19 @@ def gradient_check_n(parameters, gradients, X, Y, epsilon=1e-7, print_msg=False)
     gradapprox = np.zeros((num_parameters, 1))
 
     for i in range(num_parameters):
-        pass
+        theta_plus = np.copy(parameters_values)
+        theta_plus[i] = theta_plus[i] + epsilon
+        J_plus[i] = forward_propagation_n(X, Y, vector_to_dictionary(theta_plus))
+
+        theta_minus = np.copy(parameters_values)
+        theta_minus[i] = theta_minus[i] - epsilon
+        J_minus[i] = forward_propagation_n(X, Y, vector_to_dictionary(theta_minus))
+
+        gradapprox[i] = (J_plus[i] - J_minus[i]) / (2 * epsilon)
+
+    numerator = np.linalg.norm(grad - gradapprox)
+    denominator = np.linalg.norm(grad) + np.linalg.norm(gradapprox)
+    difference = numerator / denominator
 
     if print_msg:
         if difference > 2e-7:
