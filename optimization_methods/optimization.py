@@ -350,7 +350,6 @@ def model(X, Y, layers_dims, optimizer, learning_rate=0.0007, mini_batch_size=64
     plt.ylabel('cost')
     plt.xlabel('epochs (per 100)')
     plt.title("Learning rate = " + str(learning_rate))
-    # plt.show()
 
     return parameters
 
@@ -364,7 +363,6 @@ plt.title("Model with Gradient Descent optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
 axes.set_ylim([-1, 1.5])
-# plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
 
 layers_dims = [train_X.shape[0], 5, 2, 1]
 parameters = model(train_X, train_Y, layers_dims, beta=0.9, optimizer="momentum")
@@ -375,7 +373,6 @@ plt.title("Model with Momentum optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
 axes.set_ylim([-1, 1.5])
-# plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
 
 layers_dims = [train_X.shape[0], 5, 2, 1]
 parameters = model(train_X, train_Y, layers_dims, optimizer="adam")
@@ -386,9 +383,6 @@ plt.title("Model with Adam optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
 axes.set_ylim([-1, 1.5])
-
-
-# plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
 
 
 def model(X, Y, layers_dims, optimizer, learning_rate=0.0007, mini_batch_size=64, beta=0.9,
@@ -470,26 +464,9 @@ print("Updated learning rate: ", learning_rate_2)
 update_lr_test(update_lr)
 
 
-# GRADED FUNCTION: schedule_lr_decay
-
 def schedule_lr_decay(learning_rate0, epoch_num, decay_rate, time_interval=1000):
-    """
-    Calculates updated the learning rate using exponential weight decay.
-
-    Arguments:
-    learning_rate0 -- Original learning rate. Scalar
-    epoch_num -- Epoch number. Integer.
-    decay_rate -- Decay rate. Scalar.
-    time_interval -- Number of epochs where you update the learning rate.
-
-    Returns:
-    learning_rate -- Updated learning rate. Scalar
-    """
-    # (approx. 1 lines)
     learning_rate = 1 / (1 + decay_rate * np.floor(epoch_num / time_interval)) * learning_rate0
-    # YOUR CODE STARTS HERE
 
-    # YOUR CODE ENDS HERE
     return learning_rate
 
 
@@ -507,30 +484,24 @@ print("Updated learning rate after {} epochs: ".format(epoch_num_2), learning_ra
 
 schedule_lr_decay_test(schedule_lr_decay)
 
-# train 3-layer model
 layers_dims = [train_X.shape[0], 5, 2, 1]
 parameters = model(train_X, train_Y, layers_dims, optimizer="gd", learning_rate=0.1, num_epochs=5000,
                    decay=schedule_lr_decay)
 
-# Predict
 predictions = predict(train_X, train_Y, parameters)
 
-# Plot decision boundary
 plt.title("Model with Gradient Descent optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
 axes.set_ylim([-1, 1.5])
 plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
 
-# train 3-layer model
 layers_dims = [train_X.shape[0], 5, 2, 1]
 parameters = model(train_X, train_Y, layers_dims, optimizer="momentum", learning_rate=0.1, num_epochs=5000,
                    decay=schedule_lr_decay)
 
-# Predict
 predictions = predict(train_X, train_Y, parameters)
 
-# Plot decision boundary
 plt.title("Model with Gradient Descent with momentum optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
