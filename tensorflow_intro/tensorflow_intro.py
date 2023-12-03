@@ -37,16 +37,6 @@ for i in range(25):
 
 
 def normalize(image):
-    """
-    Transform an image into a tensor of shape (64 * 64 * 3, )
-    and normalize its components.
-
-    Arguments
-    image - Tensor.
-
-    Returns:
-    result -- Transformed tensor
-    """
     image = tf.cast(image, tf.float32) / 255.0
     image = tf.reshape(image, [-1, ])
     return image
@@ -60,26 +50,9 @@ new_train.element_spec
 print(next(iter(new_train)))
 
 
-# GRADED FUNCTION: linear_function
-
 def linear_function():
-    """
-    Implements a linear function:
-            Initializes X to be a random tensor of shape (3,1)
-            Initializes W to be a random tensor of shape (4,3)
-            Initializes b to be a random tensor of shape (4,1)
-    Returns:
-    result -- Y = WX + b
-    """
-
     np.random.seed(1)
 
-    """
-    Note, to ensure that the "random" numbers generated match the expected results,
-    please create the variables in the order given in the starting code below.
-    (Do not re-arrange the order).
-    """
-    # (approx. 4 lines)
     X = tf.constant(np.random.randn(3, 1), name="X")
     W = tf.constant(np.random.randn(4, 3), name="W")
     b = tf.constant(np.random.randn(4, 1), name="b")
@@ -95,29 +68,10 @@ assert np.allclose(result, [[-2.15657382], [2.95891446], [-1.08926781], [-0.8453
 print("\033[92mAll test passed")
 
 
-# GRADED FUNCTION: sigmoid
-
 def sigmoid(z):
-    """
-    Computes the sigmoid of z
-
-    Arguments:
-    z -- input value, scalar or vector
-
-    Returns:
-    a -- (tf.float32) the sigmoid of z
-    """
-    # tf.keras.activations.sigmoid requires float16, float32, float64, complex64, or complex128.
-
-    # (approx. 2 lines)
-    # z = ...
-    # a = ...
-    # YOUR CODE STARTS HERE
-
     z = tf.cast(z, tf.float32)
     a = tf.keras.activations.sigmoid(z)
 
-    # YOUR CODE ENDS HERE
     return a
 
 
@@ -143,15 +97,9 @@ def sigmoid_test(target):
 sigmoid_test(sigmoid)
 
 
-# GRADED FUNCTION: one_hot_matrix
 def one_hot_matrix(label, C=6):
-    # (approx. 1 line)
-    # one_hot = None(None(None, None, None), shape=[C, ])
-    # YOUR CODE STARTS HERE
-
     one_hot = None
 
-    # YOUR CODE ENDS HERE
     return one_hot
 
 
