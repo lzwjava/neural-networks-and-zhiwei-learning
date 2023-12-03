@@ -98,8 +98,8 @@ sigmoid_test(sigmoid)
 
 
 def one_hot_matrix(label, C=6):
-    one_hot = None
-
+    one_hot = tf.one_hot(label, C)
+    one_hot = tf.reshape(one_hot, (C,))
     return one_hot
 
 
@@ -125,3 +125,62 @@ new_y_test = y_test.map(one_hot_matrix)
 new_y_train = y_train.map(one_hot_matrix)
 
 print(next(iter(new_y_test)))
+
+
+# GRADED FUNCTION: initialize_parameters
+
+def initialize_parameters():
+    """
+    Initializes parameters to build a neural network with TensorFlow. The shapes are:
+                        W1 : [25, 12288]
+                        b1 : [25, 1]
+                        W2 : [12, 25]
+                        b2 : [12, 1]
+                        W3 : [6, 12]
+                        b3 : [6, 1]
+
+    Returns:
+    parameters -- a dictionary of tensors containing W1, b1, W2, b2, W3, b3
+    """
+
+    # initializer = tf.keras.initializers.GlorotNormal(seed=1)
+
+    W1 = tf.zeros((25, 12288))
+    b1 = tf.zeros((25, 1))
+    W2 = tf.zeros((12, 25))
+    b2 = tf.zeros((12, 1))
+    W3 = tf.zeros((6, 12))
+    b3 = tf.zeros((6, 1))
+
+    parameters = {"W1": W1,
+                  "b1": b1,
+                  "W2": W2,
+                  "b2": b2,
+                  "W3": W3,
+                  "b3": b3}
+
+    return parameters
+
+
+def initialize_parameters_test(target):
+    parameters = target()
+
+    values = {"W1": (25, 12288),
+              "b1": (25, 1),
+              "W2": (12, 25),
+              "b2": (12, 1),
+              "W3": (6, 12),
+              "b3": (6, 1)}
+
+    for key in parameters:
+        print(f"{key} shape: {tuple(parameters[key].shape)}")
+        assert type(parameters[key]) == ResourceVariable, "All parameter must be created using tf.Variable"
+        assert tuple(parameters[key].shape) == values[key], f"{key}: wrong shape"
+        assert np.abs(np.mean(parameters[key].numpy())) < 0.5, f"{key}: Use the GlorotNormal initializer"
+        assert np.std(parameters[key].numpy()) > 0 and np.std(
+            parameters[key].numpy()) < 1, f"{key}: Use the GlorotNormal initializer"
+
+    print("\033[92mAll test passed")
+
+
+initialize_parameters_test(initialize_parameters)
