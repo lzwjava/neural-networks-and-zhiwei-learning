@@ -100,28 +100,10 @@ assert np.allclose(mini_batches[-1][0][-1][0:3],
 print("\033[92mAll tests passed!")
 
 
-# GRADED FUNCTION: initialize_velocity
-
 def initialize_velocity(parameters):
-    """
-    Initializes the velocity as a python dictionary with:
-                - keys: "dW1", "db1", ..., "dWL", "dbL"
-                - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
-    Arguments:
-    parameters -- python dictionary containing your parameters.
-                    parameters['W' + str(l)] = Wl
-                    parameters['b' + str(l)] = bl
-
-    Returns:
-    v -- python dictionary containing the current velocity.
-                    v['dW' + str(l)] = velocity of dWl
-                    v['db' + str(l)] = velocity of dbl
-    """
-
-    L = len(parameters) // 2  # number of layers in the neural networks
+    L = len(parameters) // 2
     v = {}
 
-    # Initialize velocity
     for l in range(1, L + 1):
         wl = parameters['W' + str(l)]
         bl = parameters['b' + str(l)]
@@ -142,33 +124,9 @@ print("v[\"db2\"] =\n" + str(v["db2"]))
 initialize_velocity_test(initialize_velocity)
 
 
-# GRADED FUNCTION: update_parameters_with_momentum
-
 def update_parameters_with_momentum(parameters, grads, v, beta, learning_rate):
-    """
-    Update parameters using Momentum
+    L = len(parameters) // 2
 
-    Arguments:
-    parameters -- python dictionary containing your parameters:
-                    parameters['W' + str(l)] = Wl
-                    parameters['b' + str(l)] = bl
-    grads -- python dictionary containing your gradients for each parameters:
-                    grads['dW' + str(l)] = dWl
-                    grads['db' + str(l)] = dbl
-    v -- python dictionary containing the current velocity:
-                    v['dW' + str(l)] = ...
-                    v['db' + str(l)] = ...
-    beta -- the momentum hyperparameter, scalar
-    learning_rate -- the learning rate, scalar
-
-    Returns:
-    parameters -- python dictionary containing your updated parameters
-    v -- python dictionary containing your updated velocities
-    """
-
-    L = len(parameters) // 2  # number of layers in the neural networks
-
-    # Momentum update for each parameter
     for l in range(1, L + 1):
         dWl = 'dW' + str(l)
         dbl = 'db' + str(l)
@@ -200,3 +158,29 @@ print("v[\"dW2\"] = \n" + str(v["dW2"]))
 print("v[\"db2\"] = v" + str(v["db2"]))
 
 update_parameters_with_momentum_test(update_parameters_with_momentum)
+
+
+def initialize_adam(parameters):
+    L = len(parameters) // 2
+    v = {}
+    s = {}
+
+    for l in range(1, L + 1):
+        pass
+
+    return v, s
+
+
+parameters = initialize_adam_test_case()
+
+v, s = initialize_adam(parameters)
+print("v[\"dW1\"] = \n" + str(v["dW1"]))
+print("v[\"db1\"] = \n" + str(v["db1"]))
+print("v[\"dW2\"] = \n" + str(v["dW2"]))
+print("v[\"db2\"] = \n" + str(v["db2"]))
+print("s[\"dW1\"] = \n" + str(s["dW1"]))
+print("s[\"db1\"] = \n" + str(s["db1"]))
+print("s[\"dW2\"] = \n" + str(s["dW2"]))
+print("s[\"db2\"] = \n" + str(s["db2"]))
+
+initialize_adam_test(initialize_adam)
