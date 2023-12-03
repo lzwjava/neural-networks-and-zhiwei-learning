@@ -10,7 +10,8 @@ def datatype_check(expected_output, target_output, error):
                                           target_output[key], error)
             except:
                 print("Error: {} in variable {}. Got {} but expected type {}".format(error,
-                                                                                     key, type(target_output[key]), type(expected_output[key])))
+                                                                                     key, type(target_output[key]),
+                                                                                     type(expected_output[key])))
         if success == len(target_output.keys()):
             return 1
         else:
@@ -22,7 +23,10 @@ def datatype_check(expected_output, target_output, error):
                                           target_output[i], error)
             except:
                 print("Error: {} in variable {}, expected type: {}  but expected type {}".format(error,
-                                                                                                 i, type(target_output[i]), type(expected_output[i])))
+                                                                                                 i,
+                                                                                                 type(target_output[i]),
+                                                                                                 type(expected_output[
+                                                                                                          i])))
         if success == len(target_output):
             return 1
         else:
@@ -124,7 +128,8 @@ def single_test(test_cases, target):
         print('\033[92m', success, " Tests passed")
         print('\033[91m', len(test_cases) - success, " Tests failed")
         raise AssertionError(
-            "Not all tests were passed for {}. Check your equations and avoid using global variables inside the function.".format(target.__name__))
+            "Not all tests were passed for {}. Check your equations and avoid using global variables inside the function.".format(
+                target.__name__))
 
 
 def multiple_test(test_cases, target):
@@ -150,4 +155,5 @@ def multiple_test(test_cases, target):
         print('\033[92m', success, " Tests passed")
         print('\033[91m', len(test_cases) - success, " Tests failed")
         raise AssertionError(
-            "Not all tests were passed for {}. Check your equations and avoid using global variables inside the function.".format(target.__name__))
+            "Not all tests were passed for {}. Check your equations and avoid using global variables inside the function.".format(
+                target.__name__))
