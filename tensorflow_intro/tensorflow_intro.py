@@ -15,8 +15,14 @@ y_train = tf.data.Dataset.from_tensor_slices(train_dataset['train_set_y'])
 x_test = tf.data.Dataset.from_tensor_slices(test_dataset['test_set_x'])
 y_test = tf.data.Dataset.from_tensor_slices(test_dataset['test_set_y'])
 
-type(x_train)
+print(type(x_train))
 
 print(x_train.element_spec)
 
 print(next(iter(x_train)))
+
+unique_labels = set()
+for element in y_train:
+    unique_labels.add(element.numpy())
+print(unique_labels)
+
