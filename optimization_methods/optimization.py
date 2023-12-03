@@ -166,7 +166,14 @@ def initialize_adam(parameters):
     s = {}
 
     for l in range(1, L + 1):
-        pass
+        Wl = 'W' + str(l)
+        Ws = parameters[Wl].shape
+        bl = 'b' + str(l)
+        bs = parameters[bl].shape
+        v['dW' + str(l)] = np.zeros(Ws)
+        v['db' + str(l)] = np.zeros(bs)
+        s['dW' + str(l)] = np.zeros(Ws)
+        s['db' + str(l)] = np.zeros(bs)
 
     return v, s
 
