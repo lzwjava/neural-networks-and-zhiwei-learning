@@ -257,13 +257,10 @@ compute_total_loss_test(compute_total_loss, new_y_train)
 
 def model(X_train, Y_train, X_test, Y_test, learning_rate=0.0001,
           num_epochs=1500, minibatch_size=32, print_cost=True):
-
-    costs = []  
+    costs = []
     train_acc = []
     test_acc = []
 
-    
-    
     parameters = initialize_parameters()
 
     W1 = parameters['W1']
@@ -275,38 +272,29 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate=0.0001,
 
     optimizer = tf.keras.optimizers.Adam(learning_rate)
 
-    
     test_accuracy = tf.keras.metrics.CategoricalAccuracy()
     train_accuracy = tf.keras.metrics.CategoricalAccuracy()
 
     dataset = tf.data.Dataset.zip((X_train, Y_train))
     test_dataset = tf.data.Dataset.zip((X_test, Y_test))
 
-    
     m = dataset.cardinality().numpy()
 
     minibatches = dataset.batch(minibatch_size).prefetch(8)
     test_minibatches = test_dataset.batch(minibatch_size).prefetch(8)
-    
-    
 
-    
     for epoch in range(num_epochs):
 
         epoch_total_loss = 0.
 
-        
         train_accuracy.reset_states()
 
         for (minibatch_X, minibatch_Y) in minibatches:
             with tf.GradientTape() as tape:
-                
                 Z3 = forward_propagation(tf.transpose(minibatch_X), parameters)
 
-                
                 minibatch_total_loss = compute_total_loss(Z3, tf.transpose(minibatch_Y))
 
-            
             train_accuracy.update_state(minibatch_Y, tf.transpose(Z3))
 
             trainable_variables = [W1, b1, W2, b2, W3, b3]
@@ -314,15 +302,12 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate=0.0001,
             optimizer.apply_gradients(zip(grads, trainable_variables))
             epoch_total_loss += minibatch_total_loss
 
-        
         epoch_total_loss /= m
 
-        
         if print_cost == True and epoch % 10 == 0:
             print("Cost after epoch %i: %f" % (epoch, epoch_total_loss))
             print("Train accuracy:", train_accuracy.result())
 
-            
             for (minibatch_X, minibatch_Y) in test_minibatches:
                 Z3 = forward_propagation(tf.transpose(minibatch_X), parameters)
                 test_accuracy.update_state(minibatch_Y, tf.transpose(Z3))
@@ -338,13 +323,11 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate=0.0001,
 
 parameters, costs, train_acc, test_acc = model(new_train, new_y_train, new_test, new_y_test, num_epochs=30)
 
-
 plt.plot(np.squeeze(costs))
 plt.ylabel('cost')
 plt.xlabel('iterations (per fives)')
 plt.title("Learning rate =" + str(0.0001))
 plt.show()
-
 
 plt.plot(np.squeeze(train_acc))
 plt.ylabel('Train Accuracy')
