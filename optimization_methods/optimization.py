@@ -191,3 +191,73 @@ print("s[\"dW2\"] = \n" + str(s["dW2"]))
 print("s[\"db2\"] = \n" + str(s["db2"]))
 
 initialize_adam_test(initialize_adam)
+
+
+# GRADED FUNCTION: update_parameters_with_adam
+
+def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.01,
+                                beta1=0.9, beta2=0.999, epsilon=1e-8):
+    """
+    Update parameters using Adam
+
+    Arguments:
+    parameters -- python dictionary containing your parameters:
+                    parameters['W' + str(l)] = Wl
+                    parameters['b' + str(l)] = bl
+    grads -- python dictionary containing your gradients for each parameters:
+                    grads['dW' + str(l)] = dWl
+                    grads['db' + str(l)] = dbl
+    v -- Adam variable, moving average of the first gradient, python dictionary
+    s -- Adam variable, moving average of the squared gradient, python dictionary
+    t -- Adam variable, counts the number of taken steps
+    learning_rate -- the learning rate, scalar.
+    beta1 -- Exponential decay hyperparameter for the first moment estimates
+    beta2 -- Exponential decay hyperparameter for the second moment estimates
+    epsilon -- hyperparameter preventing division by zero in Adam updates
+
+    Returns:
+    parameters -- python dictionary containing your updated parameters
+    v -- Adam variable, moving average of the first gradient, python dictionary
+    s -- Adam variable, moving average of the squared gradient, python dictionary
+    """
+
+    L = len(parameters) // 2  # number of layers in the neural networks
+    v_corrected = {}  # Initializing first moment estimate, python dictionary
+    s_corrected = {}  # Initializing second moment estimate, python dictionary
+
+    # Perform Adam update on all parameters
+    for l in range(1, L + 1):
+        dWl = 'dW' + str(l)
+        dbl = 'db' + str(l)
+        gdW = grads[dWl]
+        gdb = grads[dbl]
+        v[dWl] = beta1 * v[dWl] + (1 - beta1) * gdW
+        v[dbl] = beta1 * v[dbl] + (1 - beta1) * gdb
+
+        v_corrected[dWl] = v[dWl] / (1 - beta1 ** t)
+        v_corrected[dbl] = v[dbl] / (1 - beta1 ** t)
+
+        s[dWl] = beta2 * s[dWl] + (1 - beta2) * (gdW ** 2)
+        s[dbl] = beta2 * s[dbl] + (1 - beta2) * (gdb ** 2)
+
+        s_corrected[dWl] = s[dWl] / (1 - beta2 ** t)
+        s_corrected[dbl] = s[dbl] / (1 - beta2 ** t)
+
+        Wl = 'W' + str(l)
+        bl = 'b' + str(l)
+        parameters[Wl] = parameters[Wl] - learning_rate * (v[dWl] / (np.sqrt(s[dWl]) + epsilon))
+        parameters[bl] = parameters[bl] - learning_rate * (v[dbl] / (np.sqrt(s[dbl]) + epsilon))
+
+    return parameters, v, s, v_corrected, s_corrected
+
+
+parametersi, grads, vi, si, t, learning_rate, beta1, beta2, epsilon = update_parameters_with_adam_test_case()
+
+parameters, v, s, vc, sc = update_parameters_with_adam(parametersi, grads, vi, si, t, learning_rate, beta1, beta2,
+                                                       epsilon)
+print(f"W1 = \n{parameters['W1']}")
+print(f"W2 = \n{parameters['W2']}")
+print(f"b1 = \n{parameters['b1']}")
+print(f"b2 = \n{parameters['b2']}")
+
+update_parameters_with_adam_test(update_parameters_with_adam)
