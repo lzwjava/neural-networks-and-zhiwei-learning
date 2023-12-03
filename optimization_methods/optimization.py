@@ -63,8 +63,8 @@ def random_mini_batches(X, Y, mini_batch_size=64, seed=0):
         mini_batches.append(mini_batch)
 
     if m % mini_batch_size != 0:
-        mini_batch_X = shuffled_X[:, (k + 1) * mini_batch_size:]
-        mini_batch_Y = shuffled_Y[:, (k + 1) * mini_batch_size:]
+        mini_batch_X = shuffled_X[:, num_complete_minibatches * mini_batch_size:]
+        mini_batch_Y = shuffled_Y[:, num_complete_minibatches * mini_batch_size:]
         mini_batch = (mini_batch_X, mini_batch_Y)
         mini_batches.append(mini_batch)
 
@@ -98,3 +98,99 @@ assert np.allclose(mini_batches[-1][0][-1][0:3],
                    [1425407, 1769471, 897023]), "Wrong values. Check the indexes used to form the mini batches"
 
 print("\033[92mAll tests passed!")
+
+
+# GRADED FUNCTION: initialize_velocity
+
+def initialize_velocity(parameters):
+    """
+    Initializes the velocity as a python dictionary with:
+                - keys: "dW1", "db1", ..., "dWL", "dbL"
+                - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
+    Arguments:
+    parameters -- python dictionary containing your parameters.
+                    parameters['W' + str(l)] = Wl
+                    parameters['b' + str(l)] = bl
+
+    Returns:
+    v -- python dictionary containing the current velocity.
+                    v['dW' + str(l)] = velocity of dWl
+                    v['db' + str(l)] = velocity of dbl
+    """
+
+    L = len(parameters) // 2  # number of layers in the neural networks
+    v = {}
+
+    # Initialize velocity
+    for l in range(1, L + 1):
+        wl = parameters['W' + str(l)]
+        bl = parameters['b' + str(l)]
+        v["dW" + str(l)] = np.zeros(wl.shape)
+        v["db" + str(l)] = np.zeros(bl.shape)
+
+    return v
+
+
+parameters = initialize_velocity_test_case()
+
+v = initialize_velocity(parameters)
+print("v[\"dW1\"] =\n" + str(v["dW1"]))
+print("v[\"db1\"] =\n" + str(v["db1"]))
+print("v[\"dW2\"] =\n" + str(v["dW2"]))
+print("v[\"db2\"] =\n" + str(v["db2"]))
+
+initialize_velocity_test(initialize_velocity)
+
+
+# GRADED FUNCTION: update_parameters_with_momentum
+
+def update_parameters_with_momentum(parameters, grads, v, beta, learning_rate):
+    """
+    Update parameters using Momentum
+
+    Arguments:
+    parameters -- python dictionary containing your parameters:
+                    parameters['W' + str(l)] = Wl
+                    parameters['b' + str(l)] = bl
+    grads -- python dictionary containing your gradients for each parameters:
+                    grads['dW' + str(l)] = dWl
+                    grads['db' + str(l)] = dbl
+    v -- python dictionary containing the current velocity:
+                    v['dW' + str(l)] = ...
+                    v['db' + str(l)] = ...
+    beta -- the momentum hyperparameter, scalar
+    learning_rate -- the learning rate, scalar
+
+    Returns:
+    parameters -- python dictionary containing your updated parameters
+    v -- python dictionary containing your updated velocities
+    """
+
+    L = len(parameters) // 2  # number of layers in the neural networks
+
+    # Momentum update for each parameter
+    for l in range(1, L + 1):
+        v["dW" + str(l)] = 0
+        v["db" + str(l)] = 0
+        parameters["W" + str(l)] = 0
+        parameters["b" + str(l)] = 0
+    # YOUR CODE STARTS HERE
+
+    # YOUR CODE ENDS HERE
+
+    return parameters, v
+
+
+parameters, grads, v = update_parameters_with_momentum_test_case()
+
+parameters, v = update_parameters_with_momentum(parameters, grads, v, beta=0.9, learning_rate=0.01)
+print("W1 = \n" + str(parameters["W1"]))
+print("b1 = \n" + str(parameters["b1"]))
+print("W2 = \n" + str(parameters["W2"]))
+print("b2 = \n" + str(parameters["b2"]))
+print("v[\"dW1\"] = \n" + str(v["dW1"]))
+print("v[\"db1\"] = \n" + str(v["db1"]))
+print("v[\"dW2\"] = \n" + str(v["dW2"]))
+print("v[\"db2\"] = v" + str(v["db2"]))
+
+update_parameters_with_momentum_test(update_parameters_with_momentum)
