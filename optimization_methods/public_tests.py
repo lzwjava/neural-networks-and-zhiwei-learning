@@ -4,7 +4,6 @@ from testCases import *
 from dlai_tools.testing_utils import single_test, multiple_test
 
 
-
 def update_parameters_with_gd_test(target):
     parameters, grads, learning_rate = update_parameters_with_gd_test_case()
     learning_rate = 0.01
@@ -31,7 +30,6 @@ def update_parameters_with_gd_test(target):
             key]), f"Wrong values for {key}. Check the formulas. Expected: \n {expected_output[key]}"
 
     print("\033[92mAll tests passed")
-
 
 
 def random_mini_batches_test(target):
@@ -89,7 +87,6 @@ def random_mini_batches_test(target):
     multiple_test(test_cases, target)
 
 
-
 def initialize_velocity_test(target):
     parameters = initialize_velocity_test_case()
 
@@ -128,7 +125,6 @@ def initialize_velocity_test(target):
     ]
 
     multiple_test(test_cases, target)
-
 
 
 def update_parameters_with_momentum_test(target):
@@ -183,7 +179,6 @@ def update_parameters_with_momentum_test(target):
     multiple_test(test_cases, target)
 
 
-
 def initialize_adam_test(target):
     parameters = initialize_adam_test_case()
 
@@ -234,7 +229,6 @@ def initialize_adam_test(target):
     multiple_test(test_cases, target)
 
 
-
 def update_parameters_with_adam_test(target):
     parametersi, grads, vi, si, t, learning_rate, beta1, beta2, epsilon = update_parameters_with_adam_test_case()
 
@@ -263,7 +257,6 @@ def update_parameters_with_adam_test(target):
         assert v[key].shape == vi[
             key].shape, f"Wrong shape for  v['{key}']. The update must keep the dimensions of v inputs"
         assert np.allclose(v[key][0], expected_v[key]), f"Wrong values. Check you formulas for v['{key}']"
-        
 
     for key in vc.keys():
         assert type(vc[key]) == np.ndarray, f"Wrong type for v_corrected['{key}']. Expected np.ndarray"
@@ -271,14 +264,12 @@ def update_parameters_with_adam_test(target):
             key].shape, f"Wrong shape for  v_corrected['{key}']. The update must keep the dimensions of v inputs"
         assert np.allclose(vc[key][0],
                            expected_v[key] * c1), f"Wrong values. Check you formulas for v_corrected['{key}']"
-        
 
     for key in s.keys():
         assert type(s[key]) == np.ndarray, f"Wrong type for s['{key}']. Expected np.ndarray"
         assert s[key].shape == si[
             key].shape, f"Wrong shape for  s['{key}']. The update must keep the dimensions of s inputs"
         assert np.allclose(s[key][0], expected_s[key]), f"Wrong values. Check you formulas for s['{key}']"
-        
 
     for key in sc.keys():
         assert type(sc[key]) == np.ndarray, f"Wrong type for s_corrected['{key}']. Expected np.ndarray"
@@ -286,7 +277,6 @@ def update_parameters_with_adam_test(target):
             key].shape, f"Wrong shape for  s_corrected['{key}']. The update must keep the dimensions of s inputs"
         assert np.allclose(sc[key][0],
                            expected_s[key] * c2), f"Wrong values. Check you formulas for s_corrected['{key}']"
-        
 
     for key in parameters.keys():
         assert type(parameters[key]) == np.ndarray, f"Wrong type for parameters['{key}']. Expected np.ndarray"
@@ -294,10 +284,8 @@ def update_parameters_with_adam_test(target):
             key].shape, f"Wrong shape for  parameters['{key}']. The update must keep the dimensions of parameters inputs"
         assert np.allclose(parameters[key][0],
                            expected_parameters[key]), f"Wrong values. Check you formulas for parameters['{key}']"
-        
 
     print("\033[92mAll tests passed")
-
 
 
 def update_lr_test(target):
@@ -310,7 +298,6 @@ def update_lr_test(target):
 
     assert np.isclose(output, expected_output), f"output: {output} expected: {expected_output}"
     print("\033[92mAll tests passed")
-
 
 
 def schedule_lr_decay_test(target):

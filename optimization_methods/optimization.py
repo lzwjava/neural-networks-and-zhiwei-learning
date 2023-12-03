@@ -11,25 +11,17 @@ from copy import deepcopy
 from testCases import *
 from public_tests import *
 
-plt.rcParams['figure.figsize'] = (7.0, 4.0)  
+plt.rcParams['figure.figsize'] = (7.0, 4.0)
 plt.rcParams['image.interpolation'] = 'nearest'
 plt.rcParams['image.cmap'] = 'gray'
 
 
-
-
 def update_parameters_with_gd(parameters, grads, learning_rate):
-    L = len(parameters) // 2  
+    L = len(parameters) // 2
 
-    
     for l in range(1, L + 1):
         pass
-    
-    
-    
-    
 
-    
     return parameters
 
 

@@ -33,10 +33,9 @@ def load_params_and_grads(seed=1):
 
 
 def initialize_parameters(layer_dims):
-
     np.random.seed(3)
     parameters = {}
-    L = len(layer_dims)  
+    L = len(layer_dims)
 
     for l in range(1, L):
         parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l - 1]) * np.sqrt(2 / layer_dims[l - 1])
@@ -49,7 +48,6 @@ def initialize_parameters(layer_dims):
 
 
 def compute_cost(a3, Y):
-
     logprobs = np.multiply(-np.log(a3), Y) + np.multiply(-np.log(1 - a3), 1 - Y)
     cost_total = np.sum(logprobs)
 
@@ -57,8 +55,6 @@ def compute_cost(a3, Y):
 
 
 def forward_propagation(X, parameters):
-
-    
     W1 = parameters["W1"]
     b1 = parameters["b1"]
     W2 = parameters["W2"]
@@ -66,7 +62,6 @@ def forward_propagation(X, parameters):
     W3 = parameters["W3"]
     b3 = parameters["b3"]
 
-    
     z1 = np.dot(W1, X) + b1
     a1 = relu(z1)
     z2 = np.dot(W2, a1) + b2
@@ -105,24 +100,17 @@ def backward_propagation(X, Y, cache):
 
 
 def predict(X, y, parameters):
-
     m = X.shape[1]
     p = np.zeros((1, m), dtype=np.int)
 
-    
     a3, caches = forward_propagation(X, parameters)
 
-    
     for i in range(0, a3.shape[1]):
         if a3[0, i] > 0.5:
             p[0, i] = 1
         else:
             p[0, i] = 0
 
-    
-
-    
-    
     print("Accuracy: " + str(np.mean((p[0, :] == y[0, :]))))
 
     return p
@@ -141,16 +129,15 @@ def load_2D_dataset():
 
 
 def plot_decision_boundary(model, X, y):
-    
     x_min, x_max = X[0, :].min() - 1, X[0, :].max() + 1
     y_min, y_max = X[1, :].min() - 1, X[1, :].max() + 1
     h = 0.01
-    
+
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-    
+
     Z = model(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
-    
+
     plt.contourf(xx, yy, Z, cmap=plt.cm.Spectral)
     plt.ylabel('x2')
     plt.xlabel('x1')
@@ -159,8 +146,6 @@ def plot_decision_boundary(model, X, y):
 
 
 def predict_dec(parameters, X):
-
-    
     a3, cache = forward_propagation(X, parameters)
     predictions = (a3 > 0.5)
     return predictions
@@ -168,8 +153,8 @@ def predict_dec(parameters, X):
 
 def load_dataset():
     np.random.seed(3)
-    train_X, train_Y = sklearn.datasets.make_moons(n_samples=300, noise=.2)  
-    
+    train_X, train_Y = sklearn.datasets.make_moons(n_samples=300, noise=.2)
+
     plt.scatter(train_X[:, 0], train_X[:, 1], c=train_Y, s=40, cmap=plt.cm.Spectral);
     train_X = train_X.T
     train_Y = train_Y.reshape((1, train_Y.shape[0]))
