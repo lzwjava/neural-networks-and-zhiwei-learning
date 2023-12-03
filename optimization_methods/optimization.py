@@ -170,6 +170,8 @@ def update_parameters_with_momentum(parameters, grads, v, beta, learning_rate):
 
     # Momentum update for each parameter
     for l in range(1, L + 1):
+        dWl = grads['dW' + str(l)]
+        dbl = grads['db' + str(l)]
         v["dW" + str(l)] = 0
         v["db" + str(l)] = 0
         parameters["W" + str(l)] = 0
