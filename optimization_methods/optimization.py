@@ -350,7 +350,7 @@ def model(X, Y, layers_dims, optimizer, learning_rate=0.0007, mini_batch_size=64
     plt.ylabel('cost')
     plt.xlabel('epochs (per 100)')
     plt.title("Learning rate = " + str(learning_rate))
-    plt.show()
+    # plt.show()
 
     return parameters
 
@@ -364,7 +364,7 @@ plt.title("Model with Gradient Descent optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
 axes.set_ylim([-1, 1.5])
-plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
+# plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
 
 layers_dims = [train_X.shape[0], 5, 2, 1]
 parameters = model(train_X, train_Y, layers_dims, beta=0.9, optimizer="momentum")
@@ -375,7 +375,7 @@ plt.title("Model with Momentum optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
 axes.set_ylim([-1, 1.5])
-plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
+# plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
 
 layers_dims = [train_X.shape[0], 5, 2, 1]
 parameters = model(train_X, train_Y, layers_dims, optimizer="adam")
@@ -386,7 +386,9 @@ plt.title("Model with Adam optimization")
 axes = plt.gca()
 axes.set_xlim([-1.5, 2.5])
 axes.set_ylim([-1, 1.5])
-plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
+
+
+# plot_decision_boundary(lambda x: predict_dec(parameters, x.T), train_X, train_Y)
 
 
 def model(X, Y, layers_dims, optimizer, learning_rate=0.0007, mini_batch_size=64, beta=0.9,
