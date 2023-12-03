@@ -101,7 +101,7 @@ def backward_propagation(X, Y, cache):
 
 def predict(X, y, parameters):
     m = X.shape[1]
-    p = np.zeros((1, m), dtype=np.int)
+    p = np.zeros((1, m), dtype=np.int64)
 
     a3, caches = forward_propagation(X, parameters)
 
