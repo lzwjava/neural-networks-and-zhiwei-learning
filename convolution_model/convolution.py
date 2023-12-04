@@ -119,6 +119,20 @@ def pool_forward(A_prev, hparameters, mode="max"):
 
     A = np.zeros((m, n_H, n_W, n_C))
 
+    for i in range(m):
+        for h in range(0, n_H * stride, stride):
+            vert_start = h
+            vert_end = h + f
+            for w in range(0, n_W * stride, stride):
+                horiz_start = w
+                horiz_end = w + f
+                for c in range(n_C):
+                    a_slice_prev = A_prev[i, vert_start:vert_end, horiz_start:horiz_end, :]
+                    if mode == 'max':
+                        A[i, h // stride, w // stride, c] = np.max(a_slice_prev)
+                    elif mode == 'average':
+                        A[i, h // stride, w // stride, c] = np.average(a_slice_prev)
+
     cache = (A_prev, hparameters)
 
     return A, cache
