@@ -174,66 +174,9 @@ pool_forward_test_2(pool_forward)
 
 
 def conv_backward(dZ, cache):
-
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-
-    
-    
-
-    
-    
-    
-    
-
-    
-    
-    
-
-    
-
-    
-    
-    
-
-    
-    
-    
-
-    
-    
-    
-    
-    
-
-    
-    
-
-    
-    
-    
-    
-
-    
-    
-    
-
-    
-
-    
     assert (dA_prev.shape == (m, n_H_prev, n_W_prev, n_C_prev))
 
     return dA_prev, dW, db
-
-
 
 
 np.random.seed(1)
@@ -243,7 +186,6 @@ b = np.random.randn(1, 1, 1, 8)
 hparameters = {"pad": 2,
                "stride": 2}
 Z, cache_conv = conv_forward(A_prev, W, b, hparameters)
-
 
 dA, dW, db = conv_backward(Z, cache_conv)
 
