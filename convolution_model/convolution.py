@@ -81,14 +81,14 @@ def conv_forward(A_prev, W, b, hparameters):
     """
 
     # Retrieve dimensions from A_prev's shape (≈1 line)
-    # (m, n_H_prev, n_W_prev, n_C_prev) = None
+    (m, n_H_prev, n_W_prev, n_C_prev) = A_prev.shape
 
     # Retrieve dimensions from W's shape (≈1 line)
-    # (f, f, n_C_prev, n_C) = None
+    (f, f, n_C_prev, n_C) = W.shape
 
     # Retrieve information from "hparameters" (≈2 lines)
-    # stride = None
-    # pad = None
+    stride = hparameters['stride']
+    pad = hparameters['pad']
 
     # Compute the dimensions of the CONV output volume using the formula given above.
     # Hint: use int() to apply the 'floor' operation. (≈2 lines)
