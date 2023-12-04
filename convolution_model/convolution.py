@@ -71,19 +71,18 @@ def conv_forward(A_prev, W, b, hparameters):
 
     for i in range(m):
         a_prev_pad = A_prev_pad[i]
-        for h in range(n_H - stride):
+        for h in range(0, n_H * stride, stride):  
             vert_start = h
-            vert_end = h + stride
-            for w in range(n_W - stride):
+            vert_end = h + f  
+            for w in range(0, n_W * stride, stride):  
                 horiz_start = w
-                horiz_end = w + stride
+                horiz_end = w + f  
 
                 for c in range(n_C):
-                    a_slice_prev = a_prev_pad[vert_start:vert_end, horiz_start:horiz_end, c]
-                    weights = W[:, :, c, n_C]
-                    biases = b[0, 0, 0, c]
-                    Z[i, h, w, c] = np.dot(a_slice_prev, weights) + biases
-
+                    a_slice_prev = a_prev_pad[vert_start:vert_end, horiz_start:horiz_end, :]
+                    weights = W[:, :, :, c]  
+                    biases = b[:, :, :, c]  
+                    Z[i, h // stride, w // stride, c] = np.sum(a_slice_prev * weights) + np.squeeze(biases)
     cache = (A_prev, W, b, hparameters)
 
     return Z, cache
