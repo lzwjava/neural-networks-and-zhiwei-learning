@@ -293,3 +293,75 @@ assert a.shape == (10, 10), f"Wrong shape {a.shape} != (10, 10)"
 assert np.sum(a) == 100, "Values must sum to 100"
 
 print("\033[92m All tests passed.")
+
+
+def pool_backward(dA, cache, mode="max"):
+    (A_prev, hparameters) = cache
+
+    stride = hparameters['stride']
+    f = hparameters['f']
+
+    m, n_H_prev, n_W_prev, n_C_prev = A_prev.shape
+    m, n_H, n_W, n_C = dA.shape
+
+    dA_prev = np.zeros_like(A_prev)
+
+    for i in range(m):
+
+        a_prev = A_prev[i]
+
+        for h in range(n_H):
+            for w in range(n_W):
+                for c in range(n_C):
+
+                    vert_start = h * stride
+                    vert_end = vert_start + f
+                    horiz_start = w * stride
+                    horiz_end = horiz_start + f
+
+                    if mode == "max":
+
+                        a_prev_slice = a_prev[vert_start:vert_end, horiz_start:horiz_end, c]
+
+                        mask = (a_prev_slice == np.max(a_prev_slice))
+
+                        dA_prev[i, vert_start: vert_end, horiz_start: horiz_end, c] += mask * dA[i, h, w, c]
+
+                    elif mode == "average":
+
+                        da = dA[i, h, w, c]
+
+                        shape = (f, f)
+
+                        dA_prev[i, vert_start: vert_end, horiz_start: horiz_end, c] += distribute_value(da, shape)
+
+    return dA_prev
+
+
+np.random.seed(1)
+A_prev = np.random.randn(5, 5, 3, 2)
+hparameters = {"stride": 1, "f": 2}
+A, cache = pool_forward(A_prev, hparameters)
+print(A.shape)
+print(cache[0].shape)
+dA = np.random.randn(5, 4, 2, 2)
+
+dA_prev1 = pool_backward(dA, cache, mode="max")
+print("mode = max")
+print('mean of dA = ', np.mean(dA))
+print('dA_prev1[1,1] = ', dA_prev1[1, 1])
+print()
+dA_prev2 = pool_backward(dA, cache, mode="average")
+print("mode = average")
+print('mean of dA = ', np.mean(dA))
+print('dA_prev2[1,1] = ', dA_prev2[1, 1])
+
+assert type(dA_prev1) == np.ndarray, "Wrong type"
+assert dA_prev1.shape == (5, 5, 3, 2), f"Wrong shape {dA_prev1.shape} != (5, 5, 3, 2)"
+assert np.allclose(dA_prev1[1, 1], [[0, 0],
+                                    [5.05844394, -1.68282702],
+                                    [0, 0]]), "Wrong values for mode max"
+assert np.allclose(dA_prev2[1, 1], [[0.08485462, 0.2787552],
+                                    [1.26461098, -0.25749373],
+                                    [1.17975636, -0.53624893]]), "Wrong values for mode average"
+print("\033[92m All tests passed.")
