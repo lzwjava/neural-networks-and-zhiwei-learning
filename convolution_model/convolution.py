@@ -71,17 +71,17 @@ def conv_forward(A_prev, W, b, hparameters):
 
     for i in range(m):
         a_prev_pad = A_prev_pad[i]
-        for h in range(0, n_H * stride, stride):  
+        for h in range(0, n_H * stride, stride):
             vert_start = h
-            vert_end = h + f  
-            for w in range(0, n_W * stride, stride):  
+            vert_end = h + f
+            for w in range(0, n_W * stride, stride):
                 horiz_start = w
-                horiz_end = w + f  
+                horiz_end = w + f
 
                 for c in range(n_C):
                     a_slice_prev = a_prev_pad[vert_start:vert_end, horiz_start:horiz_end, :]
-                    weights = W[:, :, :, c]  
-                    biases = b[:, :, :, c]  
+                    weights = W[:, :, :, c]
+                    biases = b[:, :, :, c]
                     Z[i, h // stride, w // stride, c] = np.sum(a_slice_prev * weights) + np.squeeze(biases)
     cache = (A_prev, W, b, hparameters)
 
@@ -105,3 +105,55 @@ print("cache_conv[0][1][2][3] =\n", cache_0_1_2_3)
 
 conv_forward_test_1(z_mean, z_0_2_1, cache_0_1_2_3)
 conv_forward_test_2(conv_forward)
+
+
+def pool_forward(A_prev, hparameters, mode="max"):
+    (m, n_H_prev, n_W_prev, n_C_prev) = A_prev.shape
+
+    f = hparameters["f"]
+    stride = hparameters["stride"]
+
+    n_H = int(1 + (n_H_prev - f) / stride)
+    n_W = int(1 + (n_W_prev - f) / stride)
+    n_C = n_C_prev
+
+    A = np.zeros((m, n_H, n_W, n_C))
+
+    cache = (A_prev, hparameters)
+
+    return A, cache
+
+
+print("CASE 1:\n")
+np.random.seed(1)
+A_prev_case_1 = np.random.randn(2, 5, 5, 3)
+hparameters_case_1 = {"stride": 1, "f": 3}
+
+A, cache = pool_forward(A_prev_case_1, hparameters_case_1, mode="max")
+print("mode = max")
+print("A.shape = " + str(A.shape))
+print("A[1, 1] =\n", A[1, 1])
+A, cache = pool_forward(A_prev_case_1, hparameters_case_1, mode="average")
+print("mode = average")
+print("A.shape = " + str(A.shape))
+print("A[1, 1] =\n", A[1, 1])
+
+pool_forward_test_1(pool_forward)
+
+print("\n\033[0mCASE 2:\n")
+np.random.seed(1)
+A_prev_case_2 = np.random.randn(2, 5, 5, 3)
+hparameters_case_2 = {"stride": 2, "f": 3}
+
+A, cache = pool_forward(A_prev_case_2, hparameters_case_2, mode="max")
+print("mode = max")
+print("A.shape = " + str(A.shape))
+print("A[0] =\n", A[0])
+print()
+
+A, cache = pool_forward(A_prev_case_2, hparameters_case_2, mode="average")
+print("mode = average")
+print("A.shape = " + str(A.shape))
+print("A[1] =\n", A[1])
+
+pool_forward_test_2(pool_forward)
