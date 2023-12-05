@@ -31,12 +31,27 @@ print("Y_test shape: " + str(Y_test.shape))
 
 index = 124
 plt.imshow(X_train_orig[index])
-plt.show()
+# plt.show()
+
+import tensorflow as tf
 
 
 def happyModel():
     model = tf.keras.Sequential([
 
+        tf.keras.layers.ZeroPadding2D(padding=3, input_shape=(64, 64, 3)),
+
+        tf.keras.layers.Conv2D(32, (7, 7), strides=(1, 1)),
+
+        tf.keras.layers.BatchNormalization(axis=3),
+
+        tf.keras.layers.ReLU(),
+
+        tf.keras.layers.MaxPooling2D(),
+
+        tf.keras.layers.Flatten(),
+
+        tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
     return model
@@ -56,3 +71,13 @@ output = [['ZeroPadding2D', (None, 70, 70, 3), 0, ((3, 3), (3, 3))],
           ['Dense', (None, 1), 32769, 'sigmoid']]
 
 comparator(summary(happy_model), output)
+
+happy_model.compile(optimizer='adam',
+                    loss='binary_crossentropy',
+                    metrics=['accuracy'])
+
+happy_model.summary()
+
+happy_model.fit(X_train, Y_train, epochs=10, batch_size=16)
+
+happy_model.evaluate(X_test, Y_test)
