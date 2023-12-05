@@ -184,13 +184,13 @@ loss_function = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.1 * base_learning_rate)
 
-metrics = tf.keras.metrics.Accuracy(name='accuracy')
+metrics = [tf.keras.metrics.Accuracy(name='accuracy')]
 
 model2.compile(loss=loss_function,
                optimizer=optimizer,
                metrics=metrics)
 
-assert type(loss_function) == tf.python.keras.losses.BinaryCrossentropy, "Not the correct layer"
+assert type(loss_function) == tf.keras.losses.BinaryCrossentropy, "Not the correct layer"
 assert loss_function.from_logits, "Use from_logits=True"
 assert type(optimizer) == tf.keras.optimizers.Adam, "This is not an Adam optimizer"
 assert optimizer.lr == base_learning_rate / 10, "Wrong learning rate"
