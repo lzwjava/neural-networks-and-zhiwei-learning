@@ -29,7 +29,8 @@ def identity_block(X, f, filters, initializer=random_uniform):
     X = BatchNormalization(axis=3)(X)
     X = Activation('relu')(X)
 
-    X = Conv2D(filters=F2, kernel_size=1, strides=(1, 1), padding='valid', kernel_initializer=initializer(seed=0))(X)
+    X = Conv2D(filters=F2, kernel_size=f, strides=(1, 1), padding='valid', kernel_initializer=initializer(
+        seed=0))(X)
     X = BatchNormalization(axis=3)(X)
     X = Activation('relu')(X)
 
