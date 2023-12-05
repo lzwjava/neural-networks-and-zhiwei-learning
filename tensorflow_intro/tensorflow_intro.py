@@ -5,8 +5,8 @@ import tensorflow as tf
 from tensorflow.python.framework.ops import EagerTensor
 from tensorflow.python.ops.resource_variable_ops import ResourceVariable
 
-train_dataset = h5py.File('datasets/train_signs.h5', "r")
-test_dataset = h5py.File('datasets/test_signs.h5', "r")
+train_dataset = h5py.File('../datasets/train_signs.h5', "r")
+test_dataset = h5py.File('../datasets/test_signs.h5', "r")
 
 x_train = tf.data.Dataset.from_tensor_slices(train_dataset['train_set_x'])
 y_train = tf.data.Dataset.from_tensor_slices(train_dataset['train_set_y'])
