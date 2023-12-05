@@ -7,11 +7,11 @@ from tensorflow.python.framework import ops
 
 
 def load_happy_dataset():
-    train_dataset = h5py.File('datasets/train_happy.h5', "r")
+    train_dataset = h5py.File('../datasets/train_happy.h5', "r")
     train_set_x_orig = np.array(train_dataset["train_set_x"][:])
     train_set_y_orig = np.array(train_dataset["train_set_y"][:])
 
-    test_dataset = h5py.File('datasets/test_happy.h5', "r")
+    test_dataset = h5py.File('../datasets/test_happy.h5', "r")
     test_set_x_orig = np.array(test_dataset["test_set_x"][:])
     test_set_y_orig = np.array(test_dataset["test_set_y"][:])
 
@@ -24,11 +24,11 @@ def load_happy_dataset():
 
 
 def load_signs_dataset():
-    train_dataset = h5py.File('datasets/train_signs.h5', "r")
+    train_dataset = h5py.File('../datasets/train_signs.h5', "r")
     train_set_x_orig = np.array(train_dataset["train_set_x"][:])
     train_set_y_orig = np.array(train_dataset["train_set_y"][:])
 
-    test_dataset = h5py.File('datasets/test_signs.h5', "r")
+    test_dataset = h5py.File('../datasets/test_signs.h5', "r")
     test_set_x_orig = np.array(test_dataset["test_set_x"][:])
     test_set_y_orig = np.array(test_dataset["test_set_y"][:])
 
