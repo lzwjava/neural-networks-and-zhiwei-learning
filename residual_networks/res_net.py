@@ -29,15 +29,15 @@ def identity_block(X, f, filters, initializer=random_uniform):
     X = BatchNormalization(axis=3)(X)
     X = Activation('relu')(X)
 
-    X = None
-    X = None
-    X = None
+    X = Conv2D(filters=F2, kernel_size=1, strides=(1, 1), padding='valid', kernel_initializer=initializer(seed=0))(X)
+    X = BatchNormalization(axis=3)(X)
+    X = Activation('relu')(X)
 
-    X = None
-    X = None
+    X = Conv2D(filters=F3, kernel_size=1, strides=(1, 1), padding='valid', kernel_initializer=initializer(seed=0))(X)
+    X = BatchNormalization(axis=3)(X)
 
-    X = None
-    X = None
+    X = Add()([X, X_shortcut])
+    X = Activation('relu')(X)
 
     return X
 
