@@ -96,25 +96,25 @@ tf.keras.applications.mobilenet_v2.decode_predictions(pred.numpy(), top=2)
 def alpaca_model(image_shape=IMG_SIZE, data_augmentation=data_augmenter()):
     input_shape = image_shape + (3,)
 
-    base_model = tf.keras.applications.MobileNetV2(input_shape=None,
-                                                   include_top=None,
-                                                   weights=None)
+    base_model = tf.keras.applications.MobileNetV2(input_shape=input_shape,
+                                                   include_top=False,
+                                                   weights='imagenet')
 
-    base_model.trainable = None
+    base_model.trainable = False
 
-    inputs = tf.keras.Input(shape=None)
+    inputs = tf.keras.Input(shape=input_shape)
 
     x = data_augmentation(inputs)
 
     x = preprocess_input(x)
 
-    x = base_model(None, training=None)
+    x = base_model(x, training=False)
 
-    x = None()(x)
+    x = tfl.GlobalAveragePooling2D()(x)
 
-    x = None(None)(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
 
-    outputs = None
+    outputs = tfl.Dense(1)(x)
 
     model = tf.keras.Model(inputs, outputs)
 
@@ -133,8 +133,6 @@ alpaca_summary = [['InputLayer', [(None, 160, 160, 3)], 0],
                   ['GlobalAveragePooling2D', (None, 1280), 0],
                   ['Dropout', (None, 1280), 0, 0.2],
                   ['Dense', (None, 1), 1281, 'linear']]
-
-comparator(summary(model2), alpaca_summary)
 
 for layer in summary(model2):
     print(layer)
@@ -168,6 +166,69 @@ plt.plot(val_loss, label='Validation Loss')
 plt.legend(loc='upper right')
 plt.ylabel('Cross Entropy')
 plt.ylim([0, 1.0])
+plt.title('Training and Validation Loss')
+plt.xlabel('epoch')
+plt.show()
+
+base_model = model2.layers[4]
+base_model.trainable = True
+
+print("Number of layers in the base model: ", len(base_model.layers))
+
+fine_tune_at = 120
+
+for layer in base_model.layers[:fine_tune_at]:
+    layer.trainable = None
+
+loss_function = None
+
+optimizer = None
+
+metrics = None
+
+model2.compile(loss=loss_function,
+               optimizer=optimizer,
+               metrics=metrics)
+
+assert type(loss_function) == tf.python.keras.losses.BinaryCrossentropy, "Not the correct layer"
+assert loss_function.from_logits, "Use from_logits=True"
+assert type(optimizer) == tf.keras.optimizers.Adam, "This is not an Adam optimizer"
+assert optimizer.lr == base_learning_rate / 10, "Wrong learning rate"
+assert metrics[0] == 'accuracy', "Wrong metric"
+
+print('\033[92mAll tests passed!')
+
+fine_tune_epochs = 5
+total_epochs = initial_epochs + fine_tune_epochs
+
+history_fine = model2.fit(train_dataset,
+                          epochs=total_epochs,
+                          initial_epoch=history.epoch[-1],
+                          validation_data=validation_dataset)
+
+acc += history_fine.history['accuracy']
+val_acc += history_fine.history['val_accuracy']
+
+loss += history_fine.history['loss']
+val_loss += history_fine.history['val_loss']
+
+plt.figure(figsize=(8, 8))
+plt.subplot(2, 1, 1)
+plt.plot(acc, label='Training Accuracy')
+plt.plot(val_acc, label='Validation Accuracy')
+plt.ylim([0, 1])
+plt.plot([initial_epochs - 1, initial_epochs - 1],
+         plt.ylim(), label='Start Fine Tuning')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(2, 1, 2)
+plt.plot(loss, label='Training Loss')
+plt.plot(val_loss, label='Validation Loss')
+plt.ylim([0, 1.0])
+plt.plot([initial_epochs - 1, initial_epochs - 1],
+         plt.ylim(), label='Start Fine Tuning')
+plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.xlabel('epoch')
 plt.show()
