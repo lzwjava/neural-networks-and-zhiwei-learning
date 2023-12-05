@@ -31,7 +31,6 @@ print("Y_test shape: " + str(Y_test.shape))
 
 index = 124
 plt.imshow(X_train_orig[index])
-# plt.show()
 
 import tensorflow as tf
 
@@ -81,3 +80,46 @@ happy_model.summary()
 happy_model.fit(X_train, Y_train, epochs=10, batch_size=16)
 
 happy_model.evaluate(X_test, Y_test)
+
+X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = load_signs_dataset()
+
+index = 9
+plt.imshow(X_train_orig[index])
+print("y = " + str(np.squeeze(Y_train_orig[:, index])))
+
+X_train = X_train_orig / 255.
+X_test = X_test_orig / 255.
+Y_train = convert_to_one_hot(Y_train_orig, 6).T
+Y_test = convert_to_one_hot(Y_test_orig, 6).T
+print("number of training examples = " + str(X_train.shape[0]))
+print("number of test examples = " + str(X_test.shape[0]))
+print("X_train shape: " + str(X_train.shape))
+print("Y_train shape: " + str(Y_train.shape))
+print("X_test shape: " + str(X_test.shape))
+print("Y_test shape: " + str(Y_test.shape))
+
+
+def convolutional_model(input_shape):
+    input_img = tf.keras.Input(shape=input_shape)
+
+    model = tf.keras.Model(inputs=input_img, outputs=outputs)
+    return model
+
+
+conv_model = convolutional_model((64, 64, 3))
+conv_model.compile(optimizer='adam',
+                   loss='categorical_crossentropy',
+                   metrics=['accuracy'])
+conv_model.summary()
+
+output = [['InputLayer', [(None, 64, 64, 3)], 0],
+          ['Conv2D', (None, 64, 64, 8), 392, 'same', 'linear', 'GlorotUniform'],
+          ['ReLU', (None, 64, 64, 8), 0],
+          ['MaxPooling2D', (None, 8, 8, 8), 0, (8, 8), (8, 8), 'same'],
+          ['Conv2D', (None, 8, 8, 16), 528, 'same', 'linear', 'GlorotUniform'],
+          ['ReLU', (None, 8, 8, 16), 0],
+          ['MaxPooling2D', (None, 2, 2, 16), 0, (4, 4), (4, 4), 'same'],
+          ['Flatten', (None, 64), 0],
+          ['Dense', (None, 6), 390, 'softmax']]
+
+comparator(summary(conv_model), output)
