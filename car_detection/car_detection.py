@@ -67,15 +67,15 @@ def iou(box1, box2):
     yi1 = np.max(box1_y1, box2_y1)
     xi2 = np.min(box1_x2, box2_x2)
     yi2 = np.min(box1_y2, box2_y2)
-    inter_width = None
-    inter_height = None
-    inter_area = None
+    inter_width = xi2 - xi1
+    inter_height = yi2 - yi1
+    inter_area = inter_width * inter_height
 
-    box1_area = None
-    box2_area = None
-    union_area = None
+    box1_area = (box1_x2 - box1_x1) * (box1_y2 - box1_y1)
+    box2_area = (box2_x2 - box2_x1) * (box2_y2 - box2_y1)
+    union_area = box1_area + box2_area - inter_area
 
-    iou = None
+    iou = inter_area / union_area
 
     return iou
 
