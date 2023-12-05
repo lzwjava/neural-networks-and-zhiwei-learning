@@ -110,11 +110,17 @@ print("\033[92m All tests passed!")
 def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold=0.5):
     max_boxes_tensor = tf.Variable(max_boxes, dtype='int32')
 
-    nms_indices = None
+    nms_indices = tf.image.non_max_suppression(
+        boxes,
+        scores,
+        max_boxes,
+        iou_threshold=iou_threshold,
+        name=None
+    )
 
-    scores = None
-    boxes = None
-    classes = None
+    scores = tf.gather(scores, nms_indices)
+    boxes = tf.gather(boxes, nms_indices)
+    classes = tf.gather(classes, nms_indices)
 
     return scores, boxes, classes
 
@@ -144,5 +150,59 @@ assert classes.shape == (10,), "Wrong shape"
 assert np.isclose(scores[2].numpy(), 8.147684), "Wrong value on scores"
 assert np.allclose(boxes[2].numpy(), [6.0797963, 3.743308, 1.3914018, -0.34089637]), "Wrong value on boxes"
 assert np.isclose(classes[2].numpy(), 1.7079165), "Wrong value on classes"
+
+print("\033[92m All tests passed!")
+
+
+def yolo_boxes_to_corners(box_xy, box_wh):
+    box_mins = box_xy - (box_wh / 2.)
+    box_maxes = box_xy + (box_wh / 2.)
+
+    return tf.keras.backend.concatenate([
+        box_mins[..., 1:2],
+        box_mins[..., 0:1],
+        box_maxes[..., 1:2],
+        box_maxes[..., 0:1]
+    ])
+
+
+def yolo_eval(yolo_outputs, image_shape=(720, 1280), max_boxes=10, score_threshold=.6, iou_threshold=.5):
+    box_xy, box_wh, box_confidence, box_class_probs = None
+
+    boxes = None
+
+    scores, boxes, classes = None
+
+    boxes = None
+
+    scores, boxes, classes = None
+
+    return scores, boxes, classes
+
+
+tf.random.set_seed(10)
+yolo_outputs = (tf.random.normal([19, 19, 5, 2], mean=1, stddev=4, seed=1),
+                tf.random.normal([19, 19, 5, 2], mean=1, stddev=4, seed=1),
+                tf.random.normal([19, 19, 5, 1], mean=1, stddev=4, seed=1),
+                tf.random.normal([19, 19, 5, 80], mean=1, stddev=4, seed=1))
+scores, boxes, classes = yolo_eval(yolo_outputs)
+print("scores[2] = " + str(scores[2].numpy()))
+print("boxes[2] = " + str(boxes[2].numpy()))
+print("classes[2] = " + str(classes[2].numpy()))
+print("scores.shape = " + str(scores.numpy().shape))
+print("boxes.shape = " + str(boxes.numpy().shape))
+print("classes.shape = " + str(classes.numpy().shape))
+
+assert type(scores) == EagerTensor, "Use tensoflow functions"
+assert type(boxes) == EagerTensor, "Use tensoflow functions"
+assert type(classes) == EagerTensor, "Use tensoflow functions"
+
+assert scores.shape == (10,), "Wrong shape"
+assert boxes.shape == (10, 4), "Wrong shape"
+assert classes.shape == (10,), "Wrong shape"
+
+assert np.isclose(scores[2].numpy(), 171.60194), "Wrong value on scores"
+assert np.allclose(boxes[2].numpy(), [-1240.3483, -3212.5881, -645.78, 2024.3052]), "Wrong value on boxes"
+assert np.isclose(classes[2].numpy(), 16), "Wrong value on classes"
 
 print("\033[92m All tests passed!")
