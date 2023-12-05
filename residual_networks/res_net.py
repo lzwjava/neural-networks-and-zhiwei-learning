@@ -73,4 +73,30 @@ A4 = identity_block(X, f=2, filters=[3, 3, 3],
                     initializer=lambda seed=0: constant(value=1))
 print(np.around(A4.numpy()[:, (0, -1), :, :].mean(axis=3), 5))
 
-# public_tests.identity_block_test(identity_block)
+
+def convolutional_block(X, f, filters, s=2, initializer=glorot_uniform):
+    F1, F2, F3 = filters
+
+    X_shortcut = X
+
+    X = Conv2D(filters=F1, kernel_size=1, strides=(s, s), padding='valid', kernel_initializer=initializer(seed=0))(X)
+    X = BatchNormalization(axis=3)(X)
+    X = Activation('relu')(X)
+
+    X = None
+    X = None
+    X = None
+
+    X = None
+    X = None
+
+    X_shortcut = None
+    X_shortcut = None
+
+    X = Add()([X, X_shortcut])
+    X = Activation('relu')(X)
+
+    return X
+
+
+public_tests.convolutional_block_test(convolutional_block)
