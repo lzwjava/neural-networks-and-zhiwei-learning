@@ -168,7 +168,7 @@ plt.ylabel('Cross Entropy')
 plt.ylim([0, 1.0])
 plt.title('Training and Validation Loss')
 plt.xlabel('epoch')
-plt.show()
+# plt.show()
 
 base_model = model2.layers[4]
 base_model.trainable = True
@@ -178,13 +178,13 @@ print("Number of layers in the base model: ", len(base_model.layers))
 fine_tune_at = 120
 
 for layer in base_model.layers[:fine_tune_at]:
-    layer.trainable = None
+    layer.trainable = False
 
-loss_function = None
+loss_function = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
-optimizer = None
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.1 * base_learning_rate)
 
-metrics = None
+metrics = tf.keras.metrics.Accuracy(name='accuracy')
 
 model2.compile(loss=loss_function,
                optimizer=optimizer,
