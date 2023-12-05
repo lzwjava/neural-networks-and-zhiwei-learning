@@ -118,10 +118,10 @@ def model_test(target):
                                       [0.12866053]]),
                        'b': -0.03983236094816321}
 
-    # Use 7 samples for training
+    
     b, Y, X = 1.5, np.array([[1, 0, 0, 1, 0, 0, 1]]), np.random.randn(4, 7),
 
-    # Use 3 samples for testing
+    
     x_test = np.random.randn(4, 3)
     y_test = np.array([[0, 1, 0]])
 
