@@ -104,9 +104,9 @@ def alpaca_model(image_shape=IMG_SIZE, data_augmentation=data_augmenter()):
 
     inputs = tf.keras.Input(shape=None)
 
-    x = None
+    x = data_augmentation(inputs)
 
-    x = preprocess_input(None)
+    x = preprocess_input(x)
 
     x = base_model(None, training=None)
 
