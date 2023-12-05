@@ -102,6 +102,22 @@ print("Y_test shape: " + str(Y_test.shape))
 def convolutional_model(input_shape):
     input_img = tf.keras.Input(shape=input_shape)
 
+    Z1 = tf.keras.layers.Conv2D(8, (4, 4), strides=(1, 1), padding='SAME')(input_img)
+
+    A1 = tf.keras.layers.ReLU()(Z1)
+
+    P1 = tf.keras.layers.MaxPooling2D((8, 8), strides=(8, 8), padding='SAME')(A1)
+
+    Z2 = tf.keras.layers.Conv2D(16, (2, 2), strides=(1, 1), padding='SAME')(P1)
+
+    A2 = tf.keras.layers.ReLU()(Z2)
+
+    P2 = tf.keras.layers.MaxPooling2D((4, 4), strides=(4, 4), padding='SAME')(A2)
+
+    F = tf.keras.layers.Flatten()(P2)
+
+    outputs = tf.keras.layers.Dense(6, activation='softmax')(F)
+
     model = tf.keras.Model(inputs=input_img, outputs=outputs)
     return model
 
