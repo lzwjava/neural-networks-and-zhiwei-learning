@@ -79,19 +79,25 @@ def convolutional_block(X, f, filters, s=2, initializer=glorot_uniform):
 
     X_shortcut = X
 
-    X = Conv2D(filters=F1, kernel_size=1, strides=(s, s), padding='valid', kernel_initializer=initializer(seed=0))(X)
-    X = BatchNormalization(axis=3)(X)
+    training = tf.keras.backend.learning_phase()
+
+    X = Conv2D(filters=F1, kernel_size=(1, 1), strides=(s, s), padding='valid', kernel_initializer=initializer(
+        seed=0))(X)
+    X = BatchNormalization(axis=3)(X, training=training)
     X = Activation('relu')(X)
 
-    X = None
-    X = None
-    X = None
+    X = Conv2D(filters=F2, kernel_size=(f, f), strides=(1, 1), padding='same', kernel_initializer=initializer(
+        seed=0))(X)
+    X = BatchNormalization(axis=3)(X, training=training)
+    X = Activation('relu')(X)
 
-    X = None
-    X = None
+    X = Conv2D(filters=F3, kernel_size=(1, 1), strides=(1, 1), padding='valid', kernel_initializer=initializer(
+        seed=0))(X)
+    X = BatchNormalization(axis=3)(X, training=training)
 
-    X_shortcut = None
-    X_shortcut = None
+    X_shortcut = Conv2D(filters=F3, kernel_size=(1, 1), strides=(s, s), padding='valid', kernel_initializer=initializer(
+        seed=0))(X_shortcut)
+    X_shortcut = BatchNormalization(axis=3)(X_shortcut, training=training)
 
     X = Add()([X, X_shortcut])
     X = Activation('relu')(X)
