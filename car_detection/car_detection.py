@@ -18,17 +18,17 @@ from yad2k.utils.utils import draw_boxes, get_colors_for_classes, scale_boxes, r
 
 
 def yolo_filter_boxes(boxes, box_confidence, box_class_probs, threshold=.6):
-    box_scores = None
+    box_scores = tf.matmul(box_confidence, box_class_probs)
 
-    box_classes = None
-    box_class_scores = None
+    box_classes = tf.math.argmax(box_scores, axis=-1)
+    box_class_scores = tf.math.reduce_max(box_scores, axis=-1)
 
-    filtering_mask = None
+    filtering_mask = box_class_scores >= threshold
 
-    scores = None
-    boxes = None
-    classes = None
-
+    scores = box_class_scores[filtering_mask]
+    boxes = boxes[filtering_mask]
+    classes = box_classes[filtering_mask]
+    
     return scores, boxes, classes
 
 
