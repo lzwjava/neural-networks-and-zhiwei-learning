@@ -105,4 +105,56 @@ def convolutional_block(X, f, filters, s=2, initializer=glorot_uniform):
     return X
 
 
-public_tests.convolutional_block_test(convolutional_block)
+def ResNet50(input_shape=(64, 64, 3), classes=6, training=False):
+    X_input = Input(input_shape)
+
+    X = ZeroPadding2D((3, 3))(X_input)
+
+    X = Conv2D(64, (7, 7), strides=(2, 2), kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3)(X)
+    X = Activation('relu')(X)
+    X = MaxPooling2D((3, 3), strides=(2, 2))(X)
+
+    X = convolutional_block(X, f=3, filters=[64, 64, 256], s=1)
+    X = identity_block(X, 3, [64, 64, 256])
+    X = identity_block(X, 3, [64, 64, 256])
+
+    X = None
+
+    X = None
+    X = None
+    X = None
+
+    X = None
+
+    X = None
+    X = None
+    X = None
+    X = None
+    X = None
+
+    X = None
+
+    X = None
+    X = None
+
+    X = None
+
+    X = Flatten()(X)
+    X = Dense(classes, activation='softmax', kernel_initializer=glorot_uniform(seed=0))(X)
+
+    model = Model(inputs=X_input, outputs=X)
+
+    return model
+
+
+tf.keras.backend.set_learning_phase(True)
+
+model = ResNet50(input_shape=(64, 64, 3), classes=6)
+print(model.summary())
+
+from outputs import ResNet50_summary
+
+model = ResNet50(input_shape=(64, 64, 3), classes=6)
+
+comparator(summary(model), ResNet50_summary)
