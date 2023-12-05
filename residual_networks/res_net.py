@@ -198,8 +198,8 @@ x = x / 255.0
 x2 = x
 print('Input image shape:', x.shape)
 imshow(img)
-prediction = pre_trained_model.predict(x2)
+prediction = model.predict(x2)
 print("Class prediction vector [p(0), p(1), p(2), p(3), p(4), p(5)] = ", prediction)
 print("Class:", np.argmax(prediction))
 
-pre_trained_model.summary()
+model.summary()
