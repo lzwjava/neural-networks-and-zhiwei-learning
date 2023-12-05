@@ -2,7 +2,6 @@ import numpy as np
 from test_utils import single_test, multiple_test
 
 
-### ex 1 - Test 1         
 def initialize_parameters_test_1(target):
     n_x, n_h, n_y = 3, 2, 1
     expected_W1 = np.array([[0.01624345, -0.00611756, -0.00528172],
@@ -33,7 +32,6 @@ def initialize_parameters_test_1(target):
     multiple_test(test_cases, target)
 
 
-### ex 1 - Test 2       
 def initialize_parameters_test_2(target):
     n_x, n_h, n_y = 4, 3, 2
 
@@ -69,7 +67,6 @@ def initialize_parameters_test_2(target):
     multiple_test(test_cases, target)
 
 
-### ex 2 - Test 1         
 def initialize_parameters_deep_test_1(target):
     layer_dims = [5, 4, 3]
     expected_W1 = np.array([[0.01788628, 0.0043651, 0.00096497, -0.01863493, -0.00277388],
@@ -114,7 +111,6 @@ def initialize_parameters_deep_test_1(target):
     multiple_test(test_cases, target)
 
 
-### ex 2 - Test 2         
 def initialize_parameters_deep_test_2(target):
     layer_dims = [4, 3, 2]
     expected_W1 = np.array([[0.01788628, 0.0043651, 0.00096497, -0.01863493],
@@ -586,5 +582,5 @@ def update_parameters_test(target):
         }
 
     ]
-    # print(target(*test_cases[2]["input"]))
+
     multiple_test(test_cases, target)

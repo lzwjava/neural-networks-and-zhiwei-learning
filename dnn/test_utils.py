@@ -63,7 +63,7 @@ def equation_output_check(expected_output, target_output, error):
 
     else:
         if hasattr(expected_output, 'shape'):
-            # np.allclose(target_output, expected_output)
+
             np.testing.assert_array_almost_equal(target_output, expected_output)
         else:
             assert target_output == expected_output
