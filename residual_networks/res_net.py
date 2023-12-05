@@ -163,11 +163,9 @@ model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy
 
 X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = load_dataset()
 
-# Normalize image vectors
 X_train = X_train_orig / 255.
 X_test = X_test_orig / 255.
 
-# Convert training and test labels to one hot matrices
 Y_train = convert_to_one_hot(Y_train_orig, 6).T
 Y_test = convert_to_one_hot(Y_test_orig, 6).T
 
@@ -183,8 +181,6 @@ model.fit(X_train, Y_train, epochs=10, batch_size=32)
 preds = model.evaluate(X_test, Y_test)
 print("Loss = " + str(preds[0]))
 print("Test Accuracy = " + str(preds[1]))
-
-# pre_trained_model = load_model('resnet50.h5')
 
 preds = model.evaluate(X_test, Y_test)
 print("Loss = " + str(preds[0]))
