@@ -119,26 +119,23 @@ def ResNet50(input_shape=(64, 64, 3), classes=6, training=False):
     X = identity_block(X, 3, [64, 64, 256])
     X = identity_block(X, 3, [64, 64, 256])
 
-    X = None
+    X = convolutional_block(X, f=3, filters=[128, 128, 512], s=2)
+    X = identity_block(X, 3, [128, 128, 512])
+    X = identity_block(X, 3, [128, 128, 512])
+    X = identity_block(X, 3, [128, 128, 512])
 
-    X = None
-    X = None
-    X = None
+    X = convolutional_block(X, f=3, filters=[256, 256, 1024], s=2)
+    X = identity_block(X, 3, [256, 256, 1024])
+    X = identity_block(X, 3, [256, 256, 1024])
+    X = identity_block(X, 3, [256, 256, 1024])
+    X = identity_block(X, 3, [256, 256, 1024])
+    X = identity_block(X, 3, [256, 256, 1024])
 
-    X = None
+    X = convolutional_block(X, f=3, filters=[512, 512, 2048], s=2)
+    X = identity_block(X, 3, [512, 512, 2048])
+    X = identity_block(X, 3, [512, 512, 2048])
 
-    X = None
-    X = None
-    X = None
-    X = None
-    X = None
-
-    X = None
-
-    X = None
-    X = None
-
-    X = None
+    X = AveragePooling2D((2, 2))(X)
 
     X = Flatten()(X)
     X = Dense(classes, activation='softmax', kernel_initializer=glorot_uniform(seed=0))(X)
@@ -158,3 +155,51 @@ from outputs import ResNet50_summary
 model = ResNet50(input_shape=(64, 64, 3), classes=6)
 
 comparator(summary(model), ResNet50_summary)
+
+np.random.seed(1)
+tf.random.set_seed(2)
+opt = tf.keras.optimizers.Adam(learning_rate=0.00015)
+model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+
+X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = load_dataset()
+
+# Normalize image vectors
+X_train = X_train_orig / 255.
+X_test = X_test_orig / 255.
+
+# Convert training and test labels to one hot matrices
+Y_train = convert_to_one_hot(Y_train_orig, 6).T
+Y_test = convert_to_one_hot(Y_test_orig, 6).T
+
+print("number of training examples = " + str(X_train.shape[0]))
+print("number of test examples = " + str(X_test.shape[0]))
+print("X_train shape: " + str(X_train.shape))
+print("Y_train shape: " + str(Y_train.shape))
+print("X_test shape: " + str(X_test.shape))
+print("Y_test shape: " + str(Y_test.shape))
+
+model.fit(X_train, Y_train, epochs=10, batch_size=32)
+
+preds = model.evaluate(X_test, Y_test)
+print("Loss = " + str(preds[0]))
+print("Test Accuracy = " + str(preds[1]))
+
+# pre_trained_model = load_model('resnet50.h5')
+
+preds = model.evaluate(X_test, Y_test)
+print("Loss = " + str(preds[0]))
+print("Test Accuracy = " + str(preds[1]))
+
+img_path = 'images/my_image.jpg'
+img = image.load_img(img_path, target_size=(64, 64))
+x = image.img_to_array(img)
+x = np.expand_dims(x, axis=0)
+x = x / 255.0
+x2 = x
+print('Input image shape:', x.shape)
+imshow(img)
+prediction = pre_trained_model.predict(x2)
+print("Class prediction vector [p(0), p(1), p(2), p(3), p(4), p(5)] = ", prediction)
+print("Class:", np.argmax(prediction))
+
+pre_trained_model.summary()
