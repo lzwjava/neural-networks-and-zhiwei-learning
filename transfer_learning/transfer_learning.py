@@ -184,7 +184,7 @@ loss_function = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.1 * base_learning_rate)
 
-metrics = [tf.keras.metrics.Accuracy(name='accuracy')]
+metrics = ['accuracy']
 
 model2.compile(loss=loss_function,
                optimizer=optimizer,
