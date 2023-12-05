@@ -167,15 +167,15 @@ def yolo_boxes_to_corners(box_xy, box_wh):
 
 
 def yolo_eval(yolo_outputs, image_shape=(720, 1280), max_boxes=10, score_threshold=.6, iou_threshold=.5):
-    box_xy, box_wh, box_confidence, box_class_probs = None
+    box_xy, box_wh, box_confidence, box_class_probs = yolo_outputs
 
-    boxes = None
+    boxes = yolo_boxes_to_corners(box_xy, box_wh)
 
-    scores, boxes, classes = None
+    scores, boxes, classes = yolo_filter_boxes(boxes, box_confidence, box_class_probs, threshold=iou_threshold)
 
-    boxes = None
+    boxes = scale_boxes(boxes, image_shape)
 
-    scores, boxes, classes = None
+    scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes, max_boxes, iou_threshold)
 
     return scores, boxes, classes
 
@@ -206,3 +206,36 @@ assert np.allclose(boxes[2].numpy(), [-1240.3483, -3212.5881, -645.78, 2024.3052
 assert np.isclose(classes[2].numpy(), 16), "Wrong value on classes"
 
 print("\033[92m All tests passed!")
+
+class_names = read_classes("model_data/coco_classes.txt")
+anchors = read_anchors("model_data/yolo_anchors.txt")
+model_image_size = (608, 608)
+
+yolo_model = load_model("model_data/", compile=False)
+
+yolo_model.summary()
+
+
+def predict(image_file):
+    image, image_data = preprocess_image("images/" + image_file, model_image_size=(608, 608))
+
+    yolo_model_outputs = yolo_model(image_data)
+    yolo_outputs = yolo_head(yolo_model_outputs, anchors, len(class_names))
+
+    out_scores, out_boxes, out_classes = yolo_eval(yolo_outputs, [image.size[1], image.size[0]], 10, 0.3, 0.5)
+
+    print('Found {} boxes for {}'.format(len(out_boxes), "images/" + image_file))
+
+    colors = get_colors_for_classes(len(class_names))
+
+    draw_boxes(image, out_boxes, out_classes, class_names, out_scores)
+
+    image.save(os.path.join("out", image_file), quality=100)
+
+    output_image = Image.open(os.path.join("out", image_file))
+    imshow(output_image)
+
+    return out_scores, out_boxes, out_classes
+
+
+out_scores, out_boxes, out_classes = predict("test.jpg")
