@@ -17,36 +17,19 @@ from yad2k.utils.utils import draw_boxes, get_colors_for_classes, scale_boxes, r
     preprocess_image
 
 
-
-
-
 def yolo_filter_boxes(boxes, box_confidence, box_class_probs, threshold=.6):
-
-    
-    
-    
     box_scores = None
 
-    
-    
-    
     box_classes = None
     box_class_scores = None
 
-    
-    
-    
     filtering_mask = None
 
-    
-    
     scores = None
     boxes = None
     classes = None
-    
 
     return scores, boxes, classes
-
 
 
 tf.random.set_seed(10)
@@ -74,4 +57,3 @@ assert np.allclose(boxes[2].numpy(), [4.6399336, 3.2303846, 4.431282, -2.202031]
 assert classes[2].numpy() == 8, "Values are wrong on classes"
 
 print("\033[92m All tests passed!")
-

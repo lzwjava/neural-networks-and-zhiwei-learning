@@ -41,6 +41,7 @@ def space_to_depth_x2_output_shape(input_shape):
             input_shape[3]) if input_shape[1] else (input_shape[0], None, None,
                                                     4 * input_shape[3])
 
+
 def yolo_body(inputs, num_anchors, num_classes):
     """Create YOLO_V2 model CNN body in Keras."""
     darknet = Model(inputs, darknet_body()(inputs))
@@ -285,7 +286,7 @@ def yolo_loss(args,
     classification_loss_sum = K.sum(classification_loss)
     coordinates_loss_sum = K.sum(coordinates_loss)
     total_loss = 0.5 * (
-        confidence_loss_sum + classification_loss_sum + coordinates_loss_sum)
+            confidence_loss_sum + classification_loss_sum + coordinates_loss_sum)
     if print_loss:
         total_loss = tf.Print(
             total_loss, [

@@ -9,6 +9,7 @@ from tensorflow.keras import backend as K
 
 from functools import reduce
 
+
 def preprocess_image(img_path, model_image_size):
     image_type = imghdr.what(img_path)
     image = Image.open(img_path)
@@ -17,6 +18,7 @@ def preprocess_image(img_path, model_image_size):
     image_data /= 255.
     image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
     return image, image_data
+
 
 def compose(*funcs):
     """Compose arbitrarily many functions, evaluated left to right.
@@ -29,11 +31,13 @@ def compose(*funcs):
     else:
         raise ValueError('Composition of empty sequence not supported.')
 
+
 def read_classes(classes_path):
     with open(classes_path) as f:
         class_names = f.readlines()
     class_names = [c.strip() for c in class_names]
     return class_names
+
 
 def read_anchors(anchors_path):
     with open(anchors_path) as f:
@@ -41,6 +45,7 @@ def read_anchors(anchors_path):
         anchors = [float(x) for x in anchors.split(',')]
         anchors = np.array(anchors).reshape(-1, 2)
     return anchors
+
 
 def scale_boxes(boxes, image_shape):
     """ Scales the predicted boxes in order to be drawable on the image"""
@@ -50,6 +55,7 @@ def scale_boxes(boxes, image_shape):
     image_dims = K.reshape(image_dims, [1, 4])
     boxes = boxes * image_dims
     return boxes
+
 
 def get_colors_for_classes(num_classes):
     """Return list of random colors for number of classes given."""
@@ -86,7 +92,7 @@ def draw_boxes(image, boxes, box_classes, class_names, scores=None):
     Returns:
         A copy of `image` modified with given bounding boxes.
     """
-    #image = Image.fromarray(np.floor(image * 255 + 0.5).astype('uint8'))
+    # image = Image.fromarray(np.floor(image * 255 + 0.5).astype('uint8'))
 
     font = ImageFont.truetype(
         font='font/FiraMono-Medium.otf',
@@ -98,7 +104,7 @@ def draw_boxes(image, boxes, box_classes, class_names, scores=None):
     for i, c in list(enumerate(box_classes)):
         box_class = class_names[c]
         box = boxes[i]
-        
+
         if isinstance(scores.numpy(), np.ndarray):
             score = scores.numpy()[i]
             label = '{} {:.2f}'.format(box_class, score)
