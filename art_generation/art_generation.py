@@ -32,10 +32,10 @@ def compute_content_cost(content_output, generated_output):
 
     m, n_H, n_W, n_C = a_G.shape
 
-    a_C_unrolled = tf.reshape(a_C, shape=[m, n_H * n_W, n_C])
-    a_G_unrolled = tf.reshape(a_G, shape=[m, n_H * n_W, n_C])
+    a_C_unrolled = tf.reshape(a_C, shape=[-1, n_H * n_W, n_C])
+    a_G_unrolled = tf.reshape(a_G, shape=[-1, n_H * n_W, n_C])
 
-    J_content = 1 / (4 * n_H * n_W * n_C) * tf.square(a_C_unrolled - a_G_unrolled)
+    J_content = tf.reduce_sum((a_C_unrolled - a_G_unrolled) ** 2) / (4 * n_H * n_W * n_C)
 
     return J_content
 
@@ -46,8 +46,7 @@ example = Image.open("images/monet_800600.jpg")
 
 
 def gram_matrix(A):
-    GA = None
-
+    GA = tf.matmul(A, tf.transpose(A))
     return GA
 
 
@@ -55,15 +54,15 @@ gram_matrix_test(gram_matrix)
 
 
 def compute_layer_style_cost(a_S, a_G):
-    _, n_H, n_W, n_C = None
+    _, n_H, n_W, n_C = a_G.shape
 
-    a_S = None
-    a_G = None
+    a_S = tf.reshape(a_S, (n_C, n_H * n_W))
+    a_G = tf.reshape(a_G, (n_C, n_H * n_W))
 
-    GS = None
-    GG = None
+    GS = gram_matrix(a_S)
+    GG = gram_matrix(a_G)
 
-    J_style_layer = None
+    J_style_layer = 1. / (4 * (n_C ** 2) * ((n_H * n_W) ** 2)) * tf.reduce_sum(tf.square(GS - GG))
 
     return J_style_layer
 

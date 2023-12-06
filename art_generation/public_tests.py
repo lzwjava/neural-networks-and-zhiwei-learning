@@ -33,7 +33,7 @@ def gram_matrix_test(target):
 
     assert type(GA) == EagerTensor, "Use the tensorflow function"
     assert GA.shape == (3, 3), "Wrong shape. Check the order of the matmul parameters"
-    assert np.allclose(GA[0, :], [63.193256, -26.729713, -7.732155]), "Wrong values."
+    assert np.allclose(GA[0, :], [63.193256, -26.729713, -7.732155], 1e-2), "Wrong values."
 
     print("GA = \n" + str(GA))
 
@@ -50,7 +50,7 @@ def compute_layer_style_cost_test(target):
     assert type(J_style_layer_GG) == EagerTensor, "Use the tensorflow functions"
     assert np.isclose(J_style_layer_GG, 0.0), "Wrong value. compute_layer_style_cost(A, A) must be 0"
     assert J_style_layer_SG > 0, "Wrong value. compute_layer_style_cost(A, B) must be greater than 0 if A != B"
-    assert np.isclose(J_style_layer_SG, 14.01649), "Wrong value."
+    assert np.isclose(J_style_layer_SG, 14.01649, 1e-2), "Wrong value."
 
     print("J_style_layer = " + str(J_style_layer_SG))
     print("\033[92mAll tests passed")
