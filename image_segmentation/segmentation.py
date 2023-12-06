@@ -74,23 +74,22 @@ processed_image_ds = image_ds.map(preprocess)
 
 
 def conv_block(inputs=None, n_filters=32, dropout_prob=0, max_pooling=True):
-    conv = Conv2D(None,
-                  None,
-                  activation=None,
-                  padding=None,
+    conv = Conv2D(n_filters,
+                  3,
+                  activation='relu',
+                  padding='same',
                   kernel_initializer='he_normal')(inputs)
-    conv = Conv2D(None,
-                  None,
-                  activation=None,
-                  padding=None,
-
-                  kernel_initializer=None)(conv)
+    conv = Conv2D(n_filters,
+                  3,
+                  activation='relu',
+                  padding='same',
+                  kernel_initializer='he_normal')(conv)
 
     if dropout_prob > 0:
-        conv = None
+        conv = Dropout(dropout_prob)(conv)
 
     if max_pooling:
-        next_layer = None
+        next_layer = MaxPooling2D()(conv)
     else:
         next_layer = conv
 
@@ -131,3 +130,88 @@ for layer in summary(model2):
     print(layer)
 
 comparator(summary(model2), output2)
+
+
+def upsampling_block(expansive_input, contractive_input, n_filters=32):
+    up = Conv2DTranspose(
+        n_filters,
+        3,
+        strides=(2, 2),
+        padding='same')(expansive_input)
+
+    merge = concatenate([up, contractive_input], axis=3)
+    conv = Conv2D(n_filters,
+                  3,
+                  activation='relu',
+                  padding='same',
+                  kernel_initializer='he_normal')(merge)
+    conv = Conv2D(n_filters,
+                  3,
+                  activation='relu',
+                  padding='same',
+                  kernel_initializer='he_normal')(conv)
+
+    return conv
+
+
+input_size1 = (12, 16, 256)
+input_size2 = (24, 32, 128)
+n_filters = 32
+expansive_inputs = Input(input_size1)
+contractive_inputs = Input(input_size2)
+cblock1 = upsampling_block(expansive_inputs, contractive_inputs, n_filters * 1)
+model1 = tf.keras.Model(inputs=[expansive_inputs, contractive_inputs], outputs=cblock1)
+
+output1 = [['InputLayer', [(None, 12, 16, 256)], 0],
+           ['Conv2DTranspose', (None, 24, 32, 32), 73760],
+           ['InputLayer', [(None, 24, 32, 128)], 0],
+           ['Concatenate', (None, 24, 32, 160), 0],
+           ['Conv2D', (None, 24, 32, 32), 46112, 'same', 'relu', 'HeNormal'],
+           ['Conv2D', (None, 24, 32, 32), 9248, 'same', 'relu', 'HeNormal']]
+
+print('Block 1:')
+for layer in summary(model1):
+    print(layer)
+
+comparator(summary(model1), output1)
+
+
+def unet_model(input_size=(96, 128, 3), n_filters=32, n_classes=23):
+    inputs = Input(input_size)
+
+    cblock1 = conv_block(None, None)
+
+    cblock2 = conv_block(None, None)
+    cblock3 = conv_block(None, None)
+    cblock4 = conv_block(None, None, dropout=None)
+
+    cblock5 = conv_block(None, None, dropout=None, max_pooling=None)
+    
+    ublock6 = upsampling_block(None, None, None)
+
+    ublock7 = upsampling_block(None, None, None)
+    ublock8 = upsampling_block(None, None, None)
+    ublock9 = upsampling_block(None, None, None)
+
+    conv9 = Conv2D(n_filters,
+                   3,
+                   activation='relu',
+                   padding='same',
+
+                   kernel_initializer='he_normal')(ublock9)
+
+    conv10 = Conv2D(None, None, padding=None)(conv9)
+
+    model = tf.keras.Model(inputs=inputs, outputs=conv10)
+
+    return model
+
+
+import outputs
+
+img_height = 96
+img_width = 128
+num_channels = 3
+
+unet = unet_model((img_height, img_width, num_channels))
+comparator(summary(unet), outputs.unet_model_output)
