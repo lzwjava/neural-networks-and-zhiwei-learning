@@ -11,8 +11,8 @@ from tensorflow.keras.layers import concatenate
 from test_utils import summary, comparator
 
 import os
-import numpy as np  
-import pandas as pd  
+import numpy as np
+import pandas as pd
 
 import imageio
 
@@ -28,7 +28,6 @@ mask_list = [mask_path + i for i in image_list_orig]
 N = 2
 img = imageio.imread(image_list[N])
 mask = imageio.imread(mask_list[N])
-
 
 fig, arr = plt.subplots(1, 2, figsize=(14, 10))
 arr[0].imshow(img)
@@ -72,3 +71,63 @@ def preprocess(image, mask):
 
 image_ds = dataset.map(process_path)
 processed_image_ds = image_ds.map(preprocess)
+
+
+def conv_block(inputs=None, n_filters=32, dropout_prob=0, max_pooling=True):
+    conv = Conv2D(None,
+                  None,
+                  activation=None,
+                  padding=None,
+                  kernel_initializer='he_normal')(inputs)
+    conv = Conv2D(None,
+                  None,
+                  activation=None,
+                  padding=None,
+
+                  kernel_initializer=None)(conv)
+
+    if dropout_prob > 0:
+        conv = None
+
+    if max_pooling:
+        next_layer = None
+    else:
+        next_layer = conv
+
+    skip_connection = conv
+
+    return next_layer, skip_connection
+
+
+input_size = (96, 128, 3)
+n_filters = 32
+inputs = Input(input_size)
+cblock1 = conv_block(inputs, n_filters * 1)
+model1 = tf.keras.Model(inputs=inputs, outputs=cblock1)
+
+output1 = [['InputLayer', [(None, 96, 128, 3)], 0],
+           ['Conv2D', (None, 96, 128, 32), 896, 'same', 'relu', 'HeNormal'],
+           ['Conv2D', (None, 96, 128, 32), 9248, 'same', 'relu', 'HeNormal'],
+           ['MaxPooling2D', (None, 48, 64, 32), 0, (2, 2)]]
+
+print('Block 1:')
+for layer in summary(model1):
+    print(layer)
+
+comparator(summary(model1), output1)
+
+inputs = Input(input_size)
+cblock1 = conv_block(inputs, n_filters * 32, dropout_prob=0.1, max_pooling=True)
+model2 = tf.keras.Model(inputs=inputs, outputs=cblock1)
+
+output2 = [['InputLayer', [(None, 96, 128, 3)], 0],
+           ['Conv2D', (None, 96, 128, 1024), 28672, 'same', 'relu', 'HeNormal'],
+           ['Conv2D', (None, 96, 128, 1024), 9438208, 'same', 'relu', 'HeNormal'],
+           ['Dropout', (None, 96, 128, 1024), 0, 0.1],
+           ['MaxPooling2D', (None, 48, 64, 1024), 0, (2, 2)]]
+
+print('\nBlock 2:')
+for layer in summary(model2):
+    print(layer)
+
+comparator(summary(model2), output2)

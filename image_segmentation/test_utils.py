@@ -9,7 +9,6 @@ from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import concatenate
 
 
-
 def comparator(learner, instructor):
     if len(learner) != len(instructor):
         raise AssertionError(
@@ -22,7 +21,6 @@ def comparator(learner, instructor):
                   colored(f"{a}", "red"))
             raise AssertionError("Error in test")
     print(colored("All tests passed!", "green"))
-
 
 
 def summary(model):
