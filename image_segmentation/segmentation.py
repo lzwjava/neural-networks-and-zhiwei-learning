@@ -179,31 +179,22 @@ comparator(summary(model1), output1)
 def unet_model(input_size=(96, 128, 3), n_filters=32, n_classes=23):
     inputs = Input(input_size)
 
-    cblock1 = conv_block(None, None)
+    cblock1 = conv_block(inputs, n_filters)
+    cblock2 = conv_block(cblock1, n_filters * 2)
+    cblock3 = conv_block(cblock2, n_filters * 4)
+    cblock4 = conv_block(cblock3, n_filters * 8, dropout=0.3)
+    cblock5 = conv_block(cblock4, n_filters * 16, dropout=0.3, max_pooling=False)
 
-    cblock2 = conv_block(None, None)
-    cblock3 = conv_block(None, None)
-    cblock4 = conv_block(None, None, dropout=None)
+    ublock6 = upsampling_block(cblock5, cblock4, n_filters * 8)
+    ublock7 = upsampling_block(ublock6, cblock3, n_filters * 4)
+    ublock8 = upsampling_block(ublock7, cblock2, n_filters * 2)
+    ublock9 = upsampling_block(ublock8, cblock1, n_filters)
 
-    cblock5 = conv_block(None, None, dropout=None, max_pooling=None)
-    
-    ublock6 = upsampling_block(None, None, None)
+    conv9 = Conv2D(n_filters, 3, activation='relu', padding='same', kernel_initializer='he_normal')(ublock9)
 
-    ublock7 = upsampling_block(None, None, None)
-    ublock8 = upsampling_block(None, None, None)
-    ublock9 = upsampling_block(None, None, None)
-
-    conv9 = Conv2D(n_filters,
-                   3,
-                   activation='relu',
-                   padding='same',
-
-                   kernel_initializer='he_normal')(ublock9)
-
-    conv10 = Conv2D(None, None, padding=None)(conv9)
+    conv10 = Conv2D(n_classes, 1, padding='same')(conv9)
 
     model = tf.keras.Model(inputs=inputs, outputs=conv10)
-
     return model
 
 
