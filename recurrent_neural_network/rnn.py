@@ -10,9 +10,9 @@ def rnn_cell_forward(xt, a_prev, parameters):
     ba = parameters["ba"]
     by = parameters["by"]
 
-    a_next = None
+    a_next = np.tanh(np.dot(Waa, a_prev) + np.dot(Wax, xt) + ba)
 
-    yt_pred = None
+    yt_pred = softmax(np.dot(Wya, a_next) + by)
 
     cache = (a_next, a_prev, xt, parameters)
 
