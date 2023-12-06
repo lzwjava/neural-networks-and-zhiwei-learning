@@ -1,9 +1,7 @@
-#### PART OF THIS CODE IS USING CODE FROM VICTOR SY WANG: https://github.com/iwantooxxoox/Keras-OpenFace/blob/master/utils.py ####
-
 import tensorflow as tf
 import numpy as np
 import os
-# import cv2
+
 from numpy import genfromtxt
 from tensorflow.keras.layers import Conv2D, ZeroPadding2D, Activation, Input, concatenate
 from tensorflow.keras.models import Model
@@ -142,11 +140,9 @@ conv_shape = {
 
 
 def load_weights_from_FaceNet(FRmodel):
-    # Load weights from csv files (which was exported from Openface torch model)
     weights = WEIGHTS
     weights_dict = load_weights()
 
-    # Set layer weights of the model
     for name in weights:
         if FRmodel.get_layer(name) != None:
             FRmodel.get_layer(name).set_weights(weights_dict[name])
@@ -155,7 +151,6 @@ def load_weights_from_FaceNet(FRmodel):
 
 
 def load_weights():
-    # Set weights path
     dirPath = './weights'
     fileNames = filter(lambda f: not f.startswith('.'), os.listdir(dirPath))
     paths = {}
@@ -189,14 +184,14 @@ def load_weights():
 
 def load_dataset():
     train_dataset = h5py.File('datasets/train_happy.h5', "r")
-    train_set_x_orig = np.array(train_dataset["train_set_x"][:])  # your train set features
-    train_set_y_orig = np.array(train_dataset["train_set_y"][:])  # your train set labels
+    train_set_x_orig = np.array(train_dataset["train_set_x"][:])
+    train_set_y_orig = np.array(train_dataset["train_set_y"][:])
 
     test_dataset = h5py.File('datasets/test_happy.h5', "r")
-    test_set_x_orig = np.array(test_dataset["test_set_x"][:])  # your test set features
-    test_set_y_orig = np.array(test_dataset["test_set_y"][:])  # your test set labels
+    test_set_x_orig = np.array(test_dataset["test_set_x"][:])
+    test_set_y_orig = np.array(test_dataset["test_set_y"][:])
 
-    classes = np.array(test_dataset["list_classes"][:])  # the list of classes
+    classes = np.array(test_dataset["list_classes"][:])
 
     train_set_y_orig = train_set_y_orig.reshape((1, train_set_y_orig.shape[0]))
     test_set_y_orig = test_set_y_orig.reshape((1, test_set_y_orig.shape[0]))
@@ -205,9 +200,8 @@ def load_dataset():
 
 
 def img_to_encoding(image_path, model):
-    # img = PIL.Image.open(image_path)
     img = tf.keras.preprocessing.image.load_img(image_path)
-    # img = img1[...,::-1]
+
     img = np.around(np.transpose(img, (2, 0, 1)) / 255.0, decimals=12)
     x_train = np.expand_dims(img, axis=0)
     print(x_train.shape)
