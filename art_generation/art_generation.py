@@ -43,7 +43,6 @@ def compute_content_cost(content_output, generated_output):
 compute_content_cost_test(compute_content_cost)
 
 example = Image.open("images/monet_800600.jpg")
-example
 
 
 def gram_matrix(A):
