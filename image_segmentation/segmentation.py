@@ -179,22 +179,23 @@ comparator(summary(model1), output1)
 def unet_model(input_size=(96, 128, 3), n_filters=32, n_classes=23):
     inputs = Input(input_size)
 
-    cblock1 = conv_block(inputs, n_filters)
-    cblock2 = conv_block(cblock1, n_filters * 2)
-    cblock3 = conv_block(cblock2, n_filters * 4)
-    cblock4 = conv_block(cblock3, n_filters * 8, dropout=0.3)
-    cblock5 = conv_block(cblock4, n_filters * 16, dropout=0.3, max_pooling=False)
+    cblock1, skip1 = conv_block(inputs, n_filters)
+    cblock2, skip2 = conv_block(cblock1, n_filters * 2)
+    cblock3, skip3 = conv_block(cblock2, n_filters * 4)
+    cblock4, skip4 = conv_block(cblock3, n_filters * 8, dropout_prob=0.3)
+    cblock5, _ = conv_block(cblock4, n_filters * 16, dropout_prob=0.3, max_pooling=False)
 
-    ublock6 = upsampling_block(cblock5, cblock4, n_filters * 8)
-    ublock7 = upsampling_block(ublock6, cblock3, n_filters * 4)
-    ublock8 = upsampling_block(ublock7, cblock2, n_filters * 2)
-    ublock9 = upsampling_block(ublock8, cblock1, n_filters)
+    ublock6 = upsampling_block(cblock5, skip4, n_filters * 8)
+    ublock7 = upsampling_block(ublock6, skip3, n_filters * 4)
+    ublock8 = upsampling_block(ublock7, skip2, n_filters * 2)
+    ublock9 = upsampling_block(ublock8, skip1, n_filters)
 
     conv9 = Conv2D(n_filters, 3, activation='relu', padding='same', kernel_initializer='he_normal')(ublock9)
 
     conv10 = Conv2D(n_classes, 1, padding='same')(conv9)
 
     model = tf.keras.Model(inputs=inputs, outputs=conv10)
+
     return model
 
 
@@ -206,3 +207,63 @@ num_channels = 3
 
 unet = unet_model((img_height, img_width, num_channels))
 comparator(summary(unet), outputs.unet_model_output)
+
+img_height = 96
+img_width = 128
+num_channels = 3
+
+unet = unet_model((img_height, img_width, num_channels))
+
+unet.summary()
+
+unet.compile(optimizer='adam',
+             loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+             metrics=['accuracy'])
+
+
+def display(display_list):
+    plt.figure(figsize=(15, 15))
+
+    title = ['Input Image', 'True Mask', 'Predicted Mask']
+
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i + 1)
+        plt.title(title[i])
+        plt.imshow(tf.keras.preprocessing.image.array_to_img(display_list[i]))
+        plt.axis('off')
+    plt.show()
+
+
+for image, mask in image_ds.take(1):
+    sample_image, sample_mask = image, mask
+    print(mask.shape)
+
+EPOCHS = 5
+VAL_SUBSPLITS = 5
+BUFFER_SIZE = 500
+BATCH_SIZE = 32
+train_dataset = processed_image_ds.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+print(processed_image_ds.element_spec)
+model_history = unet.fit(train_dataset, epochs=EPOCHS)
+
+
+def create_mask(pred_mask):
+    pred_mask = tf.argmax(pred_mask, axis=-1)
+    pred_mask = pred_mask[..., tf.newaxis]
+    return pred_mask[0]
+
+
+plt.plot(model_history.history["accuracy"])
+
+
+def show_predictions(dataset=None, num=1):
+    if dataset:
+        for image, mask in dataset.take(num):
+            pred_mask = unet.predict(image)
+            display([image[0], mask[0], create_mask(pred_mask)])
+    else:
+        display([sample_image, sample_mask,
+                 create_mask(unet.predict(sample_image[tf.newaxis, ...]))])
+
+
+show_predictions(train_dataset, 6)
