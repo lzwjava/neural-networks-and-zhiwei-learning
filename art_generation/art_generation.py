@@ -54,15 +54,15 @@ gram_matrix_test(gram_matrix)
 
 
 def compute_layer_style_cost(a_S, a_G):
-    _, n_H, n_W, n_C = a_G.shape
+    _, n_H, n_W, n_C = a_G.get_shape().as_list()
 
-    a_S = tf.reshape(a_S, (n_C, n_H * n_W))
-    a_G = tf.reshape(a_G, (n_C, n_H * n_W))
+    a_S = tf.reshape(tf.transpose(a_S, perm=[0, 3, 1, 2]), (n_C, n_H * n_W))
+    a_G = tf.reshape(tf.transpose(a_G, perm=[0, 3, 1, 2]), (n_C, n_H * n_W))
 
     GS = gram_matrix(a_S)
     GG = gram_matrix(a_G)
 
-    J_style_layer = 1. / (4 * (n_C ** 2) * ((n_H * n_W) ** 2)) * tf.reduce_sum(tf.square(GS - GG))
+    J_style_layer = tf.reduce_sum(tf.square(GS - GG)) / (4 * (n_C ** 2) * ((n_H * n_W) ** 2))
 
     return J_style_layer
 
@@ -98,7 +98,7 @@ def compute_style_cost(style_image_output, generated_image_output, STYLE_LAYERS=
 
 @tf.function()
 def total_cost(J_content, J_style, alpha=10, beta=40):
-    J = None
+    J = alpha * J_content + beta * J_style
 
     return J
 
@@ -110,14 +110,14 @@ content_image = tf.constant(np.reshape(content_image, ((1,) + content_image.shap
 
 print(content_image.shape)
 imshow(content_image[0])
-plt.show()
+# plt.show()
 
 style_image = np.array(Image.open("images/monet.jpg").resize((img_size, img_size)))
 style_image = tf.constant(np.reshape(style_image, ((1,) + style_image.shape)))
 
 print(style_image.shape)
 imshow(style_image[0])
-plt.show()
+# plt.show()
 
 generated_image = tf.Variable(tf.image.convert_image_dtype(content_image, tf.float32))
 noise = tf.random.uniform(tf.shape(generated_image), -0.25, 0.25)
@@ -126,7 +126,9 @@ generated_image = tf.clip_by_value(generated_image, clip_value_min=0.0, clip_val
 
 print(generated_image.shape)
 imshow(generated_image.numpy()[0])
-plt.show()
+
+
+# plt.show()
 
 
 def get_layer_outputs(vgg, layer_names):
@@ -169,13 +171,10 @@ optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 @tf.function()
 def train_step(generated_image):
     with tf.GradientTape() as tape:
-        a_G = None
-
-        J_style = None
-
-        J_content = None
-
-        J = None
+        a_G = vgg_model_outputs(generated_image)
+        J_style = compute_style_cost(a_S, a_G)
+        J_content = compute_content_cost(a_C, a_G)
+        J = total_cost(J_content, J_style, 10, 40)
 
     grad = tape.gradient(J, generated_image)
 
