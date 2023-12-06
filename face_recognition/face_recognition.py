@@ -27,5 +27,3 @@ model.load_weights('keras-facenet-h5/model.h5')
 
 print(model.inputs)
 print(model.outputs)
-
-
