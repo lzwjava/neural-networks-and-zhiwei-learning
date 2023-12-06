@@ -19,8 +19,6 @@ import PIL
 
 from tensorflow.keras.models import model_from_json
 
-tf.keras.__internal__.enable_unsafe_deserialization()
-
 json_file = open('keras-facenet-h5/model.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
