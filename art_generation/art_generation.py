@@ -30,12 +30,12 @@ def compute_content_cost(content_output, generated_output):
     a_C = content_output[-1]
     a_G = generated_output[-1]
 
-    _, n_H, n_W, n_C = None
+    m, n_H, n_W, n_C = a_G.shape
 
-    a_C_unrolled = None
-    a_G_unrolled = None
+    a_C_unrolled = tf.reshape(a_C, shape=[m, n_H * n_W, n_C])
+    a_G_unrolled = tf.reshape(a_G, shape=[m, n_H * n_W, n_C])
 
-    J_content = None
+    J_content = 1 / (4 * n_H * n_W * n_C) * tf.square(a_C_unrolled - a_G_unrolled)
 
     return J_content
 
