@@ -132,10 +132,10 @@ def who_is_it(image_path, database, model):
 
     for (name, db_enc) in database.items():
 
-        dist = np.linalg.norm(encoding, db_enc)
+        dist = np.linalg.norm(encoding - db_enc)
 
         if dist < min_dist:
-            min_dist = dis
+            min_dist = dist
             identity = name
 
     if min_dist > 0.7:
