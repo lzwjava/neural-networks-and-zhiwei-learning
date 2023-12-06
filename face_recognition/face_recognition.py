@@ -123,3 +123,35 @@ distance, door_open_flag = verify("images/camera_0.jpg", "younes", database, FRm
 # assert np.isclose(distance, 0.5992949), "Distance not as expected"
 assert isinstance(door_open_flag, bool), "Door open flag should be a boolean"
 print("(", distance, ",", door_open_flag, ")")
+
+
+def who_is_it(image_path, database, model):
+    encoding = img_to_encoding(image_path, model)
+
+    min_dist = 100
+
+    for (name, db_enc) in database.items():
+
+        dist = np.linalg.norm(encoding, db_enc)
+
+        if dist < min_dist:
+            min_dist = dis
+            identity = name
+
+    if min_dist > 0.7:
+        print("Not in the database.")
+    else:
+        print("it's " + str(identity) + ", the distance is " + str(min_dist))
+
+    return min_dist, identity
+
+
+who_is_it("images/camera_0.jpg", database, FRmodel)
+
+test1 = who_is_it("images/camera_0.jpg", database, FRmodel)
+assert np.isclose(test1[0], 0.5992946)
+assert test1[1] == 'younes'
+
+test2 = who_is_it("images/younes.jpg", database, FRmodel)
+assert np.isclose(test2[0], 0.0)
+assert test2[1] == 'younes'
