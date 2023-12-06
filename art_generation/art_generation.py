@@ -210,9 +210,3 @@ ax = fig.add_subplot(1, 3, 3)
 imshow(generated_image[0])
 ax.title.set_text('Generated image')
 plt.show()
-
-get_ipython().run_cell_magic('javascript', '',
-                             'IPython.notebook.save_checkpoint();\nif (confirm("Clear memory?") == true)\n{\n    IPython.notebook.kernel.restart();\n}\n')
-
-get_ipython().run_cell_magic('javascript', '',
-                             'IPython.notebook.save_checkpoint();\nif (confirm("Clear memory?") == true)\n{\n    IPython.notebook.kernel.restart();\n}\n')
