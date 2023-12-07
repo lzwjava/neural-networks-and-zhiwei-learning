@@ -222,7 +222,7 @@ def rnn_cell_backward(da_next, cache):
     da_prev = np.dot(Waa.T, dtanh)
     dWaa = np.dot(dtanh, a_prev.T)
 
-    dba = np.sum(dtanh)
+    dba = np.sum(dtanh, axis=1)
 
     gradients = {"dxt": dxt, "da_prev": da_prev, "dWax": dWax, "dWaa": dWaa, "dba": dba}
 
@@ -247,6 +247,64 @@ print("gradients[\"dxt\"][1][2] =", gradients_tmp["dxt"][1][2])
 print("gradients[\"dxt\"].shape =", gradients_tmp["dxt"].shape)
 print("gradients[\"da_prev\"][2][3] =", gradients_tmp["da_prev"][2][3])
 print("gradients[\"da_prev\"].shape =", gradients_tmp["da_prev"].shape)
+print("gradients[\"dWax\"][3][1] =", gradients_tmp["dWax"][3][1])
+print("gradients[\"dWax\"].shape =", gradients_tmp["dWax"].shape)
+print("gradients[\"dWaa\"][1][2] =", gradients_tmp["dWaa"][1][2])
+print("gradients[\"dWaa\"].shape =", gradients_tmp["dWaa"].shape)
+print("gradients[\"dba\"][4] =", gradients_tmp["dba"][4])
+print("gradients[\"dba\"].shape =", gradients_tmp["dba"].shape)
+
+
+def rnn_backward(da, caches):
+    (caches, x) = caches
+    (a1, a0, x1, parameters) = caches[0]
+
+    n_a, m, T_x = da.shape
+    n_x, m = x1.shape
+
+    dx = None
+    dWax = None
+    dWaa = None
+    dba = None
+    da0 = None
+    da_prevt = None
+
+    for t in reversed(range(T_x)):
+        gradients = None
+
+        dxt, da_prevt, dWaxt, dWaat, dbat = gradients["dxt"], gradients["da_prev"], gradients["dWax"], gradients[
+            "dWaa"], gradients["dba"]
+
+        dx[:, :, t] = None
+        dWax += None
+        dWaa += None
+        dba += None
+
+    da0 = None
+
+    gradients = {"dx": dx, "da0": da0, "dWax": dWax, "dWaa": dWaa, "dba": dba}
+
+    return gradients
+
+
+np.random.seed(1)
+x_tmp = np.random.randn(3, 10, 4)
+a0_tmp = np.random.randn(5, 10)
+parameters_tmp = {}
+parameters_tmp['Wax'] = np.random.randn(5, 3)
+parameters_tmp['Waa'] = np.random.randn(5, 5)
+parameters_tmp['Wya'] = np.random.randn(2, 5)
+parameters_tmp['ba'] = np.random.randn(5, 1)
+parameters_tmp['by'] = np.random.randn(2, 1)
+
+a_tmp, y_tmp, caches_tmp = rnn_forward(x_tmp, a0_tmp, parameters_tmp)
+da_tmp = np.random.randn(5, 10, 4)
+gradients_tmp = rnn_backward(da_tmp, caches_tmp)
+
+print("gradients[\"dx\"][1][2] =", gradients_tmp["dx"][1][2])
+print("gradients[\"dx\"].shape =", gradients_tmp["dx"].shape)
+print("gradients[\"da0\"][2][3] =", gradients_tmp["da0"][2][3])
+print("gradients[\"da0\"].shape =", gradients_tmp["da0"].shape)
 print("gradients[\"dWax\"][3][1] =", gradients_tmp["dWax"][3][1])
 print("gradients[\"dWax\"].shape =", gradients_tmp["dWax"].shape)
 print("gradients[\"dWaa\"][1][2] =", gradients_tmp["dWaa"][1][2])
