@@ -219,8 +219,8 @@ def backward(z, f, i, g, C, o, h, v, outputs, targets, p=params):
               + np.dot(W_i.T, di)
               + np.dot(W_g.T, dg)
               + np.dot(W_o.T, do))
-        dh_prev = dz[:hidden_size, :]
-        dC_prev = f[t] * dC
+        dh_next = dz[:hidden_size, :]
+        dC_next = f[t] * dC
 
     grads = W_f_d, W_i_d, W_g_d, W_o_d, W_v_d, b_f_d, b_i_d, b_g_d, b_o_d, b_v_d
 
