@@ -262,11 +262,11 @@ def rnn_backward(da, caches):
     n_a, m, T_x = da.shape
     n_x, m = x1.shape
 
-    dx = None
-    dWax = None
-    dWaa = None
-    dba = None
-    da0 = None
+    dx = np.zeros((n_x, m, T_x))
+    dWax = np.zeros((n_a, n_x))
+    dWaa = np.zeros((n_a, n_a))
+    dba = np.zeros((n_a, 1))
+    da0 = np.zeros((n_a, m))
     da_prevt = None
 
     for t in reversed(range(T_x)):
