@@ -267,18 +267,18 @@ def rnn_backward(da, caches):
     dWaa = np.zeros((n_a, n_a))
     dba = np.zeros((n_a, 1))
     da0 = np.zeros((n_a, m))
-    da_prevt = None
+    da_prevt = da0
 
     for t in reversed(range(T_x)):
-        gradients = None
+        gradients = rnn_cell_backward(da_prevt, caches[t])
 
         dxt, da_prevt, dWaxt, dWaat, dbat = gradients["dxt"], gradients["da_prev"], gradients["dWax"], gradients[
             "dWaa"], gradients["dba"]
 
-        dx[:, :, t] = None
-        dWax += None
-        dWaa += None
-        dba += None
+        dx[:, :, t] = dxt
+        dWax += dWaxt
+        dWaa += dWaat
+        dba += dbat
 
     da0 = None
 
