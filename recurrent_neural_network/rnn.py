@@ -397,3 +397,89 @@ print("gradients[\"dbc\"][4] =", gradients_tmp["dbc"][4])
 print("gradients[\"dbc\"].shape =", gradients_tmp["dbc"].shape)
 print("gradients[\"dbo\"][4] =", gradients_tmp["dbo"][4])
 print("gradients[\"dbo\"].shape =", gradients_tmp["dbo"].shape)
+
+
+def lstm_backward(da, caches):
+    (caches, x) = caches
+    (a1, c1, a0, c0, f1, i1, cc1, o1, x1, parameters) = caches[0]
+
+    n_a, m, T_x = da.shape
+    n_x, m = x1.shape
+
+    dx = np.zeros((n_x, m, T_x))
+    da0 = np.zeros((n_a, m))
+    da_prevt = np.zeros((n_a, m))
+    dc_prevt = np.zeros((n_a, m))
+    dWf = np.zeros((n_a, n_a + n_x))
+    dWi = np.zeros((n_a, n_a + n_x))
+    dWc = np.zeros((n_a, n_a + n_x))
+    dWo = np.zeros((n_a, n_a + n_x))
+    dbf = np.zeros((n_a, 1))
+    dbi = np.zeros((n_a, 1))
+    dbc = np.zeros((n_a, 1))
+    dbo = np.zeros((n_a, 1))
+
+    for t in reversed(range(T_x)):
+        gradients = lstm_cell_backward(da[:, :, t] + da_prevt, dc_prevt, caches[t])
+
+        da_prevt = gradients['da_prev']
+        dc_prevt = gradients['dc_prev']
+        dx[:, :, t] = gradients['dxt']
+        dWf += gradients['dWf']
+        dWi += gradients['dWi']
+        dWc += gradients['dWc']
+        dWo += gradients['dWo']
+        dbf += gradients['dbf']
+        dbi += gradients['dbi']
+        dbc += gradients['dbc']
+        dbo += gradients['dbo']
+
+    da0 = da_prevt
+
+    gradients = {"dx": dx, "da0": da0, "dWf": dWf, "dbf": dbf, "dWi": dWi, "dbi": dbi,
+                 "dWc": dWc, "dbc": dbc, "dWo": dWo, "dbo": dbo}
+
+    return gradients
+
+
+np.random.seed(1)
+x_tmp = np.random.randn(3, 10, 7)
+a0_tmp = np.random.randn(5, 10)
+
+parameters_tmp = {}
+parameters_tmp['Wf'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bf'] = np.random.randn(5, 1)
+parameters_tmp['Wi'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bi'] = np.random.randn(5, 1)
+parameters_tmp['Wo'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bo'] = np.random.randn(5, 1)
+parameters_tmp['Wc'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bc'] = np.random.randn(5, 1)
+parameters_tmp['Wy'] = np.zeros((2, 5))
+parameters_tmp['by'] = np.zeros((2, 1))
+
+a_tmp, y_tmp, c_tmp, caches_tmp = lstm_forward(x_tmp, a0_tmp, parameters_tmp)
+
+da_tmp = np.random.randn(5, 10, 4)
+gradients_tmp = lstm_backward(da_tmp, caches_tmp)
+
+print("gradients[\"dx\"][1][2] =", gradients_tmp["dx"][1][2])
+print("gradients[\"dx\"].shape =", gradients_tmp["dx"].shape)
+print("gradients[\"da0\"][2][3] =", gradients_tmp["da0"][2][3])
+print("gradients[\"da0\"].shape =", gradients_tmp["da0"].shape)
+print("gradients[\"dWf\"][3][1] =", gradients_tmp["dWf"][3][1])
+print("gradients[\"dWf\"].shape =", gradients_tmp["dWf"].shape)
+print("gradients[\"dWi\"][1][2] =", gradients_tmp["dWi"][1][2])
+print("gradients[\"dWi\"].shape =", gradients_tmp["dWi"].shape)
+print("gradients[\"dWc\"][3][1] =", gradients_tmp["dWc"][3][1])
+print("gradients[\"dWc\"].shape =", gradients_tmp["dWc"].shape)
+print("gradients[\"dWo\"][1][2] =", gradients_tmp["dWo"][1][2])
+print("gradients[\"dWo\"].shape =", gradients_tmp["dWo"].shape)
+print("gradients[\"dbf\"][4] =", gradients_tmp["dbf"][4])
+print("gradients[\"dbf\"].shape =", gradients_tmp["dbf"].shape)
+print("gradients[\"dbi\"][4] =", gradients_tmp["dbi"][4])
+print("gradients[\"dbi\"].shape =", gradients_tmp["dbi"].shape)
+print("gradients[\"dbc\"][4] =", gradients_tmp["dbc"][4])
+print("gradients[\"dbc\"].shape =", gradients_tmp["dbc"].shape)
+print("gradients[\"dbo\"][4] =", gradients_tmp["dbo"][4])
+print("gradients[\"dbo\"].shape =", gradients_tmp["dbo"].shape)
