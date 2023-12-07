@@ -150,12 +150,12 @@ def lstm_forward(x, a0, parameters):
 
     Wy = parameters['Wy']
 
-    n_x, m, T_x = None
-    n_y, n_a = None
+    n_x, m, T_x = x.shape
+    n_y, n_a = Wy.shape
 
-    a = None
-    c = None
-    y = None
+    a = np.zeros((n_a, m, T_x))
+    c = np.zeros((n_a, m, T_x))
+    y = np.zeros((n_y, m, T_x))
 
     a_next = None
     c_next = None
