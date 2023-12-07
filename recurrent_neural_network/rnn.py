@@ -315,26 +315,37 @@ print("gradients[\"dba\"].shape =", gradients_tmp["dba"].shape)
 def lstm_cell_backward(da_next, dc_next, cache):
     (a_next, c_next, a_prev, c_prev, ft, it, cct, ot, xt, parameters) = cache
 
-    n_x, m = None
-    n_a, m = None
+    n_x, m = xt.shape
+    n_a, m = a_next.shape
 
-    dot = None
-    dcct = None
-    dit = None
-    dft = None
+    dot = da_next * np.tanh(c_next) * ot * (1 - ot)
+    dcct = (dc_next * it + ot * (1 - np.square(np.tanh(c_next))) * it * da_next) * (
+            1 - np.square(cct))
+    dit = (dc_next * cct + ot * (1 - np.square(np.tanh(c_next))) * cct * da_next) * it * (
+            1 - it)
+    dft = (dc_next * c_prev + ot * (1 - np.square(np.tanh(c_next))) * c_prev * da_next) * ft * (
+            1 - ft)
 
-    dWf = None
-    dWi = None
-    dWc = None
-    dWo = None
-    dbf = None
-    dbi = None
-    dbc = None
-    dbo = None
+    concat = np.concatenate((a_prev, xt), axis=0)
 
-    da_prev = None
-    dc_prev = None
-    dxt = None
+    dWf = np.dot(dft, concat.T)
+    dWi = np.dot(dit, concat.T)
+    dWc = np.dot(dcct, concat.T)
+    dWo = np.dot(dot, concat.T)
+    dbf = np.sum(dft, axis=1, keepdims=True)
+    dbi = np.sum(dit, axis=1, keepdims=True)
+    dbc = np.sum(dcct, axis=1, keepdims=True)
+    dbo = np.sum(dot, axis=1, keepdims=True)
+
+    da_prev = np.dot(parameters["Wf"][:, :n_a].T, dft) + \
+              np.dot(parameters["Wi"][:, :n_a].T, dit) + \
+              np.dot(parameters["Wc"][:, :n_a].T, dcct) + \
+              np.dot(parameters["Wo"][:, :n_a].T, dot)
+    dc_prev = dc_next * ft + ot * (1 - np.square(np.tanh(c_next))) * ft * da_next
+    dxt = np.dot(parameters["Wf"][:, n_a:].T, dft) + \
+          np.dot(parameters["Wi"][:, n_a:].T, dit) + \
+          np.dot(parameters["Wc"][:, n_a:].T, dcct) + \
+          np.dot(parameters["Wo"][:, n_a:].T, dot)
 
     gradients = {"dxt": dxt, "da_prev": da_prev, "dc_prev": dc_prev, "dWf": dWf, "dbf": dbf, "dWi": dWi, "dbi": dbi,
                  "dWc": dWc, "dbc": dbc, "dWo": dWo, "dbo": dbo}
@@ -344,6 +355,7 @@ def lstm_cell_backward(da_next, dc_next, cache):
 
 np.random.seed(1)
 xt_tmp = np.random.randn(3, 10)
+
 a_prev_tmp = np.random.randn(5, 10)
 c_prev_tmp = np.random.randn(5, 10)
 parameters_tmp = {}
