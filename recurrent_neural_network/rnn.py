@@ -148,8 +148,7 @@ lstm_cell_forward_test(lstm_cell_forward)
 def lstm_forward(x, a0, parameters):
     caches = []
 
-    Wy = parameters[
-        'Wy']
+    Wy = parameters['Wy']
 
     n_x, m, T_x = None
     n_y, n_a = None
