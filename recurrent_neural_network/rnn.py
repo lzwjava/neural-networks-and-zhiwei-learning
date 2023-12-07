@@ -310,3 +310,78 @@ print("gradients[\"dWaa\"][1][2] =", gradients_tmp["dWaa"][1][2])
 print("gradients[\"dWaa\"].shape =", gradients_tmp["dWaa"].shape)
 print("gradients[\"dba\"][4] =", gradients_tmp["dba"][4])
 print("gradients[\"dba\"].shape =", gradients_tmp["dba"].shape)
+
+
+def lstm_cell_backward(da_next, dc_next, cache):
+    (a_next, c_next, a_prev, c_prev, ft, it, cct, ot, xt, parameters) = cache
+
+    n_x, m = None
+    n_a, m = None
+
+    dot = None
+    dcct = None
+    dit = None
+    dft = None
+
+    dWf = None
+    dWi = None
+    dWc = None
+    dWo = None
+    dbf = None
+    dbi = None
+    dbc = None
+    dbo = None
+
+    da_prev = None
+    dc_prev = None
+    dxt = None
+
+    gradients = {"dxt": dxt, "da_prev": da_prev, "dc_prev": dc_prev, "dWf": dWf, "dbf": dbf, "dWi": dWi, "dbi": dbi,
+                 "dWc": dWc, "dbc": dbc, "dWo": dWo, "dbo": dbo}
+
+    return gradients
+
+
+np.random.seed(1)
+xt_tmp = np.random.randn(3, 10)
+a_prev_tmp = np.random.randn(5, 10)
+c_prev_tmp = np.random.randn(5, 10)
+parameters_tmp = {}
+parameters_tmp['Wf'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bf'] = np.random.randn(5, 1)
+parameters_tmp['Wi'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bi'] = np.random.randn(5, 1)
+parameters_tmp['Wo'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bo'] = np.random.randn(5, 1)
+parameters_tmp['Wc'] = np.random.randn(5, 5 + 3)
+parameters_tmp['bc'] = np.random.randn(5, 1)
+parameters_tmp['Wy'] = np.random.randn(2, 5)
+parameters_tmp['by'] = np.random.randn(2, 1)
+
+a_next_tmp, c_next_tmp, yt_tmp, cache_tmp = lstm_cell_forward(xt_tmp, a_prev_tmp, c_prev_tmp, parameters_tmp)
+
+da_next_tmp = np.random.randn(5, 10)
+dc_next_tmp = np.random.randn(5, 10)
+gradients_tmp = lstm_cell_backward(da_next_tmp, dc_next_tmp, cache_tmp)
+print("gradients[\"dxt\"][1][2] =", gradients_tmp["dxt"][1][2])
+print("gradients[\"dxt\"].shape =", gradients_tmp["dxt"].shape)
+print("gradients[\"da_prev\"][2][3] =", gradients_tmp["da_prev"][2][3])
+print("gradients[\"da_prev\"].shape =", gradients_tmp["da_prev"].shape)
+print("gradients[\"dc_prev\"][2][3] =", gradients_tmp["dc_prev"][2][3])
+print("gradients[\"dc_prev\"].shape =", gradients_tmp["dc_prev"].shape)
+print("gradients[\"dWf\"][3][1] =", gradients_tmp["dWf"][3][1])
+print("gradients[\"dWf\"].shape =", gradients_tmp["dWf"].shape)
+print("gradients[\"dWi\"][1][2] =", gradients_tmp["dWi"][1][2])
+print("gradients[\"dWi\"].shape =", gradients_tmp["dWi"].shape)
+print("gradients[\"dWc\"][3][1] =", gradients_tmp["dWc"][3][1])
+print("gradients[\"dWc\"].shape =", gradients_tmp["dWc"].shape)
+print("gradients[\"dWo\"][1][2] =", gradients_tmp["dWo"][1][2])
+print("gradients[\"dWo\"].shape =", gradients_tmp["dWo"].shape)
+print("gradients[\"dbf\"][4] =", gradients_tmp["dbf"][4])
+print("gradients[\"dbf\"].shape =", gradients_tmp["dbf"].shape)
+print("gradients[\"dbi\"][4] =", gradients_tmp["dbi"][4])
+print("gradients[\"dbi\"].shape =", gradients_tmp["dbi"].shape)
+print("gradients[\"dbc\"][4] =", gradients_tmp["dbc"][4])
+print("gradients[\"dbc\"].shape =", gradients_tmp["dbc"].shape)
+print("gradients[\"dbo\"][4] =", gradients_tmp["dbo"][4])
+print("gradients[\"dbo\"].shape =", gradients_tmp["dbo"].shape)
