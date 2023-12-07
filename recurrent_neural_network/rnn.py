@@ -157,21 +157,21 @@ def lstm_forward(x, a0, parameters):
     c = np.zeros((n_a, m, T_x))
     y = np.zeros((n_y, m, T_x))
 
-    a_next = None
-    c_next = None
+    a_next = a0
+    c_next = x[0]
 
     for t in range(T_x):
         xt = x[:, :, t]
 
-        a_next, c_next, yt, cache = None
+        a_next, c_next, yt, cache = lstm_cell_forward(xt, a_next, c_next, parameters)
 
-        a[:, :, t] = None
+        a[:, :, t] = a_next
 
-        c[:, :, t] = None
+        c[:, :, t] = c_next
 
-        y[:, :, t] = None
+        y[:, :, t] = yt
 
-        None
+        caches.append(cache)
 
     caches = (caches, x)
 
