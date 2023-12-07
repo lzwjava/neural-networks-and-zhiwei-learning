@@ -214,15 +214,15 @@ def rnn_cell_backward(da_next, cache):
     ba = parameters["ba"]
     by = parameters["by"]
 
-    dtanh = None
+    dtanh = da_next * (1 - np.square(np.tanh(np.dot(Wax, xt) + np.dot(Waa, a_prev) + ba)))
 
-    dxt = None
-    dWax = None
+    dxt = np.dot(Wax.T, dtanh)
+    dWax = np.dot(dtanh, xt.T)
 
-    da_prev = None
-    dWaa = None
+    da_prev = np.dot(Waa.T, dtanh)
+    dWaa = np.dot(dtanh, a_prev.T)
 
-    dba = None
+    dba = np.sum(dtanh)
 
     gradients = {"dxt": dxt, "da_prev": da_prev, "dWax": dWax, "dWaa": dWaa, "dba": dba}
 
