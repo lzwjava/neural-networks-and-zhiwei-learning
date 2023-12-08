@@ -78,7 +78,7 @@ def sentence_to_avg_test(target):
 sentence_to_avg_test(sentence_to_avg)
 
 
-def model(X, Y, word_to_vec_map, learning_rate=0.01, num_iterations=400):
+def model(X, Y, word_to_vec_map, learning_rate=0.01, num_iterations=100):
     any_word = list(word_to_vec_map.keys())[0]
 
     m = Y.shape[0]
@@ -169,4 +169,3 @@ print('           ' + label_to_emoji(0) + '    ' + label_to_emoji(1) + '    ' + 
     2) + '    ' + label_to_emoji(3) + '   ' + label_to_emoji(4))
 print(pd.crosstab(Y_test, pred_test.reshape(56, ), rownames=['Actual'], colnames=['Predicted'], margins=True))
 plot_confusion_matrix(Y_test, pred_test)
-
