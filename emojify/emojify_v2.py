@@ -26,24 +26,32 @@ for idx, val in enumerate(["I", "like", "learning"]):
 
 word_to_index, index_to_word, word_to_vec_map = read_glove_vecs('data/glove.6B.50d.txt')
 
+import numpy as np
+
 
 def sentences_to_indices(X, word_to_index, max_len):
-    m = X.shape[0]
 
-    X_indices = None
+    m = X.shape[0]  
 
-    for i in range(m):
+    
+    X_indices = np.zeros((m, max_len))
 
-        sentence_words = None
+    for i in range(m):  
 
-        j = None
+        
+        sentence_words = X[i].lower().split()
 
-        for w in None:
+        
+        j = 0
 
-            if w in None:
-                X_indices[i, j] = None
-
-                j = None
+        
+        for w in sentence_words:
+            
+            if w in word_to_index:
+                
+                X_indices[i, j] = word_to_index[w]
+                
+                j += 1
 
     return X_indices
 
@@ -77,19 +85,30 @@ print("X1_indices =\n", X1_indices)
 
 
 def pretrained_embedding_layer(word_to_vec_map, word_to_index):
-    vocab_size = len(word_to_index) + 1
-    any_word = list(word_to_vec_map.keys())[0]
-    emb_dim = word_to_vec_map[any_word].shape[0]
 
-    emb_matrix = None
+    vocab_size = len(word_to_index) + 1  
+    emb_dim = word_to_vec_map[next(iter(word_to_vec_map))].shape[0]  
 
+    
+    emb_matrix = np.zeros((vocab_size, emb_dim))
+
+    
     for word, idx in word_to_index.items():
-        emb_matrix[idx, :] = None
+        if word in word_to_vec_map:
+            emb_matrix[idx, :] = word_to_vec_map[word]
 
-    embedding_layer = None
+    
+    embedding_layer = Embedding(
+        input_dim=vocab_size,  
+        output_dim=emb_dim,  
+        trainable=False,  
+        input_length=None  
+    )
 
+    
     embedding_layer.build((None,))
 
+    
     embedding_layer.set_weights([emb_matrix])
 
     return embedding_layer
@@ -130,25 +149,34 @@ print("Output_dim", embedding_layer.output_dim)
 
 
 def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
-    sentence_indices = None
 
-    embedding_layer = None
+    
+    
+    sentence_indices = Input(shape=input_shape, dtype='int32')
 
-    embeddings = None
+    
+    embedding_layer = pretrained_embedding_layer(word_to_vec_map, word_to_index)
 
-    X = None
+    
+    
+    embeddings = embedding_layer(sentence_indices)
 
-    X = None
+    
+    
+    X = LSTM(128, return_sequences=True)(embeddings)
+    
+    X = Dropout(0.5)(X)
+    
+    
+    X = LSTM(128, return_sequences=False)(X)
+    
+    X = Dropout(0.5)(X)
+    
+    X = Dense(5)(X)
+    
+    X = Activation('softmax')(X)
 
-    X = None
-
-    X = None
-
-    X = None
-
-    X = None
-
-    model = None
+    model = Model(inputs=sentence_indices, outputs=X)
 
     return model
 
@@ -167,7 +195,7 @@ def Emojify_V2_test(target):
 
     word_to_index = {}
     for idx, val in enumerate(list(word_to_vec_map.keys())):
-        word_to_index[val] = idx;
+        word_to_index[val] = idx
 
     maxLen = 4
     model = target((maxLen,), word_to_vec_map, word_to_index)
