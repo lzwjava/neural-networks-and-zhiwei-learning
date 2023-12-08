@@ -90,7 +90,7 @@ post_activation_LSTM_cell = LSTM(n_s, return_state=True)
 output_layer = Dense(len(machine_vocab), activation=softmax)
 
 
-def model(Tx, Ty, n_a, n_s, human_vocab_size, machine_vocab_size):
+def modelf(Tx, Ty, n_a, n_s, human_vocab_size, machine_vocab_size):
     X = Input(shape=(Tx, human_vocab_size))
     s0 = Input(shape=(n_s,), name='s0')
     c0 = Input(shape=(n_s,), name='c0')
@@ -148,9 +148,9 @@ def modelf_test(target):
     comparator(summary(model), expected_summary)
 
 
-modelf_test(model)
+modelf_test(modelf)
 
-model = model(Tx, Ty, n_a, n_s, len(human_vocab), len(machine_vocab))
+model = modelf(Tx, Ty, n_a, n_s, len(human_vocab), len(machine_vocab))
 
 model.summary()
 
