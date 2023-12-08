@@ -83,34 +83,30 @@ def sample(parameters, char_to_ix, seed):
     vocab_size = by.shape[0]
     n_a = Waa.shape[1]
 
-    x = None
-
-    a_prev = None
+    x = np.zeros((vocab_size, 1))
+    a_prev = np.zeros((n_a, 1))
 
     indices = []
 
-    idx = None
+    idx = -1
 
     counter = 0
     newline_character = char_to_ix['\n']
 
     while (idx != newline_character and counter != 50):
-        a = None
-        z = None
-        y = None
+        a = np.tanh(np.dot(Wax, x) + np.dot(Waa, a_prev) + b)
+        z = np.dot(Wya, a) + by
+        y = softmax(z)
 
-        np.random.seed(counter + seed)
-
-        idx = None
+        idx = np.random.choice(range(vocab_size), p=y.ravel())
 
         indices.append(idx)
 
-        x = None
-        x[idx] = None
+        x = np.zeros((vocab_size, 1))
+        x[idx] = 1
 
-        a_prev = None
+        a_prev = a
 
-        seed += 1
         counter += 1
 
     if (counter == 50):
