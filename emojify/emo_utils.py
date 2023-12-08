@@ -1,10 +1,9 @@
 import csv
 import numpy as np
-import emoji
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
-
+import emoji
 
 def read_glove_vecs(glove_file):
     with open(glove_file, 'r') as f:
@@ -65,7 +64,7 @@ def label_to_emoji(label):
     """
     Converts a label (int or string) into the corresponding emoji code (string) ready to be printed
     """
-    return emoji.emojize(emoji_dictionary[str(label)], use_aliases=True)
+    return emoji.emojize(emoji_dictionary[str(label)])
 
 
 def print_predictions(X, pred):

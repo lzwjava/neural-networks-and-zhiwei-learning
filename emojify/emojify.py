@@ -4,8 +4,6 @@ import emoji
 import matplotlib.pyplot as plt
 from test_utils import *
 
-get_ipython().run_line_magic('matplotlib', 'inline')
-
 X_train, Y_train = read_csv('data/train_emoji.csv')
 X_test, Y_test = read_csv('data/tesss.csv')
 
