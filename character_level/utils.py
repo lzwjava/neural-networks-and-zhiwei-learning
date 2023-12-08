@@ -84,7 +84,7 @@ def rnn_forward(X, Y, a0, parameters, vocab_size=27):
     for t in range(len(X)):
 
         x[t] = np.zeros((vocab_size, 1))
-        if (X[t] != None):
+        if X[t] != None:
             x[t][X[t]] = 1
 
         a[t], y_hat[t] = rnn_step_forward(parameters, a[t - 1], x[t])
