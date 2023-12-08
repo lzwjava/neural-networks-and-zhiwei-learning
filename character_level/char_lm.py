@@ -210,7 +210,7 @@ def model(data_x, ix_to_char, char_to_ix, num_iterations=35000, n_a=50, dino_nam
         X = [None] + single_example_ix
 
         ix_newline = char_to_ix['\n']
-        Y = np.roll(X, shift=-1, axis=0)  # Roll along axis 0 (rows)
+        Y = np.roll(X, shift=-1, axis=0)
         Y[-1] = ix_newline
 
         curr_loss, gradients, a_prev = optimize(parameters, X, Y, a_prev)
