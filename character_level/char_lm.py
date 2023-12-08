@@ -184,35 +184,44 @@ def optimize_test(target):
 optimize_test(optimize)
 
 
-def model(data, ix_to_char, char_to_ix, num_iterations=35000, n_a=50, dino_names=7, vocab_size=27):
+def model(data_x, ix_to_char, char_to_ix, num_iterations=35000, n_a=50, dino_names=7, vocab_size=27, verbose=False):
     n_x, n_y = vocab_size, vocab_size
 
     parameters = initialize_parameters(n_a, n_x, n_y)
 
     loss = get_initial_loss(vocab_size, dino_names)
 
-    with open("dinos.txt") as f:
-        examples = f.readlines()
-    examples = [x.lower().strip() for x in examples]
+    examples = [x.strip() for x in data_x]
 
     np.random.seed(0)
     np.random.shuffle(examples)
 
     a_prev = np.zeros((n_a, 1))
 
+    last_dino_name = "abc"
+
     for j in range(num_iterations):
 
-        idx = j % len(examples)
+        idx = np.random.randint(0, len(examples))
 
-        single_example = idx
-        single_example_chars = [c for c in examples[single_example]]
+        single_example = examples[idx]
+        single_example_chars = list(single_example)
         single_example_ix = [char_to_ix[c] for c in single_example_chars]
         X = [None] + single_example_ix
 
-        ix_newline = [char_to_ix["\n"]]
-        Y = X[1:] + ix_newline
+        ix_newline = char_to_ix['\n']
+        Y = np.roll(X, shift=-1, axis=1)
+        Y[:, -1] = ix_newline
 
-        curr_loss, gradients, a_prev = optimize(X, Y, a_prev, parameters)
+        curr_loss, gradients, a_prev = optimize(parameters, X, Y, a_prev)
+
+        if verbose and j in [0, len(examples) - 1, len(examples)]:
+            print("j = ", j, "idx = ", idx, )
+        if verbose and j in [0]:
+            print("single_example =", single_example)
+            print("single_example_chars", single_example_chars)
+            print("single_example_ix", single_example_ix)
+            print(" X = ", X, "\n", "Y =       ", Y, "\n")
 
         loss = smooth(loss, curr_loss)
 
@@ -223,13 +232,14 @@ def model(data, ix_to_char, char_to_ix, num_iterations=35000, n_a=50, dino_names
             seed = 0
             for name in range(dino_names):
                 sampled_indices = sample(parameters, char_to_ix, seed)
-                print_sample(sampled_indices, ix_to_char)
+                last_dino_name = get_sample(sampled_indices, ix_to_char)
+                print(last_dino_name.replace('\n', ''))
 
                 seed += 1
 
             print('\n')
 
-    return parameters
+    return parameters, last_dino_name
 
 
 parameters, last_name = model(data.split("\n"), ix_to_char, char_to_ix, 22001, verbose=True)
