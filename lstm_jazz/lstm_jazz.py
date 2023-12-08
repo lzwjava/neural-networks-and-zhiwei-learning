@@ -44,18 +44,18 @@ def djmodel(Tx, LSTM_cell, densor, reshaper):
     a = a0
     c = c0
 
-    outputs = None
+    outputs = []
 
-    for t in range(None):
-        x = None
+    for t in range(Tx):
+        x = X[:, t, :]
 
-        x = None
+        x = reshaper(x)
 
-        _, a, c = None
+        a, _, c = LSTM_cell(inputs=[x, a, c])
 
-        out = None
+        out = densor(a)
 
-        None
+        outputs.append(out)
 
     model = Model(inputs=[X, a0, c0], outputs=outputs)
 
@@ -97,21 +97,21 @@ def music_inference_model(LSTM_cell, densor, Ty=100):
     c = c0
     x = x0
 
-    outputs = None
+    outputs = []
 
-    for t in range(None):
-        _, a, c = None
+    for t in range(Ty):
+        a, _, c = LSTM_cell(x, initial_state=[a, c])
 
-        out = None
+        out = densor(a)
 
-        outputs.append(None)
+        outputs.append(out)
 
-        x = None
-        x = None
+        x = tf.math.argmax(out, 1)
+        x = tf.one_hot(x, 90)
 
-        x = None
+        x = RepeatVector(1)(x)
 
-    inference_model = None
+    inference_model = Model(inputs=[x0, a0, c0], outputs=outputs)
 
     return inference_model
 
@@ -132,11 +132,11 @@ def predict_and_sample(inference_model, x_initializer=x_initializer, a_initializ
                        c_initializer=c_initializer):
     n_values = x_initializer.shape[2]
 
-    pred = inference_model.predict([None, None, None])
+    pred = inference_model.predict([x_initializer, a_initializer, c_initializer])
 
-    indices = None
+    indices = np.argmax(np.array(pred), axis=-1)
 
-    results = to_categorical(None, num_classes=None)
+    results = to_categorical(indices, num_classes=n_values)
 
     return results, indices
 
