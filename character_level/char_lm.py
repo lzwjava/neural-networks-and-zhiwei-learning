@@ -140,13 +140,13 @@ sample_test(sample)
 
 
 def optimize(X, Y, a_prev, parameters, learning_rate=0.01):
-    loss, cache = None
+    loss, cache = rnn_forward(X, Y, a_prev, parameters)
 
-    gradients, a = None
+    gradients, a = rnn_backward(X, Y, parameters, cache)
 
-    gradients = None
+    gradients = clip(gradients, 5)
 
-    parameters = None
+    parameters = update_parameters(parameters, gradients, learning_rate)
 
     return loss, gradients, a[len(X) - 1]
 
@@ -184,43 +184,35 @@ def optimize_test(target):
 optimize_test(optimize)
 
 
-def model(data_x, ix_to_char, char_to_ix, num_iterations=35000, n_a=50, dino_names=7, vocab_size=27, verbose=False):
+def model(data, ix_to_char, char_to_ix, num_iterations=35000, n_a=50, dino_names=7, vocab_size=27):
     n_x, n_y = vocab_size, vocab_size
 
     parameters = initialize_parameters(n_a, n_x, n_y)
 
     loss = get_initial_loss(vocab_size, dino_names)
 
-    examples = [x.strip() for x in data_x]
+    with open("dinos.txt") as f:
+        examples = f.readlines()
+    examples = [x.lower().strip() for x in examples]
 
     np.random.seed(0)
     np.random.shuffle(examples)
 
     a_prev = np.zeros((n_a, 1))
 
-    last_dino_name = "abc"
-
     for j in range(num_iterations):
 
-        idx = None
+        idx = j % len(examples)
 
-        single_example = None
-        single_example_chars = None
-        single_example_ix = None
-        X = None
+        single_example = idx
+        single_example_chars = [c for c in examples[single_example]]
+        single_example_ix = [char_to_ix[c] for c in single_example_chars]
+        X = [None] + single_example_ix
 
-        ix_newline = None
-        Y = None
+        ix_newline = [char_to_ix["\n"]]
+        Y = X[1:] + ix_newline
 
-        curr_loss, gradients, a_prev = None
-
-        if verbose and j in [0, len(examples) - 1, len(examples)]:
-            print("j = ", j, "idx = ", idx, )
-        if verbose and j in [0]:
-            print("single_example =", single_example)
-            print("single_example_chars", single_example_chars)
-            print("single_example_ix", single_example_ix)
-            print(" X = ", X, "\n", "Y =       ", Y, "\n")
+        curr_loss, gradients, a_prev = optimize(X, Y, a_prev, parameters)
 
         loss = smooth(loss, curr_loss)
 
@@ -231,14 +223,13 @@ def model(data_x, ix_to_char, char_to_ix, num_iterations=35000, n_a=50, dino_nam
             seed = 0
             for name in range(dino_names):
                 sampled_indices = sample(parameters, char_to_ix, seed)
-                last_dino_name = get_sample(sampled_indices, ix_to_char)
-                print(last_dino_name.replace('\n', ''))
+                print_sample(sampled_indices, ix_to_char)
 
                 seed += 1
 
             print('\n')
 
-    return parameters, last_dino_name
+    return parameters
 
 
 parameters, last_name = model(data.split("\n"), ix_to_char, char_to_ix, 22001, verbose=True)
