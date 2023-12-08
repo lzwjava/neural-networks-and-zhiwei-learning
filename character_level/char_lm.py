@@ -86,7 +86,7 @@ def sample(parameters, char_to_ix, seed):
     x = None
 
     a_prev = None
-    
+
     indices = []
 
     idx = None
