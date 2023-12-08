@@ -51,7 +51,7 @@ def sentences_to_indices(X, word_to_index, max_len):
 def sentences_to_indices_test(target):
     word_to_index = {}
     for idx, val in enumerate(["i", "like", "learning", "deep", "machine", "love", "smile", '´0.=']):
-        word_to_index[val] = idx + 1;
+        word_to_index[val] = idx + 1
 
     max_len = 4
     sentences = np.array(["I like deep learning", "deep ´0.= love machine", "machine learning smile", "$"]);
