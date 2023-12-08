@@ -84,6 +84,7 @@ def sample(parameters, char_to_ix, seed):
     n_a = Waa.shape[1]
 
     x = np.zeros((vocab_size, 1))
+
     a_prev = np.zeros((n_a, 1))
 
     indices = []
@@ -98,7 +99,9 @@ def sample(parameters, char_to_ix, seed):
         z = np.dot(Wya, a) + by
         y = softmax(z)
 
-        idx = np.random.choice(range(vocab_size), p=y.ravel())
+        np.random.seed(counter + seed)
+
+        idx = np.random.choice(list(range(vocab_size)), p=y.ravel())
 
         indices.append(idx)
 
@@ -107,6 +110,7 @@ def sample(parameters, char_to_ix, seed):
 
         a_prev = a
 
+        seed += 1
         counter += 1
 
     if (counter == 50):
