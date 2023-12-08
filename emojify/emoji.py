@@ -32,21 +32,21 @@ print("the", str(idx) + "th word in the vocabulary is", index_to_word[idx])
 def sentence_to_avg(sentence, word_to_vec_map):
     any_word = list(word_to_vec_map.keys())[0]
 
-    words = None
+    words = sentence.lower().split(' ')
 
-    avg = None
+    avg = np.zeros(word_to_vec_map[any_word].shape)
 
-    count = None
+    count = 0
 
-    for w in None:
+    for w in words:
 
-        if w in None:
-            avg += None
+        if w in word_to_vec_map.keys():
+            avg += word_to_vec_map[w]
 
             count += 1
 
     if count > 0:
-        avg = None
+        avg = avg / count
 
     return avg
 
