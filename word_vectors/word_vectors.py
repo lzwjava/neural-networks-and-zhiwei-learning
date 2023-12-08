@@ -142,11 +142,11 @@ g_unit = word_to_vec_map_unit_vectors['woman'] - word_to_vec_map_unit_vectors['m
 
 
 def neutralize(word, g, word_to_vec_map):
-    e = None
+    e = word_to_vec_map[word]
 
-    e_biascomponent = None
+    e_biascomponent = (np.dot(e, g) / np.linalg.norm(g) ** 2) * g
 
-    e_debiased = None
+    e_debiased = e - e_biascomponent
 
     return e_debiased
 
@@ -160,22 +160,22 @@ print("cosine similarity between " + word + " and g_unit, after neutralizing: ",
 
 
 def equalize(pair, bias_axis, word_to_vec_map):
-    w1, w2 = None
-    e_w1, e_w2 = None
+    w1, w2 = pair
+    e_w1, e_w2 = word_to_vec_map[w1], word_to_vec_map[w2]
 
-    mu = None
+    mu = (e_w1 + e_w2) / 2.0
 
-    mu_B = None
-    mu_orth = None
+    mu_B = np.dot(mu, bias_axis) / np.linalg.norm(bias_axis) ** 2 * bias_axis
+    mu_orth = mu - mu_B
 
-    e_w1B = None
-    e_w2B = None
+    e_w1B = np.dot(e_w1, bias_axis) / np.linalg.norm(bias_axis) ** 2 * bias_axis
+    e_w2B = np.dot(e_w2, bias_axis) / np.linalg.norm(bias_axis) ** 2 * bias_axis
 
-    corrected_e_w1B = None
-    corrected_e_w2B = None
+    corrected_e_w1B = np.sqrt(1 - np.linalg.norm(mu_orth) ** 2) * (e_w1B - mu_B) / np.linalg.norm(e_w1 - mu_orth - mu_B)
+    corrected_e_w2B = np.sqrt(1 - np.linalg.norm(mu_orth) ** 2) * (e_w2B - mu_B) / np.linalg.norm(e_w2 - mu_orth - mu_B)
 
-    e1 = None
-    e2 = None
+    e1 = mu_orth + corrected_e_w1B
+    e2 = mu_orth + corrected_e_w2B
 
     return e1, e2
 
