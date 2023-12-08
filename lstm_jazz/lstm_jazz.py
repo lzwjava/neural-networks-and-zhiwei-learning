@@ -150,6 +150,3 @@ print("list(indices[12:18]) =", list(indices[12:18]))
 out_stream = generate_music(inference_model, indices_values, chords)
 
 mid2wav('output/my_music.midi')
-IPython.display.Audio('./output/rendered.wav')
-
-IPython.display.Audio('./data/30s_trained_model.wav')
