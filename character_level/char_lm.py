@@ -35,8 +35,8 @@ def clip(gradients, maxValue):
     dWaa, dWax, dWya, db, dby = gradients['dWaa'], gradients['dWax'], gradients['dWya'], gradients['db'], gradients[
         'dby']
 
-    for gradient in None:
-        np.clip(None, None, None, out=None)
+    for gradient in [dWax, dWaa, dWya, db, dby]:
+        np.clip(gradient, -maxValue, maxValue, out=None)
 
     gradients = {"dWaa": dWaa, "dWax": dWax, "dWya": dWya, "db": db, "dby": dby}
 
