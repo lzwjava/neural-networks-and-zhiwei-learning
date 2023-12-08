@@ -97,12 +97,12 @@ def model(X, Y, word_to_vec_map, learning_rate=0.01, num_iterations=400):
         db = 0
 
         for i in range(m):
-            avg = None
+            avg = sentence_to_avg(X[i], word_to_vec_map)
 
-            z = None
-            a = None
+            z = np.dot(W, avg) + b
+            a = softmax(z)
 
-            cost += None
+            cost += - np.sum(Y_oh, np.log(a))
 
             dz = a - Y_oh[i]
             dW += np.dot(dz.reshape(n_y, 1), avg.reshape(1, n_h))
