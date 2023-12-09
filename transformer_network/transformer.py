@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.layers import Embedding, MultiHeadAttention, Dense, Input, Dropout, LayerNormalization
 from transformers import DistilBertTokenizerFast
 from transformers import TFDistilBertForTokenClassification
+from public_tests import *
 
 
 def get_angles(pos, k, d):
@@ -15,8 +16,6 @@ def get_angles(pos, k, d):
 
     return angles
 
-
-from public_tests import *
 
 get_angles_test(get_angles)
 
