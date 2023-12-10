@@ -222,7 +222,6 @@ DecoderLayer_test(DecoderLayer, create_look_ahead_mask)
 
 
 class Decoder(tf.keras.layers.Layer):
-
     def __init__(self, num_layers, embedding_dim, num_heads, fully_connected_dim, target_vocab_size,
                  maximum_position_encoding, dropout_rate=0.1, layernorm_eps=1e-6):
         super(Decoder, self).__init__()
@@ -246,20 +245,19 @@ class Decoder(tf.keras.layers.Layer):
         seq_len = tf.shape(x)[1]
         attention_weights = {}
 
-        x = None
+        x = self.embedding(x)
 
-        x *= None
+        x *= tf.math.sqrt(tf.cast(self.embedding_dim, tf.float32))
 
-        x += None
+        x += self.pos_encoding[:, :seq_len, :]
 
-        x = None
+        x = self.dropout(x, training=training)
 
         for i in range(self.num_layers):
-            x, block1, block2 = self.dec_layers[i](None, None, None,
-                                                   None, None)
+            x, block1, block2 = self.dec_layers[i](x, enc_output, training, look_ahead_mask, padding_mask)
 
-            attention_weights['decoder_layer{}_block1_self_att'.format(i + 1)] = None
-            attention_weights['decoder_layer{}_block2_decenc_att'.format(i + 1)] = None
+            attention_weights['decoder_layer{}_block1_self_att'.format(i + 1)] = block1
+            attention_weights['decoder_layer{}_block2_decenc_att'.format(i + 1)] = block2
 
         return x, attention_weights
 
