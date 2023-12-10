@@ -293,11 +293,13 @@ class Transformer(tf.keras.Model):
         self.final_layer = Dense(target_vocab_size, activation='softmax')
 
     def call(self, input_sentence, output_sentence, training, enc_padding_mask, look_ahead_mask, dec_padding_mask):
-        enc_output = None
+        enc_output = self.encoder(input_sentence, training,
+                                  enc_padding_mask)
 
-        dec_output, attention_weights = self.decoder(None, None, None, None, None)
+        dec_output, attention_weights = self.decoder(output_sentence, enc_output, training, look_ahead_mask,
+                                                     dec_padding_mask)
 
-        final_output = None
+        final_output = self.final_layer(dec_output)
 
         return final_output, attention_weights
 
