@@ -76,6 +76,9 @@ x = tf.random.uniform((1, 3))
 temp = create_look_ahead_mask(x.shape[1])
 print(temp)
 
+import numpy as np
+import tensorflow as tf
+
 
 def scaled_dot_product_attention(q, k, v, mask):
     matmul_qk = tf.matmul(q, k, transpose_b=True)
@@ -93,6 +96,8 @@ def scaled_dot_product_attention(q, k, v, mask):
 
     return output, attention_weights
 
+
+scaled_dot_product_attention_test(scaled_dot_product_attention)
 
 scaled_dot_product_attention_test(scaled_dot_product_attention)
 
