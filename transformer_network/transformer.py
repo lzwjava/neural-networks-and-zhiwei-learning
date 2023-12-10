@@ -51,7 +51,6 @@ plt.xlabel('d')
 plt.xlim((0, 512))
 plt.ylabel('Position')
 plt.colorbar()
-plt.show()
 
 
 def create_padding_mask(decoder_token_ids):
@@ -76,9 +75,6 @@ x = tf.random.uniform((1, 3))
 temp = create_look_ahead_mask(x.shape[1])
 print(temp)
 
-import numpy as np
-import tensorflow as tf
-
 
 def scaled_dot_product_attention(q, k, v, mask):
     matmul_qk = tf.matmul(q, k, transpose_b=True)
@@ -88,7 +84,7 @@ def scaled_dot_product_attention(q, k, v, mask):
     scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
 
     if mask is not None:
-        scaled_attention_logits += (mask * -1e9)
+        scaled_attention_logits += ((1. - mask) * -1e9)
 
     attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
 
@@ -96,8 +92,6 @@ def scaled_dot_product_attention(q, k, v, mask):
 
     return output, attention_weights
 
-
-scaled_dot_product_attention_test(scaled_dot_product_attention)
 
 scaled_dot_product_attention_test(scaled_dot_product_attention)
 
@@ -110,7 +104,6 @@ def FullyConnected(embedding_dim, fully_connected_dim):
 
 
 class EncoderLayer(tf.keras.layers.Layer):
-
     def __init__(self, embedding_dim, num_heads, fully_connected_dim,
                  dropout_rate=0.1, layernorm_eps=1e-6):
         super(EncoderLayer, self).__init__()
@@ -128,15 +121,15 @@ class EncoderLayer(tf.keras.layers.Layer):
         self.dropout_ffn = Dropout(dropout_rate)
 
     def call(self, x, training, mask):
-        self_mha_output = None
+        self_mha_output = self.mha(x, x, x, mask)
 
-        skip_x_attention = None
+        skip_x_attention = self.layernorm1(x + self_mha_output)
 
-        ffn_output = None
+        ffn_output = self.ffn(skip_x_attention)
 
-        ffn_output = None
+        ffn_output = self.dropout_ffn(ffn_output, training=training)
 
-        encoder_layer_out = None
+        encoder_layer_out = self.layernorm2(skip_x_attention + ffn_output)
 
         return encoder_layer_out
 
