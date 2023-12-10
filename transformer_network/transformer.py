@@ -10,9 +10,9 @@ from public_tests import *
 
 
 def get_angles(pos, k, d):
-    i = None
+    i = k // 2
 
-    angles = None
+    angles = pos / (10000 ** (2 * i / d))
 
     return angles
 
@@ -27,13 +27,13 @@ get_angles(pos_m, dims, d_model)
 
 
 def positional_encoding(positions, d):
-    angle_rads = get_angles(None,
-                            None,
-                            None)
+    angle_rads = get_angles(np.arange(positions)[:, np.newaxis],
+                            np.arange(d)[np.newaxis, :],
+                            d)
 
-    angle_rads[:, 0::2] = None
+    angle_rads[:, 0::2] = np.sin(angle_rads[:, 0::2])
 
-    angle_rads[:, 1::2] = None
+    angle_rads[:, 1::2] = np.cos(angle_rads[:, 1::2])
 
     pos_encoding = angle_rads[np.newaxis, ...]
 
@@ -74,7 +74,7 @@ def create_look_ahead_mask(sequence_length):
 
 x = tf.random.uniform((1, 3))
 temp = create_look_ahead_mask(x.shape[1])
-temp
+print(temp)
 
 
 def scaled_dot_product_attention(q, k, v, mask):
