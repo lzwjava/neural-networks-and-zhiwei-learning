@@ -179,7 +179,6 @@ Encoder_test(Encoder)
 
 
 class DecoderLayer(tf.keras.layers.Layer):
-
     def __init__(self, embedding_dim, num_heads, fully_connected_dim, dropout_rate=0.1, layernorm_eps=1e-6):
         super(DecoderLayer, self).__init__()
 
@@ -201,21 +200,20 @@ class DecoderLayer(tf.keras.layers.Layer):
         self.dropout_ffn = Dropout(dropout_rate)
 
     def call(self, x, enc_output, training, look_ahead_mask, padding_mask):
-        mult_attn_out1, attn_weights_block1 = self.mha1(None, None, None, None,
+        mult_attn_out1, attn_weights_block1 = self.mha1(x, x, x, look_ahead_mask, return_attention_scores=True)
+
+        out1 = self.layernorm1(x + mult_attn_out1)
+
+        mult_attn_out2, attn_weights_block2 = self.mha2(out1, enc_output, enc_output, padding_mask,
                                                         return_attention_scores=True)
 
-        Q1 = None
+        out2 = self.layernorm2(out1 + mult_attn_out2)
 
-        mult_attn_out2, attn_weights_block2 = self.mha2(None, None, None, None,
-                                                        return_attention_scores=True)
+        ffn_output = self.ffn(out2)
 
-        mult_attn_out2 = None
+        ffn_output = self.dropout_ffn(ffn_output, training=training)
 
-        ffn_output = None
-
-        ffn_output = None
-
-        out3 = None
+        out3 = self.layernorm3(out2 + ffn_output)
 
         return out3, attn_weights_block1, attn_weights_block2
 
