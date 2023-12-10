@@ -138,7 +138,6 @@ EncoderLayer_test(EncoderLayer)
 
 
 class Encoder(tf.keras.layers.Layer):
-
     def __init__(self, num_layers, embedding_dim, num_heads, fully_connected_dim, input_vocab_size,
                  maximum_position_encoding, dropout_rate=0.1, layernorm_eps=1e-6):
         super(Encoder, self).__init__()
@@ -162,16 +161,16 @@ class Encoder(tf.keras.layers.Layer):
     def call(self, x, training, mask):
         seq_len = tf.shape(x)[1]
 
-        x = None
+        x = self.embedding(x)
 
-        x *= None
+        x *= tf.math.sqrt(tf.cast(self.embedding_dim, tf.float32))
 
-        x += None
+        x += self.pos_encoding[:, :seq_len, :]
 
-        x = None
+        x = self.dropout(x, training=training)
 
         for i in range(self.num_layers):
-            x = None
+            x = self.enc_layers[i](x, training, mask)
 
         return x
 
