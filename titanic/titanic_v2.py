@@ -1,10 +1,10 @@
-import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import TensorDataset, DataLoader
+from sklearn.model_selection import train_test_split
+from pandas import DataFrame
 
 
 class Net(nn.Module):
@@ -24,30 +24,42 @@ class Net(nn.Module):
         return x
 
 
-def train(X, y):
-    model = Net()
+def train(model, train_loader: DataLoader):
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    X = torch.tensor(X.values, dtype=torch.float32)
-    y = torch.tensor(y.values, dtype=torch.float32).view(-1, 1)
-
-    epochs = 1000
-
-    for epoch in range(epochs):
-
+    for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
 
-        outputs = model(X)
+        outputs = model(data)
 
-        loss = criterion(outputs, y)
+        loss = criterion(outputs, target)
 
         loss.backward()
 
         optimizer.step()
 
-        if (epoch + 1) % 100 == 0:
-            print(f'Epoch [{epoch + 1}/{epochs}], Loss: {loss.item()}')
+        if (batch_idx + 1) % 10 == 0:
+            print(f'batch {batch_idx + 1}, Loss: {loss.item()}')
+
+
+def test(model: Net, test_loader: DataLoader):
+    model.eval()
+
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            output = model(data)
+            correct += output.eq(target.view_as(output)).sum().item()
+
+
+def cal(X_test_2: DataFrame, model: Net):
+    pred1 = model(X_test_2)
+
+    output = pd.DataFrame({'PassengerId': X_test_2.PassengerId, 'Survived': pred1})
+    output.to_csv('submission.csv', index=False)
+
+    print('submitted')
 
 
 def main():
@@ -66,31 +78,27 @@ def main():
     test_data['Fare'].fillna(0, inplace=True)
 
     X = pd.get_dummies(train_data[features])
+    X_test_2 = pd.get_dummies(test_data[features])
     print(X)
 
-    X_test = pd.get_dummies(test_data[features])
+    X = torch.tensor(X.values, dtype=torch.float32)
+    y = torch.tensor(y.values, dtype=torch.float32).view(-1, 1)
 
-    model = RandomForestClassifier(n_estimators=100, max_depth=15, random_state=10)
-    model.fit(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=42)
 
-    predictions1 = model.predict(X)
+    batch_size = 32
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-    m = len(y)
+    model = Net()
+    train(model, train_loader)
 
-    count = 0
+    test_dataset = TensorDataset(X_test, y_test)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-    for i in range(m):
-        if y[i] == predictions1[i]:
-            count += 1
+    test(model, test_loader)
 
-    print(f'rate={count / m}')
-
-    predictions = model.predict(X_test)
-
-    output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': predictions})
-    output.to_csv('submission.csv', index=False)
-
-    print('submitted')
+    cal(X_test_2, model)
 
 
 if __name__ == '__main__':
