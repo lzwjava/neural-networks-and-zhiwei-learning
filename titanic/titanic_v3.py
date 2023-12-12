@@ -82,8 +82,8 @@ app.layout = html.Div([
     html.H4('Analysis of Iris data using scatter matrix'),
     dcc.Dropdown(
         id="dropdown",
-        options=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
-        value=['sepal_length', 'sepal_width'],
+        options=[],
+        value=[],
         multi=True
     ),
     dcc.Graph(id="graph"),
@@ -94,11 +94,29 @@ app.layout = html.Div([
     Output("graph", "figure"),
     Input("dropdown", "value"))
 def update_bar_chart(dims):
+    # df = pd.read_csv('./train.csv')
+    # fig = px.scatter_3d(df, x='PassengerId', y='Sex', z='Age', color='Age')
+
     df = pd.read_csv('./train.csv')
-    fig = px.scatter_3d(df, x='PassengerId', y='Sex', z='Age',
-                        color='Age')
+
+    for template in ["plotly"]:
+        fig = px.scatter(df,
+                         x="PassengerId", y="Age", color="Survived",
+                         log_x=True, size_max=20,
+                         template=template, title="Which Age Survived?")
 
     return fig
 
 
-app.run_server(debug=True)
+# app.run_server(debug=True)
+
+sns.barplot(x='Pclass', y='Survived', data=train_data)
+
+plt.rc('xtick', labelsize=14)
+plt.rc('ytick', labelsize=14)
+
+plt.figure()
+fig = train_data.groupby('Survived')['Pclass'].plot.hist(histtype='bar', alpha=0.8)
+plt.legend(('Died', 'Survived'), fontsize=12)
+plt.xlabel('Pclass', fontsize=18)
+plt.show()
