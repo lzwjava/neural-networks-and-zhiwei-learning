@@ -51,9 +51,9 @@ for dataset in data:
     mean = train_data["Age"].mean()
     std = test_data["Age"].std()
     is_null = dataset["Age"].isnull().sum()
-    # compute random numbers between the mean, std and is_null
+
     rand_age = np.random.randint(mean - std, mean + std, size=is_null)
-    # fill NaN values in Age column with random values generated
+
     age_slice = dataset["Age"].copy()
     age_slice[np.isnan(age_slice)] = rand_age
     dataset["Age"] = age_slice
@@ -75,9 +75,6 @@ ax = sns.distplot(men[men['Survived'] == 0].Age.dropna(), bins=40, label=not_sur
                   color="red")
 ax.legend()
 _ = ax.set_title('Male')
-
-# plt.show()
-
 
 app = Dash(__name__)
 
