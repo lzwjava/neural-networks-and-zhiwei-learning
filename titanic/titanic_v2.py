@@ -11,18 +11,16 @@ class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(8, 20)
-        self.fc2 = nn.Linear(20, 1)
-        self.dropout = nn.Dropout(0.25)
+        hidden_unit = 10
+        self.fc1 = nn.Linear(7, hidden_unit)
+        self.fc2 = nn.Linear(hidden_unit, 1)
         self.sigmoid = nn.Sigmoid()
         self.tanh = nn.Tanh()
-        self.flatten = nn.Flatten()
 
     def forward(self, x):
-        x = self.flatten(x, 1)
-        x = self.tanh(x)
+        x = torch.flatten(x, 1)
+        x = torch.relu(x)
         x = self.fc1(x)
-        x = self.dropout(x)
         x = self.fc2(x)
         x = self.sigmoid(x)
         return x
@@ -95,7 +93,7 @@ def main():
     print(train_data.head())
 
     y = train_data['Survived']
-    features = ['Age', 'Pclass', 'Sex', 'SibSp', 'Parch', 'Fare', 'Embarked']
+    features = ['Age', 'Pclass', 'Sex', 'SibSp', 'Parch', 'Fare']
 
     train_data['Age'].fillna(0, inplace=True)
     test_data['Age'].fillna(0, inplace=True)
@@ -103,9 +101,12 @@ def main():
     train_data['Fare'].fillna(0, inplace=True)
     test_data['Fare'].fillna(0, inplace=True)
 
-    embarked_mapping = {'S': 0, 'C': 1, 'Q': 2}
-    train_data['Embarked'] = train_data['Embarked'].map(embarked_mapping)
-    test_data['Embarked'] = test_data['Embarked'].map(embarked_mapping)
+    # train_data['Embarked'].fillna(0, inplace=True)
+    # test_data['Embarked'].fillna(0, inplace=True)
+
+    # embarked_mapping = {'S': 1, 'C': 2, 'Q': 3}
+    # train_data['Embarked'] = train_data['Embarked'].map(embarked_mapping)
+    # test_data['Embarked'] = test_data['Embarked'].map(embarked_mapping)
 
     X = pd.get_dummies(train_data[features])
 
