@@ -26,9 +26,10 @@ class Net(nn.Module):
         return x
 
 
-def train(model, train_loader: DataLoader):
+def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
+    model.train()
+
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
@@ -99,7 +100,13 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     model = Net()
-    train(model, train_loader)
+
+    epochs = 10
+
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    for i in range(epochs):
+        train(model, optimizer, train_loader)
 
     test_dataset = TensorDataset(X_test, y_test)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)

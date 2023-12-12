@@ -38,7 +38,7 @@ class Net(nn.Module):
 
 
 def train(model, train_loader, optimizer):
-    model.train()
+    model.train(,
     for batch_idx, (data, target) in enumerate(train_loader):
         if (batch_idx > 10000):
             break
