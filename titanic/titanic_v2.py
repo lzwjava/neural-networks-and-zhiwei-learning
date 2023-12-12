@@ -11,14 +11,16 @@ class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(7, 30)
-        self.fc2 = nn.Linear(30, 1)
+        self.fc1 = nn.Linear(8, 20)
+        self.fc2 = nn.Linear(20, 1)
         self.dropout = nn.Dropout(0.25)
         self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
+        self.flatten = nn.Flatten()
 
     def forward(self, x):
-        x = torch.flatten(x, 1)
-        x = torch.tanh(x)
+        x = self.flatten(x, 1)
+        x = self.tanh(x)
         x = self.fc1(x)
         x = self.dropout(x)
         x = self.fc2(x)
@@ -93,13 +95,17 @@ def main():
     print(train_data.head())
 
     y = train_data['Survived']
-    features = ['Age', 'Pclass', 'Sex', 'SibSp', 'Parch', 'Fare']
+    features = ['Age', 'Pclass', 'Sex', 'SibSp', 'Parch', 'Fare', 'Embarked']
 
     train_data['Age'].fillna(0, inplace=True)
     test_data['Age'].fillna(0, inplace=True)
 
     train_data['Fare'].fillna(0, inplace=True)
     test_data['Fare'].fillna(0, inplace=True)
+
+    embarked_mapping = {'S': 0, 'C': 1, 'Q': 2}
+    train_data['Embarked'] = train_data['Embarked'].map(embarked_mapping)
+    test_data['Embarked'] = test_data['Embarked'].map(embarked_mapping)
 
     X = pd.get_dummies(train_data[features])
 
@@ -110,7 +116,7 @@ def main():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=42)
 
-    batch_size = 32
+    batch_size = 30
     train_dataset = TensorDataset(X_train, y_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
@@ -118,7 +124,7 @@ def main():
 
     epochs = 100
 
-    optimizer = optim.Adam(model.parameters(), lr=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     for i in range(epochs):
         train(model, optimizer, train_loader)
