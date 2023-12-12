@@ -29,7 +29,7 @@ class Net(nn.Module):
 def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
     model.train()
 
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.MSELoss()
 
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
@@ -50,10 +50,17 @@ def test(model: Net, test_loader: DataLoader):
     model.eval()
 
     correct = 0
+    total = 0
     with torch.no_grad():
         for data, target in test_loader:
             output = model(data)
-            correct += output.eq(target.view_as(output)).sum().item()
+
+            output_tensor = torch.where(output >= 0.5, torch.tensor(1.0), torch.tensor(0.0))
+
+            correct += output_tensor.eq(target.view_as(output_tensor)).sum().item()
+            total += len(data)
+
+    print(f'test correct rate: {correct / total}')
 
 
 def cal(test_data: DataFrame, features, model: Net):
@@ -61,11 +68,19 @@ def cal(test_data: DataFrame, features, model: Net):
 
     X_test_vec = torch.tensor(X_test_2.values, dtype=torch.float32)
 
-    pred1 = model(X_test_vec)
+    pred = model(X_test_vec)
 
-    pred1 = pred1.view(-1)
+    pred = pred.view(-1)
 
-    output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': pred1.detach().numpy()})
+    pred = pred.detach().numpy()
+
+    new_pred = []
+
+    for i in range(len(pred)):
+        v = 1 if pred[i] >= 0.5 else 0
+        new_pred.append(v)
+
+    output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': new_pred})
     output.to_csv('submission.csv', index=False)
 
     print('submitted')
@@ -101,9 +116,9 @@ def main():
 
     model = Net()
 
-    epochs = 10
+    epochs = 100
 
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.1)
 
     for i in range(epochs):
         train(model, optimizer, train_loader)
