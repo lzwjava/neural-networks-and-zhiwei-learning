@@ -11,9 +11,10 @@ class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(6, 30)
+        self.fc1 = nn.Linear(7, 30)
         self.fc2 = nn.Linear(30, 1)
         self.dropout = nn.Dropout(0.25)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x = torch.flatten(x, 1)
@@ -21,6 +22,7 @@ class Net(nn.Module):
         x = self.fc1(x)
         x = self.dropout(x)
         x = self.fc2(x)
+        x = self.sigmoid(x)
         return x
 
 
@@ -53,10 +55,16 @@ def test(model: Net, test_loader: DataLoader):
             correct += output.eq(target.view_as(output)).sum().item()
 
 
-def cal(X_test_2: DataFrame, model: Net):
-    pred1 = model(X_test_2)
+def cal(test_data: DataFrame, features, model: Net):
+    X_test_2 = pd.get_dummies(test_data[features])
 
-    output = pd.DataFrame({'PassengerId': X_test_2.PassengerId, 'Survived': pred1})
+    X_test_vec = torch.tensor(X_test_2.values, dtype=torch.float32)
+
+    pred1 = model(X_test_vec)
+
+    pred1 = pred1.view(-1)
+
+    output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': pred1.detach().numpy()})
     output.to_csv('submission.csv', index=False)
 
     print('submitted')
@@ -78,7 +86,7 @@ def main():
     test_data['Fare'].fillna(0, inplace=True)
 
     X = pd.get_dummies(train_data[features])
-    X_test_2 = pd.get_dummies(test_data[features])
+
     print(X)
 
     X = torch.tensor(X.values, dtype=torch.float32)
@@ -98,7 +106,7 @@ def main():
 
     test(model, test_loader)
 
-    cal(X_test_2, model)
+    cal(test_data, features, model)
 
 
 if __name__ == '__main__':
