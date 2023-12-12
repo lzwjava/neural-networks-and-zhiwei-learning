@@ -74,7 +74,7 @@ ax = sns.distplot(men[men['Survived'] == 1].Age.dropna(), bins=18, label=survive
 ax = sns.distplot(men[men['Survived'] == 0].Age.dropna(), bins=40, label=not_survived, ax=axes[1], kde=False,
                   color="red")
 ax.legend()
-_ = ax.set_title('Male');
+_ = ax.set_title('Male')
 
 # plt.show()
 
