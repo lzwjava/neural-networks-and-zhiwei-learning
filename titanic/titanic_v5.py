@@ -27,8 +27,8 @@ def divide_df(all_data):
     return all_data.loc[:890], all_data.loc[891:].drop(['Survived'], axis=1)
 
 
-df_train = pd.read_csv('../input/train.csv')
-df_test = pd.read_csv('../input/test.csv')
+df_train = pd.read_csv('./train.csv')
+df_test = pd.read_csv('./test.csv')
 df_all = concat_df(df_train, df_test)
 
 df_train.name = 'Training Set'
@@ -576,7 +576,7 @@ single_best_model = RandomForestClassifier(criterion='gini',
                                            max_depth=5,
                                            min_samples_split=4,
                                            min_samples_leaf=5,
-                                           max_features='auto',
+                                           # max_features='auto',
                                            oob_score=True,
                                            random_state=SEED,
                                            n_jobs=-1,
@@ -587,7 +587,7 @@ leaderboard_model = RandomForestClassifier(criterion='gini',
                                            max_depth=7,
                                            min_samples_split=6,
                                            min_samples_leaf=6,
-                                           max_features='auto',
+                                           # max_features='auto',
                                            oob_score=True,
                                            random_state=SEED,
                                            n_jobs=-1,
