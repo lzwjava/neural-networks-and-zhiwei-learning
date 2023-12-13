@@ -7,11 +7,21 @@ import pandas as pd
 class Network(object):
 
     def __init__(self, sizes):
-        pass
+        self.layers = len(sizes)
+        self.sizes = sizes
+        self.weights = [np.random.rand(sizes[i + 1], sizes[i]) for i in range(self.layers - 1)]
+        self.bias = [np.random.rand(sizes[i + 1]) for i in range(self.layers - 1)]
+        print('hi')
 
-    def SGD(self, training_data, epochs, mini_batch_size, eta,
-            test_data=None):
-        pass
+    def SGD(self, training_data: zip, epochs: int, mini_batch_size: int, eta: float,
+            val_data: zip):
+        for (training_input, training_result) in training_data:
+            print_shape(training_input)
+            print_shape(training_result)
+            self.feedforward(training_input)
+
+
+            exit()
 
     def update_mini_batch(self, mini_batch, eta):
         pass
@@ -25,8 +35,12 @@ class Network(object):
     def evalute(self, test_data):
         pass
 
-    def feedforward(self, a):
-        pass
+    def feedforward(self, a: np.ndarray):
+        v = a
+        for i in range(self.layers - 1):
+            z = np.dot(v, self.weights[i]) + self.bias[i]
+            v = sigmoid(z)
+        return v
 
 
 def sigmoid(z):
@@ -42,7 +56,7 @@ def sigmoid_prime(z):
     return sigmoid(z) * (1 - sigmoid(z))
 
 
-def read_training_data() -> zip:
+def read_training_data() -> tuple:
     df = pd.read_csv('./train.csv')
     # print(df.head())
 
@@ -50,11 +64,22 @@ def read_training_data() -> zip:
     pixels = df.drop('label', axis=1).values
     pixels = pixels / 255.0
 
-    training_inputs = [np.reshape(x, (784, 1)) for x in pixels]
-    training_results = [vectorized_result(y) for y in labels]
+    n = len(labels)
+
+    inputs = [np.reshape(x, (784, 1)) for x in pixels]
+    results = [vectorized_result(y) for y in labels]
+
+    middle = int(n * 0.9)
+
+    training_inputs = inputs[:middle]
+    training_results = results[:middle]
+
+    val_inputs = inputs[middle:]
+    val_results = inputs[middle:]
 
     training_data = zip(training_inputs, training_results)
-    return training_data
+    val_data = zip(val_inputs, val_results)
+    return training_data, val_data
 
 
 def read_test_input() -> list:
@@ -81,12 +106,14 @@ def draw(some_digit):
 
 
 def main():
-    training_data = read_training_data()
+    training_data, val_data = read_training_data()
     test_input = read_test_input()
+
+    network = Network([784, 30, 10])
+    network.SGD(training_data, epochs=100, mini_batch_size=10, eta=1e-5, val_data=val_data)
 
     # print(training_data)
     # print(test_input[0])
-    pass
 
 
 if __name__ == '__main__':
