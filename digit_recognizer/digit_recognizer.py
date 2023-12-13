@@ -1,8 +1,45 @@
-import pandas
-import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+
+
+class Network(object):
+
+    def __init__(self, sizes):
+        pass
+
+    def SGD(self, training_data, epochs, mini_batch_size, eta,
+            test_data=None):
+        pass
+
+    def update_mini_batch(self, mini_batch, eta):
+        pass
+
+    def backprop(self, x, y):
+        pass
+
+    def cost_derivative(self, output_activations, y):
+        pass
+
+    def evalute(self, test_data):
+        pass
+
+    def feedforward(self, a):
+        pass
+
+
+def sigmoid(z):
+    return 1.0 / (1.0 + np.exp(-z))
+
+
+def print_shape(array):
+    arr = np.array(array)
+    print(arr.shape)
+
+
+def sigmoid_prime(z):
+    return sigmoid(z) * (1 - sigmoid(z))
 
 
 def read_training_data() -> zip:
