@@ -34,7 +34,7 @@ class Network(object):
     def evalute(self, test_data):
         pass
 
-    def feedforward(self, a: np.ndarray):
+    def feedforward(self, a: np.ndarray):  # (784,1)
         z = a
         for i in range(self.layers - 1):
             for j in range(self.sizes[i + 1]):
