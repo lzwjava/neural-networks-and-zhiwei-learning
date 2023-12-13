@@ -76,3 +76,6 @@ df_all['Age'] = df_all.groupby(['Sex', 'Pclass'])['Age'].apply(lambda x: x.filln
 print(df_all[df_all['Embarked'].isnull()])
 
 print(df_all[df_all['Fare'].isnull()])
+
+med_fare = df_all.groupby(['Pclass', 'Parch', 'SibSp']).Fare.median()[3][0][0]
+df_all['Fare'] = df_all['Fare'].fillna(med_fare)
