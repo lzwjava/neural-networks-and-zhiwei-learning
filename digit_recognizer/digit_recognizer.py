@@ -20,7 +20,6 @@ class Network(object):
             print_shape(training_result)
             self.feedforward(training_input)
 
-
             exit()
 
     def update_mini_batch(self, mini_batch, eta):
@@ -36,11 +35,12 @@ class Network(object):
         pass
 
     def feedforward(self, a: np.ndarray):
-        v = a
+        z = a
         for i in range(self.layers - 1):
-            z = np.dot(v, self.weights[i]) + self.bias[i]
-            v = sigmoid(z)
-        return v
+            for j in range(self.sizes[i + 1]):
+                z[j] = np.dot(z[j], self.weights[i][j]) + self.bias[i][j]
+                z[j] = sigmoid(z[j])
+        return z
 
 
 def sigmoid(z):
