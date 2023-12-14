@@ -1,4 +1,5 @@
 import math
+import random
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -84,7 +85,7 @@ class Network(object):
         return output_activations - y
 
     def evalute(self, test_data):
-        test_results = [(np.argmax(self.feedforward(x)), y)
+        test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
                         for (x, y) in test_data]
         return sum(int(x == y) for (x, y) in test_results)
 
@@ -115,18 +116,22 @@ def read_training_data() -> tuple:
     pixels = df.drop('label', axis=1).values
     pixels = pixels / 255.0
 
+    shuffle_list = list(zip(pixels, labels))
+    random.shuffle(shuffle_list)
+    pixels, labels = zip(*shuffle_list)
+
     n = len(labels)
 
     inputs = [np.reshape(x, (784, 1)) for x in pixels]
     results = [vectorized_result(y) for y in labels]
 
-    middle = int(n * 0.9)
+    middle = int(n * 0.98)
 
     training_inputs = inputs[:middle]
     training_results = results[:middle]
 
     val_inputs = inputs[middle:]
-    val_results = inputs[middle:]
+    val_results = results[middle:]
 
     training_data = zip(training_inputs, training_results)
     val_data = zip(val_inputs, val_results)
@@ -161,7 +166,7 @@ def main():
     test_input = read_test_input()
 
     network = Network([784, 30, 10])
-    network.SGD(training_data, epochs=1, mini_batch_size=10, eta=1e-5, val_data=val_data)
+    network.SGD(training_data, epochs=100, mini_batch_size=100, eta=1e-1, val_data=val_data)
 
     # print(training_data)
     # print(test_input[0])
