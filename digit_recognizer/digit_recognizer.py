@@ -1,3 +1,5 @@
+import math
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,20 +12,30 @@ class Network(object):
         self.layers = len(sizes)
         self.sizes = sizes
         self.weights = [np.random.rand(sizes[i + 1], sizes[i]) for i in range(self.layers - 1)]
-        self.bias = [np.random.rand(sizes[i + 1]) for i in range(self.layers - 1)]
+        self.biases = [np.random.rand(sizes[i + 1]) for i in range(self.layers - 1)]
         print('hi')
 
     def SGD(self, training_data: zip, epochs: int, mini_batch_size: int, eta: float,
             val_data: zip):
-        for (training_input, training_result) in training_data:
-            print_shape(training_input)
-            print_shape(training_result)
-            self.feedforward(training_input)
 
-            exit()
+        training_data = list(training_data)
+
+        n = len(training_data)
+
+        num_batches = math.ceil(n / mini_batch_size)
+
+        for j in range(epochs):
+            for k in range(num_batches):
+                start_idx = k * mini_batch_size
+                end_idx = (k + 1) * mini_batch_size
+
+                mini_batches = training_data[start_idx:end_idx]
+                for mini_batch in mini_batches:
+                    self.update_mini_batch(mini_batch, eta)
 
     def update_mini_batch(self, mini_batch, eta):
-        pass
+        for (x, y) in mini_batch:
+            self.backprop(x, y)
 
     def backprop(self, x, y):
         pass
@@ -34,13 +46,10 @@ class Network(object):
     def evalute(self, test_data):
         pass
 
-    def feedforward(self, a: np.ndarray):  # (784,1)
-        z = a
-        for i in range(self.layers - 1):
-            for j in range(self.sizes[i + 1]):
-                z[j] = np.dot(z[j], self.weights[i][j]) + self.bias[i][j]
-                z[j] = sigmoid(z[j])
-        return z
+    def feedforward(self, a):
+        for w, b in zip(self.weights, self.biases):
+            a = sigmoid(np.dot(w, a) + b)
+        return a
 
 
 def sigmoid(z):
