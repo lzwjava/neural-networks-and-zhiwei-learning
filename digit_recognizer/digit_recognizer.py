@@ -23,15 +23,34 @@ class Network(object):
 
         num_batches = math.ceil(n / mini_batch_size)
 
+        if val_data:
+            val_data = list(val_data)
+            n_val = len(val_data)
+
         for j in range(epochs):
             mini_batches = [training_data[k * mini_batch_size:(k + 1) * mini_batch_size] for k in range(num_batches)]
 
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
 
+            if val_data:
+                print("Epoch {}: {}/{}".format(j, self.evalute(val_data), n_val))
+            else:
+                print("Epoch {} complete".format(j))
+
     def update_mini_batch(self, mini_batch, eta):
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        nabla_b = [np.zeros(b.shape) for b in self.biases]
+
         for (x, y) in mini_batch:
-            self.backprop(x, y)
+            delta_nabla_w, delta_nabla_b = self.backprop(x, y)
+            nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+            nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+
+        n = len(mini_batch)
+
+        self.weights = [w - nw / n * eta for w, nw in zip(self.weights, nabla_w)]
+        self.biases = [b - nb / n * eta for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y) -> tuple:
         nabla_w = [np.zeros(w.shape) for w in self.weights]
@@ -59,13 +78,15 @@ class Network(object):
             nabla_b[-l] = delta
             nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
 
-        return nabla_b, nabla_w
+        return nabla_w, nabla_b
 
     def cost_derivative(self, output_activations, y):
         return output_activations - y
 
     def evalute(self, test_data):
-        pass
+        test_results = [(np.argmax(self.feedforward(x)), y)
+                        for (x, y) in test_data]
+        return sum(int(x == y) for (x, y) in test_results)
 
     def feedforward(self, a):
         for w, b in zip(self.weights, self.biases):
