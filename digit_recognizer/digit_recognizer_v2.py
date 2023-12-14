@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
+import torch.optim as optim
 
 
 class Net(nn.Module):
@@ -24,17 +26,19 @@ class Net(nn.Module):
         return x
 
 
-def sigmoid(z):
-    return 1.0 / (1.0 + np.exp(-z))
+def train(model: Net, train_loader: DataLoader, optimizer: optim.Optimizer):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data = data.to(get_device())
+        target = target.to(get_device())
 
-
-def print_shape(array):
-    arr = np.array(array)
-    print(arr.shape)
-
-
-def sigmoid_prime(z):
-    return sigmoid(z) * (1 - sigmoid(z))
+        optimizer.zero_grad()
+        output = model(data)
+        loss = nn.CrossEntropyLoss()
+        loss = loss(output, target)
+        loss.backward()
+        optimizer.step()
+        # print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
 
 
 def read_training_data() -> tuple:
@@ -44,10 +48,6 @@ def read_training_data() -> tuple:
     labels = df['label'].values
     pixels = df.drop('label', axis=1).values
     pixels = pixels / 255.0
-
-    shuffle_list = list(zip(pixels, labels))
-    random.shuffle(shuffle_list)
-    pixels, labels = zip(*shuffle_list)
 
     n = len(labels)
 
@@ -62,8 +62,14 @@ def read_training_data() -> tuple:
     val_inputs = inputs[middle:]
     val_results = results[middle:]
 
-    training_data = zip(training_inputs, training_results)
-    val_data = zip(val_inputs, val_results)
+    training_inputs = torch.Tensor(np.array(training_inputs))
+    training_results = torch.Tensor(np.array(training_results))
+    training_data = DataLoader(list(zip(training_inputs, training_results)), batch_size=10, shuffle=True)
+
+    val_inputs = torch.Tensor(val_inputs)
+    val_results = torch.Tensor(val_results)
+    val_data = DataLoader(list(zip(val_inputs, val_results)), batch_size=10, shuffle=True)
+
     return training_data, val_data
 
 
@@ -76,7 +82,7 @@ def read_test_input() -> list:
 
 
 def vectorized_result(j):
-    e = np.zeros((10, 1))
+    e = np.zeros(10)
     e[j] = 1.0
     return e
 
@@ -98,15 +104,47 @@ def submit(test_output):
     output.to_csv('submission.csv', index=False)
 
 
+def get_device():
+    if torch.cuda.is_available():
+        return torch.device('cuda')
+    else:
+        return torch.device('cpu')
+
+
+def test(model, val_loader):
+    model.eval()
+    correct = 0
+    with torch.no_grad():
+        for data, target in val_loader:
+            data = data.to(get_device())
+            target = target.to(get_device())
+
+            output = model(data)
+            pred = output.argmax(dim=1, keepdim=True)
+            target = target.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target).sum().item()
+
+    print('Accuracy:{}'.format(100. * correct / len(val_loader.dataset)))
+
+
 def main():
-    training_data, val_data = read_training_data()
+    train_loader, val_loader = read_training_data()
     test_input = read_test_input()
 
-    network = Network([784, 30, 10])
-    network.SGD(training_data, epochs=100, mini_batch_size=10, eta=5e-2, val_data=val_data)
+    model = Net()
 
-    test_output = network.cal(test_input)
-    submit(test_output)
+    model = model.to(get_device())
+
+    optimizer = optim.SGD(model.parameters(), lr=1e-3)
+
+    epochs = 100
+
+    for i in range(epochs):
+        train(model, train_loader, optimizer)
+        test(model, val_loader)
+
+    # test_output = network.cal(test_input)
+    # submit(test_output)
 
 
 if __name__ == '__main__':
