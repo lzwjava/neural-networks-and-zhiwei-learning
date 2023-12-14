@@ -54,7 +54,7 @@ class Net(nn.Module):
 
 
 def train(model, train_loader, optimizer):
-    model.train(,
+    model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         if (batch_idx > 10000):
             break
@@ -74,7 +74,7 @@ def train(model, train_loader, optimizer):
         #         print(param)
 
 
-def test(model, test_loader):
+def validate(model, test_loader):
     model.eval()
     correct = 0
     with torch.no_grad():
@@ -102,7 +102,7 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=1e-3)
 
     train(model, train_loader, optimizer)
-    test(model, test_loader)
+    validate(model, test_loader)
 
 
 if __name__ == '__main__':

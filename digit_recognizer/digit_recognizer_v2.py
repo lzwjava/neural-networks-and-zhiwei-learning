@@ -9,21 +9,33 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
+import torch.nn.functional as F
 
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(784, 128)
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)
+        self.fc1 = nn.Linear(9216, 128)
         self.fc2 = nn.Linear(128, 10)
-        self.dropout = nn.Dropout(0.25)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
 
     def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
         x = torch.flatten(x, 1)
         x = self.fc1(x)
-        x = self.dropout(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
         x = self.fc2(x)
-        return x
+        output = F.log_softmax(x, dim=1)
+        return output
 
 
 def train(model: Net, train_loader: DataLoader, optimizer: optim.Optimizer):
@@ -34,8 +46,10 @@ def train(model: Net, train_loader: DataLoader, optimizer: optim.Optimizer):
 
         optimizer.zero_grad()
         output = model(data)
-        loss = nn.CrossEntropyLoss()
-        loss = loss(output, target)
+
+        target = target.argmax(dim=1)
+
+        loss = F.nll_loss(output, target)
         loss.backward()
         optimizer.step()
         # print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
@@ -51,10 +65,10 @@ def read_training_data() -> tuple:
 
     n = len(labels)
 
-    inputs = [np.reshape(x, (784, 1)) for x in pixels]
+    inputs = [np.reshape(x, (1, 28, 28)) for x in pixels]
     results = [vectorized_result(y) for y in labels]
 
-    middle = int(n * 0.98)
+    middle = int(n * 0.99)
 
     training_inputs = inputs[:middle]
     training_results = results[:middle]
@@ -73,12 +87,14 @@ def read_training_data() -> tuple:
     return training_data, val_data
 
 
-def read_test_input() -> list:
+def read_test_loader() -> list:
     df = pd.read_csv('./test.csv')
     pixels = df.values
     pixels = pixels / 255.0
-    test_input = [np.reshape(x, (784, 1)) for x in pixels]
-    return test_input
+    test_input = [np.reshape(x, (1, 28, 28)) for x in pixels]
+    test_input = torch.Tensor(np.array(test_input))
+    test_loader = DataLoader(test_input, batch_size=10, shuffle=False)
+    return test_loader
 
 
 def vectorized_result(j):
@@ -96,14 +112,6 @@ def draw(some_digit):
     plt.show()
 
 
-def submit(test_output):
-    test_n = len(test_output)
-    images = [i + 1 for i in range(test_n)]
-
-    output = pd.DataFrame({'ImageId': images, 'Label': test_output})
-    output.to_csv('submission.csv', index=False)
-
-
 def get_device():
     if torch.cuda.is_available():
         return torch.device('cuda')
@@ -111,7 +119,7 @@ def get_device():
         return torch.device('cpu')
 
 
-def test(model, val_loader):
+def validate(model, val_loader):
     model.eval()
     correct = 0
     with torch.no_grad():
@@ -127,9 +135,25 @@ def test(model, val_loader):
     print('Accuracy:{}'.format(100. * correct / len(val_loader.dataset)))
 
 
+def submit(model: Net, test_loader: DataLoader):
+    model.eval()
+    with torch.no_grad():
+        test_n = len(test_loader.dataset)
+        images = [i + 1 for i in range(test_n)]
+        result = []
+        for batch_idx, data in enumerate(test_loader):
+            data = data.to(get_device())
+            test_output = model(data)
+            test_output = test_output.argmax(dim=1)
+            result.extend(test_output.cpu().detach().tolist())
+
+        output = pd.DataFrame({'ImageId': images, 'Label': result})
+        output.to_csv('submission.csv', index=False)
+
+
 def main():
     train_loader, val_loader = read_training_data()
-    test_input = read_test_input()
+    test_loader = read_test_loader()
 
     model = Net()
 
@@ -137,14 +161,14 @@ def main():
 
     optimizer = optim.SGD(model.parameters(), lr=1e-3)
 
-    epochs = 100
+    epochs = 1
 
     for i in range(epochs):
         train(model, train_loader, optimizer)
-        test(model, val_loader)
+        validate(model, val_loader)
 
     # test_output = network.cal(test_input)
-    # submit(test_output)
+    submit(model, test_loader)
 
 
 if __name__ == '__main__':
