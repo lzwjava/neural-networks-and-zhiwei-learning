@@ -11,9 +11,8 @@ class Network(object):
     def __init__(self, sizes):
         self.layers = len(sizes)
         self.sizes = sizes
-        self.weights = [np.random.rand(sizes[i + 1], sizes[i]) for i in range(self.layers - 1)]
-        self.biases = [np.random.rand(sizes[i + 1]) for i in range(self.layers - 1)]
-        print('hi')
+        self.weights = [np.random.randn(sizes[i + 1], sizes[i]) for i in range(self.layers - 1)]
+        self.biases = [np.random.randn(sizes[i + 1], 1) for i in range(self.layers - 1)]
 
     def SGD(self, training_data: zip, epochs: int, mini_batch_size: int, eta: float,
             val_data: zip):
@@ -25,20 +24,31 @@ class Network(object):
         num_batches = math.ceil(n / mini_batch_size)
 
         for j in range(epochs):
-            for k in range(num_batches):
-                start_idx = k * mini_batch_size
-                end_idx = (k + 1) * mini_batch_size
+            mini_batches = [training_data[k * mini_batch_size:(k + 1) * mini_batch_size] for k in range(num_batches)]
 
-                mini_batches = training_data[start_idx:end_idx]
-                for mini_batch in mini_batches:
-                    self.update_mini_batch(mini_batch, eta)
+            for mini_batch in mini_batches:
+                self.update_mini_batch(mini_batch, eta)
 
     def update_mini_batch(self, mini_batch, eta):
         for (x, y) in mini_batch:
             self.backprop(x, y)
 
-    def backprop(self, x, y):
-        pass
+    def backprop(self, x, y) -> tuple:
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        nabla_b = [np.zeros(b.shape) for b in self.biases]
+
+        zs = []
+        activation = x
+        activations = [activation]
+
+        for w, b in zip(self.weights, self.biases):
+            z = np.dot(w, activation) + b
+
+            zs.append(z)
+            activation = sigmoid(z)
+            activations.append(activation)
+
+        print('backprop')
 
     def cost_derivative(self, output_activations, y):
         pass
@@ -119,7 +129,7 @@ def main():
     test_input = read_test_input()
 
     network = Network([784, 30, 10])
-    network.SGD(training_data, epochs=100, mini_batch_size=10, eta=1e-5, val_data=val_data)
+    network.SGD(training_data, epochs=1, mini_batch_size=10, eta=1e-5, val_data=val_data)
 
     # print(training_data)
     # print(test_input[0])
