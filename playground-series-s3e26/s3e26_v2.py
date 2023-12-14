@@ -3,6 +3,7 @@ from sklearn.ensemble import RandomForestClassifier
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.model_selection import train_test_split
 
@@ -22,8 +23,8 @@ class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-        hidden_unit = 10
-        self.fc1 = nn.Linear(8, hidden_unit)
+        hidden_unit = 30
+        self.fc1 = nn.Linear(17, hidden_unit)
         self.fc2 = nn.Linear(hidden_unit, 1)
         self.sigmoid = nn.Sigmoid()
         self.tanh = nn.Tanh()
@@ -33,21 +34,19 @@ class Net(nn.Module):
         x = torch.tanh(x)
         x = self.fc1(x)
         x = self.fc2(x)
-        x = self.sigmoid(x)
+        x = F.log_softmax(x, dim=1)
         return x
 
 
 def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
     model.train()
 
-    criterion = nn.MSELoss()
-
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
 
         outputs = model(data)
 
-        loss = criterion(outputs, target)
+        loss = F.nll_loss(outputs, target)
 
         loss.backward()
 
@@ -107,17 +106,6 @@ features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema
             'Tryglicerides', 'Platelets', 'Prothrombin', 'Stage']
 
 X = pd.get_dummies(train_data[features])
-
-model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=1)
-model.fit(X, y)
-
-predictions1 = model.predict(X)
-
-m = len(y)
-
-count = sum(1 for i in range(m) if y[i] == predictions1[i])
-
-print(f'rate={count / m}')
 
 X = torch.tensor(X.values, dtype=torch.float32)
 y = torch.tensor(y.values, dtype=torch.float32).view(-1, 1)
