@@ -62,6 +62,10 @@ def read_training_data() -> tuple:
     pixels = df.drop('label', axis=1).values
     pixels = pixels / 255.0
 
+    shuffle_list = list(zip(pixels, labels))
+    random.shuffle(shuffle_list)
+    pixels, labels = zip(*shuffle_list)
+
     n = len(labels)
 
     inputs = [np.reshape(x, (1, 28, 28)) for x in pixels]
@@ -160,7 +164,7 @@ def main():
 
     optimizer = optim.SGD(model.parameters(), lr=1e-3)
 
-    epochs = 1
+    epochs = 10
 
     for i in range(epochs):
         train(model, train_loader, optimizer)
