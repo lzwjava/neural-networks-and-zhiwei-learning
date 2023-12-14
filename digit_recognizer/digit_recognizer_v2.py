@@ -52,7 +52,6 @@ def train(model: Net, train_loader: DataLoader, optimizer: optim.Optimizer):
         loss = F.nll_loss(output, target)
         loss.backward()
         optimizer.step()
-        # print('batch:{} Loss:{:.6f}'.format(batch_idx, loss.item()))
 
 
 def read_training_data() -> tuple:
