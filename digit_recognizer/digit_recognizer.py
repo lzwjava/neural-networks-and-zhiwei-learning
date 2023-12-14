@@ -9,10 +9,10 @@ import pandas as pd
 class Network(object):
 
     def __init__(self, sizes):
-        self.layers = len(sizes)
+        self.num_layers = len(sizes)
         self.sizes = sizes
-        self.weights = [np.random.randn(sizes[i + 1], sizes[i]) for i in range(self.layers - 1)]
-        self.biases = [np.random.randn(sizes[i + 1], 1) for i in range(self.layers - 1)]
+        self.weights = [np.random.randn(sizes[i + 1], sizes[i]) for i in range(self.num_layers - 1)]
+        self.biases = [np.random.randn(sizes[i + 1], 1) for i in range(self.num_layers - 1)]
 
     def SGD(self, training_data: zip, epochs: int, mini_batch_size: int, eta: float,
             val_data: zip):
