@@ -187,7 +187,7 @@ def main():
     test_input = read_test_input()
 
     network = Network([784, 30, 10])
-    network.SGD(training_data, epochs=300, mini_batch_size=100, eta=1e-2, val_data=val_data)
+    network.SGD(training_data, epochs=300, mini_batch_size=10, eta=1e-2, val_data=val_data)
 
     test_output = network.cal(test_input)
     submit(test_output)
