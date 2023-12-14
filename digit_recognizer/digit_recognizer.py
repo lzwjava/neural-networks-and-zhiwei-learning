@@ -28,6 +28,8 @@ class Network(object):
             val_data = list(val_data)
             n_val = len(val_data)
 
+        error_rates = [1]
+
         for j in range(epochs):
             mini_batches = [training_data[k * mini_batch_size:(k + 1) * mini_batch_size] for k in range(num_batches)]
 
@@ -35,9 +37,17 @@ class Network(object):
                 self.update_mini_batch(mini_batch, eta)
 
             if val_data:
-                print("Epoch {}: {}/{}".format(j, self.evalute(val_data), n_val))
+                correct = self.evalute(val_data)
+                print("Epoch {}: {}/{}".format(j, correct, n_val))
+                error_rates.append(1 - correct / n_val)
             else:
                 print("Epoch {} complete".format(j))
+
+        if val_data:
+            x = [i for i in range(epochs + 1)]
+            plt.plot(x, error_rates)
+            plt.ylim(0, 1)
+            plt.show()
 
     def update_mini_batch(self, mini_batch, eta):
         nabla_w = [np.zeros(w.shape) for w in self.weights]
@@ -88,6 +98,9 @@ class Network(object):
         test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
                         for (x, y) in test_data]
         return sum(int(x == y) for (x, y) in test_results)
+
+    def cal(self, test_data):
+        return [np.argmax(self.feedforward(x)) for x in test_data]
 
     def feedforward(self, a):
         for w, b in zip(self.weights, self.biases):
@@ -161,15 +174,23 @@ def draw(some_digit):
     plt.show()
 
 
+def submit(test_output):
+    test_n = len(test_output)
+    images = [i + 1 for i in range(test_n)]
+
+    output = pd.DataFrame({'ImageId': images, 'Label': test_output})
+    output.to_csv('submission.csv', index=False)
+
+
 def main():
     training_data, val_data = read_training_data()
     test_input = read_test_input()
 
     network = Network([784, 30, 10])
-    network.SGD(training_data, epochs=100, mini_batch_size=100, eta=1e-1, val_data=val_data)
+    network.SGD(training_data, epochs=300, mini_batch_size=100, eta=1e-2, val_data=val_data)
 
-    # print(training_data)
-    # print(test_input[0])
+    test_output = network.cal(test_input)
+    submit(test_output)
 
 
 if __name__ == '__main__':
