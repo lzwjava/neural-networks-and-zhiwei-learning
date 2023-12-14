@@ -48,10 +48,21 @@ class Network(object):
             activation = sigmoid(z)
             activations.append(activation)
 
-        print('backprop')
+        for l in range(1, self.num_layers):
+            if l == 1:
+                left = self.cost_derivative(activations[-1], y)
+            else:
+                left = np.dot(self.weights[-l + 1].transpose(), delta)
+
+            delta = left * sigmoid_prime(zs[-l])
+
+            nabla_b[-l] = delta
+            nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
+
+        return nabla_b, nabla_w
 
     def cost_derivative(self, output_activations, y):
-        pass
+        return output_activations - y
 
     def evalute(self, test_data):
         pass
