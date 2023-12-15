@@ -56,7 +56,6 @@ def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
 def validate(model: Net, test_loader: DataLoader):
     model.eval()
 
-    correct = 0
     total = 0
     with torch.no_grad():
         log_loss = 0
