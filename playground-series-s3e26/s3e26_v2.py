@@ -30,14 +30,14 @@ class Net(nn.Module):
         x = F.tanh(x)
         x = self.fc1(x)
         x = self.fc2(x)
-        x = F.softmax(x, dim=1)
+        x = F.log_softmax(x, dim=1)
         return x
 
 
 def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
     model.train()
 
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.NLLLoss()
 
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
@@ -60,7 +60,10 @@ def validate(model: Net, test_loader: DataLoader):
         for data, target in test_loader:
             output = model(data)
 
-            log_loss += torch.sum(torch.log(output) * target)
+            target_onehot = torch.zeros(target.size(0), 3)
+            target_onehot.scatter_(1, target.view(-1, 1), 1)
+
+            log_loss += torch.sum(torch.log(output) * target_onehot)
 
             total += len(data)
 
@@ -133,7 +136,7 @@ features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema
 X = pd.get_dummies(train_data[features])
 
 X = torch.tensor(X.values, dtype=torch.float32)
-y = torch.tensor(y.values, dtype=torch.float32).view(-1, 1)
+y = torch.tensor(y.values, dtype=torch.long)
 
 nan_indices = torch.where(torch.isnan(X))
 
@@ -142,10 +145,10 @@ rows, cols = nan_indices
 for i in range(len(rows)):
     print(f"NaN at row {rows[i]}, column {cols[i]}")
 
-y_onehot = torch.zeros(y.size(0), 3)
-y_onehot.scatter_(1, y.type(torch.long), 1)
+# y_onehot = torch.zeros(y.size(0), 3)
+# y_onehot.scatter_(1, y.type(torch.long), 1)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y_onehot, test_size=0.02, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.02, random_state=42)
 
 batch_size = 30
 train_dataset = TensorDataset(X_train, y_train)
@@ -153,9 +156,9 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 model = Net()
 
-epochs = 1
+epochs = 100
 
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 
 test_dataset = TensorDataset(X_test, y_test)
 test_loader = DataLoader(test_dataset, batch_size=batch_size)
