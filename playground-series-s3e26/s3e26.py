@@ -36,11 +36,15 @@ print(gb.size())
 print(gb.mean())
 
 y = train_data['Status']
-features = ['N_Days', 'Copper', 'Alk_Phos', 'SGOT', 'Tryglicerides']
+# features = ['N_Days', 'Copper', 'Alk_Phos', 'SGOT', 'Tryglicerides']
+
+features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema',
+            'Bilirubin', 'Cholesterol', 'Albumin', 'Copper', 'Alk_Phos', 'SGOT',
+            'Tryglicerides', 'Platelets', 'Prothrombin', 'Stage']
 
 X = pd.get_dummies(train_data[features])
 
-model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=1)
+model = RandomForestClassifier(n_estimators=100, max_depth=20, random_state=1)
 model.fit(X, y)
 
 predictions1 = model.predict(X)
@@ -57,7 +61,7 @@ predictions = model.predict(X_test)
 
 
 def create_column(predictions, label):
-    return [(2 / 3 if pred == label else 1 / 3) for pred in predictions]
+    return [(1 if pred == label else 0) for pred in predictions]
 
 
 output = pd.DataFrame({
