@@ -30,14 +30,14 @@ class Net(nn.Module):
         x = F.tanh(x)
         x = self.fc1(x)
         x = self.fc2(x)
-        x = F.log_softmax(x, dim=1)
+        x = F.log_softmax(x, dim=-1)
         return x
 
 
 def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
     model.train()
 
-    loss_fn = nn.NLLLoss()
+    loss_fn = nn.NLLLoss(reduction='sum')
 
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
@@ -79,7 +79,7 @@ def predict(model: Net, test_loader: DataLoader) -> list:
         for data, _ in test_loader:
             output = model(data)
 
-            preds = torch.concat((preds, output), dim=0)
+            preds = torch.concat((preds, torch.exp(output)), dim=0)
 
     preds = preds.permute(1, 0).detach().tolist()
 
@@ -156,7 +156,7 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 model = Net()
 
-epochs = 100
+epochs = 10
 
 optimizer = optim.Adam(model.parameters(), lr=0.01)
 
