@@ -22,14 +22,14 @@ class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-        hidden_unit = 30
-        self.fc1 = nn.Linear(17, hidden_unit)
-        self.fc2 = nn.Linear(hidden_unit, 3)
+        hidden_unit = 10
+        self.layer1 = nn.Linear(17, hidden_unit)
+        self.layer2 = nn.Linear(hidden_unit, 3)
 
     def forward(self, x):
         x = F.tanh(x)
-        x = self.fc1(x)
-        x = self.fc2(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
         x = F.log_softmax(x, dim=-1)
         return x
 
@@ -148,7 +148,7 @@ for i in range(len(rows)):
 # y_onehot = torch.zeros(y.size(0), 3)
 # y_onehot.scatter_(1, y.type(torch.long), 1)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.02, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, random_state=42)
 
 batch_size = 30
 train_dataset = TensorDataset(X_train, y_train)
@@ -156,9 +156,9 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 model = Net()
 
-epochs = 10
+epochs = 20
 
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.Adam(model.parameters(), lr=5e-2)
 
 test_dataset = TensorDataset(X_test, y_test)
 test_loader = DataLoader(test_dataset, batch_size=batch_size)
