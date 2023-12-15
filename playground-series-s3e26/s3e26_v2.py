@@ -55,19 +55,19 @@ def validate(model: Net, test_loader: DataLoader):
     model.eval()
 
     total = 0
+    log_loss = 0
     with torch.no_grad():
-        log_loss = 0
         for data, target in test_loader:
             output = model(data)
 
             target_onehot = torch.zeros(target.size(0), 3)
             target_onehot.scatter_(1, target.view(-1, 1), 1)
 
-            log_loss += torch.sum(torch.log(output) * target_onehot)
+            log_loss += torch.sum(output * target_onehot)
 
             total += len(data)
 
-    log_loss = log_loss * -1 / total
+    log_loss = -1 / total * log_loss
     print(f'log_loss: {log_loss}')
 
 
