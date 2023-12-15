@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -6,7 +5,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from torch.utils.data import TensorDataset, DataLoader
-from torchvision import transforms
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
