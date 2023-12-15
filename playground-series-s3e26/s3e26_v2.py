@@ -20,15 +20,16 @@ print(train_data.info())
 
 class Net(nn.Module):
 
-    def __init__(self):
+    def __init__(self, in_features):
         super(Net, self).__init__()
-        hidden_unit = 10
-        self.layer1 = nn.Linear(17, hidden_unit)
+        hidden_unit = 30
+        self.layer1 = nn.Linear(in_features, hidden_unit)
         self.layer2 = nn.Linear(hidden_unit, 3)
 
     def forward(self, x):
         x = F.tanh(x)
         x = self.layer1(x)
+        x = F.sigmoid(x)
         x = self.layer2(x)
         x = F.log_softmax(x, dim=-1)
         return x
@@ -129,9 +130,12 @@ train_data = preprocess_train_data(train_data)
 
 y = train_data['Status']
 
+# features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema',
+#             'Bilirubin', 'Cholesterol', 'Albumin', 'Copper', 'Alk_Phos', 'SGOT',
+#             'Tryglicerides', 'Platelets', 'Prothrombin', 'Stage']
+
 features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema',
-            'Bilirubin', 'Cholesterol', 'Albumin', 'Copper', 'Alk_Phos', 'SGOT',
-            'Tryglicerides', 'Platelets', 'Prothrombin', 'Stage']
+            'Bilirubin', 'Cholesterol', 'Albumin', 'Copper', 'Alk_Phos']
 
 X = pd.get_dummies(train_data[features])
 
@@ -154,11 +158,11 @@ batch_size = 30
 train_dataset = TensorDataset(X_train, y_train)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-model = Net()
+model = Net(in_features=len(features))
 
-epochs = 20
+epochs = 1000
 
-optimizer = optim.Adam(model.parameters(), lr=5e-2)
+optimizer = optim.Adam(model.parameters(), lr=1e-1)
 
 test_dataset = TensorDataset(X_test, y_test)
 test_loader = DataLoader(test_dataset, batch_size=batch_size)
