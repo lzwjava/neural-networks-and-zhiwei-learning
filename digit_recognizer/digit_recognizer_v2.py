@@ -164,7 +164,7 @@ def main():
 
     optimizer = optim.SGD(model.parameters(), lr=1e-3)
 
-    epochs = 10
+    epochs = 50
 
     for i in range(epochs):
         train(model, train_loader, optimizer)
