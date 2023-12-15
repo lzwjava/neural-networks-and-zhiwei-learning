@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -28,20 +29,24 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(hidden_unit, 3)
 
     def forward(self, x):
+        x = F.tanh(x)
         x = self.fc1(x)
         x = self.fc2(x)
+        x = F.softmax(x, dim=1)
         return x
 
 
 def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
     model.train()
 
+    loss_fn = nn.CrossEntropyLoss()
+
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
 
         outputs = model(data)
 
-        loss = F.nll_loss(outputs, target)
+        loss = loss_fn(outputs, target)
 
         loss.backward()
 
@@ -54,15 +59,16 @@ def validate(model: Net, test_loader: DataLoader):
     correct = 0
     total = 0
     with torch.no_grad():
+        log_loss = 0
         for data, target in test_loader:
             output = model(data)
 
-            output_tensor = torch.where(output >= 0.5, torch.tensor(1.0), torch.tensor(0.0))
+            log_loss += torch.sum(torch.log(output) * target)
 
-            correct += output_tensor.eq(target.view_as(output_tensor)).sum().item()
             total += len(data)
 
-    print(f'test correct rate: {correct / total}')
+    log_loss = log_loss * -1 / total
+    print(f'log_loss: {log_loss}')
 
 
 gb = train_data.groupby('Status')
@@ -72,6 +78,9 @@ print(gb.size())
 
 print(gb.mean())
 
+sgb = train_data.groupby('Edema')
+print(sgb.size())
+
 
 def preprocess_data(data: pd.DataFrame):
     status_mapping = {'C': 0, 'CL': 1, 'D': 2}
@@ -80,7 +89,12 @@ def preprocess_data(data: pd.DataFrame):
     sex_mapping = {'M': 0, 'F': 1}
     data['Sex'] = data['Sex'].map(sex_mapping)
 
-    bool_items = ['Ascites', 'Hepatomegaly', 'Spiders', 'Edema']
+    data['Age'] = data['Age'] / 1000
+
+    edema_mapping = {'N': 0, 'S': 1, 'Y': 2}
+    data['Edema'] = data['Edema'].map(edema_mapping)
+
+    bool_items = ['Ascites', 'Hepatomegaly', 'Spiders']
 
     bool_mapping = {'Y': 1, 'N': 0}
 
@@ -100,19 +114,20 @@ features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema
 
 X = pd.get_dummies(train_data[features])
 
-mean = [0.1307]
-std = [0.3081]
-
-
-def custom_transform(x):
-    transform = transforms.Compose([transforms.Normalize(mean, std)])
-    return transform(x)
-
-
 X = torch.tensor(X.values, dtype=torch.float32)
 y = torch.tensor(y.values, dtype=torch.float32).view(-1, 1)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.02, random_state=42)
+nan_indices = torch.where(torch.isnan(X))
+
+rows, cols = nan_indices
+
+for i in range(len(rows)):
+    print(f"NaN at row {rows[i]}, column {cols[i]}")
+
+y_onehot = torch.zeros(y.size(0), 3)
+y_onehot.scatter_(1, y.type(torch.long), 1)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y_onehot, test_size=0.02, random_state=42)
 
 batch_size = 30
 train_dataset = TensorDataset(X_train, y_train)
@@ -133,7 +148,9 @@ for i in range(epochs):
 
 test_data = pd.read_csv('./test.csv')
 X_test = pd.get_dummies(test_data[features])
-predictions = model.predict(X_test)
+
+
+# predictions = model.predict(X_test)
 
 
 def create_column(predictions, label):
