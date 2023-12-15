@@ -1,11 +1,11 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-from torch.utils.data import TensorDataset, DataLoader
+import torch.optim as optim
 from sklearn.model_selection import train_test_split
+from torch.utils.data import TensorDataset, DataLoader
+from torchvision import transforms
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -25,16 +25,11 @@ class Net(nn.Module):
         super(Net, self).__init__()
         hidden_unit = 30
         self.fc1 = nn.Linear(17, hidden_unit)
-        self.fc2 = nn.Linear(hidden_unit, 1)
-        self.sigmoid = nn.Sigmoid()
-        self.tanh = nn.Tanh()
+        self.fc2 = nn.Linear(hidden_unit, 3)
 
     def forward(self, x):
-        x = torch.flatten(x, 1)
-        x = torch.tanh(x)
         x = self.fc1(x)
         x = self.fc2(x)
-        x = F.log_softmax(x, dim=1)
         return x
 
 
@@ -53,7 +48,7 @@ def train(model: Net, optimizer: optim.Adam, train_loader: DataLoader):
         optimizer.step()
 
 
-def test(model: Net, test_loader: DataLoader):
+def validate(model: Net, test_loader: DataLoader):
     model.eval()
 
     correct = 0
@@ -78,12 +73,8 @@ print(gb.size())
 print(gb.mean())
 
 
-def map_bool_values(value):
-    return 1 if value == 'Y' else 0
-
-
 def preprocess_data(data: pd.DataFrame):
-    status_mapping = {'C': 0, 'CL': 1, '1': 2}
+    status_mapping = {'C': 0, 'CL': 1, 'D': 2}
     data['Status'] = data['Status'].map(status_mapping)
 
     sex_mapping = {'M': 0, 'F': 1}
@@ -91,8 +82,10 @@ def preprocess_data(data: pd.DataFrame):
 
     bool_items = ['Ascites', 'Hepatomegaly', 'Spiders', 'Edema']
 
+    bool_mapping = {'Y': 1, 'N': 0}
+
     for column in bool_items:
-        data[column] = data[column].map(map_bool_values)
+        data[column] = data[column].map(bool_mapping)
 
     return data
 
@@ -106,6 +99,15 @@ features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema
             'Tryglicerides', 'Platelets', 'Prothrombin', 'Stage']
 
 X = pd.get_dummies(train_data[features])
+
+mean = [0.1307]
+std = [0.3081]
+
+
+def custom_transform(x):
+    transform = transforms.Compose([transforms.Normalize(mean, std)])
+    return transform(x)
+
 
 X = torch.tensor(X.values, dtype=torch.float32)
 y = torch.tensor(y.values, dtype=torch.float32).view(-1, 1)
@@ -127,7 +129,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
 for i in range(epochs):
     train(model, optimizer, train_loader)
-    test(model, test_loader)
+    validate(model, test_loader)
 
 test_data = pd.read_csv('./test.csv')
 X_test = pd.get_dummies(test_data[features])
