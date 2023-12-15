@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
 train_data = pd.read_csv('./train.csv')
 
@@ -44,14 +45,16 @@ features = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Edema
 
 X = pd.get_dummies(train_data[features])
 
-model = RandomForestClassifier(n_estimators=100, max_depth=20, random_state=1)
-model.fit(X, y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, random_state=42)
 
-predictions1 = model.predict(X)
+model = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=1)
+model.fit(X_train, y_train)
 
-m = len(y)
+predictions1 = model.predict(X_test)
 
-count = sum(1 for i in range(m) if y[i] == predictions1[i])
+m = len(y_test)
+
+count = sum(1 for i in range(m) if y_test.iloc[i] == predictions1[i])
 
 print(f'rate={count / m}')
 
@@ -61,7 +64,7 @@ predictions = model.predict(X_test)
 
 
 def create_column(predictions, label):
-    return [(1 if pred == label else 0) for pred in predictions]
+    return [(2 / 3 if pred == label else 1 / 3) for pred in predictions]
 
 
 output = pd.DataFrame({
