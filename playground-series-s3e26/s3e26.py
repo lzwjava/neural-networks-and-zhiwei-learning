@@ -47,7 +47,18 @@ X = pd.get_dummies(train_data[features])
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, random_state=42)
 
-model = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=1)
+# model = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=1)
+model = RandomForestClassifier(criterion='gini',
+                               n_estimators=1100,
+                               max_depth=5,
+                               min_samples_split=4,
+                               min_samples_leaf=5,
+                               # max_features='auto',
+                               oob_score=True,
+                               random_state=42,
+                               n_jobs=-1,
+                               verbose=1)
+
 model.fit(X_train, y_train)
 
 predictions1 = model.predict(X_test)
