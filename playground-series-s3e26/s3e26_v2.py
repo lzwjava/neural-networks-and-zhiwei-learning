@@ -71,6 +71,21 @@ def validate(model: Net, test_loader: DataLoader):
     print(f'log_loss: {log_loss}')
 
 
+def predict(model: Net, test_loader: DataLoader) -> list:
+    model.eval()
+
+    preds = torch.tensor([])
+    with torch.no_grad():
+        for data, _ in test_loader:
+            output = model(data)
+
+            preds = torch.concat((preds, output), dim=0)
+
+    preds = preds.permute(1, 0).detach().tolist()
+
+    return preds
+
+
 gb = train_data.groupby('Status')
 print(gb)
 
@@ -83,9 +98,6 @@ print(sgb.size())
 
 
 def preprocess_data(data: pd.DataFrame):
-    status_mapping = {'C': 0, 'CL': 1, 'D': 2}
-    data['Status'] = data['Status'].map(status_mapping)
-
     sex_mapping = {'M': 0, 'F': 1}
     data['Sex'] = data['Sex'].map(sex_mapping)
 
@@ -104,7 +116,16 @@ def preprocess_data(data: pd.DataFrame):
     return data
 
 
-train_data = preprocess_data(train_data)
+def preprocess_train_data(data: pd.DataFrame):
+    preprocess_data(data)
+
+    status_mapping = {'C': 0, 'CL': 1, 'D': 2}
+    data['Status'] = data['Status'].map(status_mapping)
+
+    return data
+
+
+train_data = preprocess_train_data(train_data)
 
 y = train_data['Status']
 
@@ -135,7 +156,7 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 model = Net()
 
-epochs = 100
+epochs = 1
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
@@ -147,10 +168,16 @@ for i in range(epochs):
     validate(model, test_loader)
 
 test_data = pd.read_csv('./test.csv')
+test_data = preprocess_data(test_data)
+
 X_test = pd.get_dummies(test_data[features])
 
+X_test = torch.tensor(X_test.values, dtype=torch.float32)
 
-# predictions = model.predict(X_test)
+test_dataset = TensorDataset(X_test, torch.zeros(X_test.size(0)))
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+predictions = predict(model, test_loader)
 
 
 def create_column(predictions, label):
@@ -159,9 +186,9 @@ def create_column(predictions, label):
 
 output = pd.DataFrame({
     'id': test_data['id'],
-    'Status_C': create_column(predictions, 'C'),
-    'Status_CL': create_column(predictions, 'CL'),
-    'Status_D': create_column(predictions, 'D'),
+    'Status_C': predictions[0],
+    'Status_CL': predictions[1],
+    'Status_D': predictions[2]
 })
 
 output.to_csv('submission.csv', index=False)
