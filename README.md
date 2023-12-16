@@ -3,7 +3,7 @@
 This repository contains the learning code I use and play around for neural networks and deep learning. I use this 
 repository to record my learning process and share it with others.
 
-From several sources, including but not limited to:
+The learning resources are from several sources, including but not limited to:
 
 * [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) 
 * [Andrej Karpathy's educational projects](https://github.com/karpathy)
