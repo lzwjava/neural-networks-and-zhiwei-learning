@@ -51,11 +51,22 @@ group_items = ['N_Days', 'Age', 'Sex', 'Ascites', 'Hepatomegaly', 'Spiders', 'Ed
                'Cholesterol', 'Albumin', 'Copper', 'Alk_Phos', 'SGOT',
                'Tryglicerides', 'Platelets', 'Prothrombin', 'Stage']
 
+
+def groupby_status():
+    for column in group_items:
+        gb = train_data.groupby([column, 'Status']).size().unstack(fill_value=0)
+        gb.plot(kind='bar', stacked=True)
+        plt.xlabel(column)
+        plt.ylabel('Count')
+        plt.title(f'Distribution of Status by {column}')
+        plt.legend(title='Status')
+        plt.show()
+
+
 for column in group_items:
-    gb = train_data.groupby([column, 'Status']).size().unstack(fill_value=0)
-    gb.plot(kind='bar', stacked=True)
+    vc = pd.value_counts(train_data[column])
+    vc.plot(kind='bar')
     plt.xlabel(column)
     plt.ylabel('Count')
-    plt.title(f'Distribution of Status by {column}')
-    plt.legend(title='Status')
+    plt.title(f'Distribution of {column}')
     # plt.show()
