@@ -7,8 +7,7 @@ The learning resources are from several sources, including but not limited to:
 
 * [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) 
 * [Andrej Karpathy's educational projects](https://github.com/karpathy)
-* Coursera's courses, [Machine Learning Specialization](https://www.coursera.org/specializations/machine-learning-introduction) and [Deep Learning Specialization](https://www.coursera.
-org/specializations/deep-learning) 
+* Coursera's courses, [Machine Learning Specialization](https://www.coursera.org/specializations/machine-learning-introduction) and [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning)
 * [PyTorch's examples](https://github.com/pytorch/examples)
 * [PyTorch's tutorials](https://github.com/pytorch/tutorials)
 * [Some Kaggle's competitions](https://www.kaggle.com/)
