@@ -10,7 +10,7 @@ The learning resources are from several sources, including but not limited to:
 * Coursera's courses, [Machine Learning Specialization](https://www.coursera.org/specializations/machine-learning-introduction) and [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning)
 * [PyTorch's examples](https://github.com/pytorch/examples)
 * [PyTorch's tutorials](https://github.com/pytorch/tutorials)
-* [Some Kaggle's competitions](https://www.kaggle.com/)
+* [Some Kaggle's competitions](https://www.kaggle.com/lzwjava)
 
 ## Work I do 
 
