@@ -55,3 +55,5 @@ submission = pd.read_csv('./sample_submission.csv')
 
 print('The dimension of the train dataset is:', train.shape)
 print('The dimension of the test dataset is:', test.shape)
+
+print(train.describe())
