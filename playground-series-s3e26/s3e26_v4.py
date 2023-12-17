@@ -57,3 +57,9 @@ print('The dimension of the train dataset is:', train.shape)
 print('The dimension of the test dataset is:', test.shape)
 
 print(train.describe())
+
+print(test.describe())
+
+train['Status'].value_counts(normalize=True).plot(kind='bar', color=['steelblue', 'orange', 'green'])
+plt.ylabel('Percentage')
+plt.show()
