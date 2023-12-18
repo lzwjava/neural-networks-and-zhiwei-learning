@@ -70,4 +70,12 @@ sns.boxplot(ax=axes[0], data=train, x='Status', y='Age', hue='Status');
 sns.boxplot(ax=axes[1], data=train, x='Status', y='Bilirubin', hue='Status');
 sns.boxplot(ax=axes[2], data=train, x='Status', y='Cholesterol', hue='Status');
 
+# plt.show()
+
+fig, axes = plt.subplots(1, 3, figsize = (20, 7))
+
+sns.boxplot(ax = axes[0], data = train, x = 'Status', y = 'Albumin', hue = 'Status');
+sns.boxplot(ax = axes[1], data = train, x = 'Status', y = 'Copper', hue = 'Status');
+sns.boxplot(ax = axes[2], data = train, x = 'Status', y = 'Alk_Phos', hue = 'Status');
+
 plt.show()
