@@ -27,18 +27,15 @@ vocab_size = len(chars)
 
 stoi = {ch: i for i, ch in enumerate(chars)}
 itos = {i: ch for i, ch in enumerate(chars)}
-encode = lambda s: [stoi[c] for c in s]  # encoder: take a string, output a list of ints
-decode = lambda l: "".join(itos[i] for i in l)  # decode: take a list of ints, output a string
+encode = lambda s: [stoi[c] for c in s]
+decode = lambda l: "".join(itos[i] for i in l)
 
 data = torch.tensor(encode(text), dtype=torch.long)
-# print(data.shape, data.type)
-# print(data[:1000])        
 
-# Split ratio for train and val set
 split_ratio: float = 0.9
-# Training batch size, number of sequences in a mini batch
+
 batch_size: int = 12
-# Maximum context length
+
 block_size: int = 64
 
 n_layer = 6
@@ -55,14 +52,13 @@ val_data = data[n:]
 print(len(train_data), len(val_data))
 
 torch.manual_seed(1337)
-# torch.manual_seed(1338)
 
 device = 'cuda'
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
-torch.backends.cuda.matmul.allow_tf32 = True  # allow tf32 on matmul
-torch.backends.cudnn.allow_tf32 = True  # allow tf32 on cudnn
-device_type = 'cuda' if 'cuda' in device else 'cpu'  # for later use in torch.autocast
-# note: float16 data type will automatically use a GradScaler
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+device_type = 'cuda' if 'cuda' in device else 'cpu'
+
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 print('ctx')
@@ -70,14 +66,13 @@ print(ctx)
 
 
 def get_batch(split):
-    # generate a small batch of data of input x and targets y
     data = train_data if split == "train" else val_data
     ix = torch.randint(len(data) - block_size,
-                       (batch_size,))  # because last will start from -8 and go until the end of text
+                       (batch_size,))
     x = torch.stack([data[i:i + block_size] for i in ix])
     y = torch.stack([data[i + 1:i + block_size + 1] for i in ix])
     if device_type == 'cuda':
-        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+
         x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
     else:
         x, y = x.to(device), y.to(device)
@@ -94,7 +89,6 @@ print(yb)
 
 
 class LayerNorm(nn.Module):
-    """ LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False """
 
     def __init__(self, ndim, bias):
         super().__init__()
@@ -120,24 +114,21 @@ class CausalSelfAttention(nn.Module):
                              .view(1, 1, block_size, block_size))
 
     def forward(self, x):
-        B, T, C = x.size()  # batch size, sequence length, embedding dimensionality (n_embd)
+        B, T, C = x.size()
 
-        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
         q, k, v = self.c_attn(x).split(self.n_embd, dim=2)
-        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
-        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
-        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
+        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
 
-        # manual implementation of attention
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
         att = att.masked_fill(self.bias[:, :, :T, :T] == 0, float('-inf'))
         att = F.softmax(att, dim=-1)
         att = self.attn_dropout(att)
-        y = att @ v  # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
+        y = att @ v
 
-        y = y.transpose(1, 2).contiguous().view(B, T, C)  # re-assemble all head outputs side by side
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
 
-        # output projection
         y = self.resid_dropout(self.c_proj(y))
         return y
 
@@ -156,8 +147,7 @@ class MLP(nn.Module):
         x = self.gelu(x)
         x = self.c_proj(x)
         x = self.dropout(x)
-        # print('x.size()')
-        # print(x.size())
+
         return x
 
 
@@ -180,17 +170,6 @@ class GPT(nn.Module):
 
     def __init__(self):
         super().__init__()
-
-        # self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
-        # self.position_embedding_table = nn.Embedding(block_size, n_embd)
-
-        # print('token_embedding_table')
-        # print(self.token_embedding_table)
-
-        # embedding_matrix = self.token_embedding_table.weight.data
-        # print('embedding_matrix')
-        # print(embedding_matrix)
-        # print(embedding_matrix.size())
 
         self.transformer = nn.ModuleDict(dict(
             wte=nn.Embedding(vocab_size, n_embd),
@@ -221,23 +200,10 @@ class GPT(nn.Module):
         b, t = idx.size()
         assert t <= block_size, f"Cannot forward sequence of length {t}, block size is only {block_size}"
 
-        # print('idx')
-        # print(idx)
-        # exit()
-        # print(idx.size())
-        # exit()
+        pos = torch.arange(0, t, dtype=torch.long, device=device)
 
-        pos = torch.arange(0, t, dtype=torch.long, device=device)  # shape (t)
-
-        # print('pos')
-        # print(pos)
-        # exit()       
-
-        tok_emb = self.transformer.wte(idx)  # token embeddings of shape (b, t, n_embd)
-        pos_emb = self.transformer.wpe(pos)  # position embeddings of shape (t, n_embd)
-
-        # print(tok_emb.size())
-        # print(pos_emb.size())
+        tok_emb = self.transformer.wte(idx)
+        pos_emb = self.transformer.wpe(pos)
 
         x = self.transformer.drop(tok_emb + pos_emb)
         for block in self.transformer.h:
@@ -245,23 +211,22 @@ class GPT(nn.Module):
         x = self.transformer.ln_f(x)
 
         if targets is not None:
-            # if we are given some desired targets also calculate the loss
+
             logits = self.lm_head(x)
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
-            # inference-time mini-optimization: only forward the lm_head on the very last position
-            logits = self.lm_head(x[:, [-1], :])  # note: using list [-1] to preserve the time dim
+
+            logits = self.lm_head(x[:, [-1], :])
             loss = None
 
         return logits, loss
 
     def configure_optimizers(self, weight_decay, learning_rate, betas, device_type):
-        # start with all of the candidate parameters
+
         param_dict = {pn: p for pn, p in self.named_parameters()}
-        # filter out those that do not require grad
+
         param_dict = {pn: p for pn, p in param_dict.items() if p.requires_grad}
-        # create optim groups. Any parameters that is 2D will be weight decayed, otherwise no.
-        # i.e. all weight tensors in matmuls + embeddings decay, all biases and layernorms don't.
+
         decay_params = [p for n, p in param_dict.items() if p.dim() >= 2]
         nodecay_params = [p for n, p in param_dict.items() if p.dim() < 2]
         optim_groups = [
@@ -272,7 +237,7 @@ class GPT(nn.Module):
         num_nodecay_params = sum(p.numel() for p in nodecay_params)
         print(f"num decayed parameter tensors: {len(decay_params)}, with {num_decay_params:,} parameters")
         print(f"num non-decayed parameter tensors: {len(nodecay_params)}, with {num_nodecay_params:,} parameters")
-        # Create AdamW optimizer and use the fused version if it is available
+
         fused_available = 'fused' in inspect.signature(torch.optim.AdamW).parameters
         use_fused = fused_available and device_type == 'cuda'
         extra_args = dict(fused=True) if use_fused else dict()
@@ -284,35 +249,27 @@ class GPT(nn.Module):
     @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
         for _ in range(max_new_tokens):
-            # if the sequence context is growing too long we must crop it at block_size
+
             idx_cond = idx if idx.size(1) <= block_size else idx[:, -block_size:]
-            # forward the model to get the logits for the index in the sequence
+
             logits, _ = self(idx_cond)
-            # pluck the logits at the final step and scale by desired temperature
+
             logits = logits[:, -1, :] / temperature
-            # optionally crop the logits to only the top k options
+
             if top_k is not None:
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = -float('Inf')
-            # apply softmax to convert logits to (normalized) probabilities
+
             probs = F.softmax(logits, dim=-1)
-            # sample from the distribution
+
             idx_next = torch.multinomial(probs, num_samples=1)
-            # append sampled index to the running sequence and continue
+
             idx = torch.cat((idx, idx_next), dim=1)
 
         return idx
 
 
 model = GPT()
-
-# logits, loss = m(xb, yb)
-# print(logits.shape)
-# print(loss)
-
-# idx = torch.zeros((1, 1), dtype=torch.long)
-# print(decode(m.generate(idx, max_new_tokens=100)[0].tolist()))
-
 
 batch_sieze = 32
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
@@ -323,9 +280,7 @@ t0 = time.time()
 
 iter_num = 0
 
-# ctx = nullcontext()
-
-gradient_accumulation_steps = 5 * 8  # used to simulate larger batch sizes
+gradient_accumulation_steps = 5 * 8
 
 scaler = torch.cuda.amp.GradScaler(enabled=(np.dtype == 'float16'))
 
@@ -341,7 +296,7 @@ model.to(device)
 
 optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta2), device)
 
-grad_clip = 1.0  # clip gradients at this value, or disable if == 0.0
+grad_clip = 1.0
 
 max_iters = 100
 
@@ -374,37 +329,32 @@ while True:
 
     print(f'iter num: {iter_num}')
 
-    # determine and set the learning rate for this iteration
-    lr = learning_rate  # max learning rate
+    lr = learning_rate
 
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(losses)
 
-    # and using the GradScaler if data type is float16
     for micro_step in range(gradient_accumulation_steps):
         with ctx:
             logits, loss = model(X, Y)
-            loss = loss / gradient_accumulation_steps  # scale the loss to account for gradient accumulation
+            loss = loss / gradient_accumulation_steps
         X, Y = get_batch('train')
         scaler.scale(loss).backward()
 
-    # clip the gradient
     if grad_clip != 0.0:
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
-    # step the optimizer and scaler if training in fp16
+
     scaler.step(optimizer)
     scaler.update()
-    # flush the gradients as soon as we can, no need for this memory anymore
+
     optimizer.zero_grad(set_to_none=True)
 
     iter_num += 1
 
     if iter_num > max_iters:
         break
-
-# print(loss.item())
 
 print('training finished')
 
