@@ -1,4 +1,4 @@
-# neural-networks-and-zhiwei-learning
+# Neural Networks and Zhiwei Learning
 
 This repository contains the learning code I use and play around for neural networks and deep learning. I use this 
 repository to record my learning process and share it with others.
