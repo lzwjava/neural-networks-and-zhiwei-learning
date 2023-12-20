@@ -273,8 +273,24 @@ class GPT(nn.Module):
 
     @torch.no_grad()
     def is_generated(self, prompt, text):
+        text_len = len(text)
+        for i in range(text_len):
+            part_text = text[:i]
+            prompt_with_text = prompt + part_text
+            idx = torch.tensor(encode(prompt_with_text), dtype=torch.long)
 
-        print(text)
+            idx_cond = idx if idx.size(1) <= block_size else idx[:, -block_size:]
+
+            logits, _ = self(idx_cond)
+
+            logits = logits[:, -1, :]
+
+            probs = F.softmax(logits, dim=-1)
+
+            # idx_next = torch.argmax(probs, dim=-1)
+
+            print('')
+
         return True
 
 
@@ -307,7 +323,7 @@ optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta
 
 grad_clip = 1.0
 
-max_iters = 10
+max_iters = 1
 
 eval_iters = 2
 
