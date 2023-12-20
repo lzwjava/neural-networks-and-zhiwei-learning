@@ -15,7 +15,6 @@ print(train_data.head())
 print(test_data.head())
 print(train_prompts.head())
 
-
 chars = sorted(list(set(text)))
 vocab_size = len(chars)
 
