@@ -11,6 +11,8 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import VotingClassifier
 
+import string
+
 from sklearn.metrics import roc_auc_score
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -58,8 +60,6 @@ train.reset_index(drop=True, inplace=True)
 train.head(2)
 
 test.head(5)
-
-import string
 
 unique_words = set()
 for text in train['text']:
