@@ -17,15 +17,19 @@ pd.set_option('display.width', 1000)
 dir_name = './'
 # dir_name = '/kaggle/input/llm-detect-ai-generated-text/'
 
-train_data = pd.read_csv(dir_name + 'train_essays.csv')
-test_data = pd.read_csv(dir_name + 'test_essays.csv')
+train_essays = pd.read_csv(dir_name + 'train_essays.csv')
+test_essays = pd.read_csv(dir_name + 'test_essays.csv')
 train_prompts = pd.read_csv(dir_name + 'train_prompts.csv')
 
-print(train_data.head())
-print(test_data.head())
+print(train_essays.head())
+print(test_essays.head())
 print(train_prompts.head())
 
-text = ' '.join(train_data.loc[train_data['generated'] == 0, 'text'])
+text = ' '.join(train_essays.loc[train_essays['generated'] == 0, 'text'])
+
+instructions_concatenated = train_prompts['instructions'].str.cat(sep=' ')
+
+text += ' ' + instructions_concatenated
 
 chars = sorted(list(set(text)))
 vocab_size = len(chars)
@@ -274,10 +278,13 @@ class GPT(nn.Module):
     @torch.no_grad()
     def is_generated(self, prompt, text):
         text_len = len(text)
+        prob_sum = 0
         for i in range(text_len):
             part_text = text[:i]
             prompt_with_text = prompt + part_text
-            idx = torch.tensor(encode(prompt_with_text), dtype=torch.long)
+            idx = torch.tensor(encode(prompt_with_text), dtype=torch.long).view(1, -1)
+
+            idx = idx.to(device)
 
             idx_cond = idx if idx.size(1) <= block_size else idx[:, -block_size:]
 
@@ -287,11 +294,15 @@ class GPT(nn.Module):
 
             probs = F.softmax(logits, dim=-1)
 
-            # idx_next = torch.argmax(probs, dim=-1)
+            tv = encode(text[i])
 
-            print('')
+            prob = probs[0][tv[0]]
 
-        return True
+            prob_sum += prob
+
+        average = prob_sum / text_len
+
+        return average > 0.5
 
 
 model = GPT()
@@ -383,20 +394,32 @@ while True:
 
 print('training finished')
 
-idx = torch.zeros((1, 1), dtype=torch.long)
-idx = idx.to(device)
+# idx = torch.zeros((1, 1), dtype=torch.long)
+# idx = idx.to(device)
+#
+# print(decode(model.generate(idx=idx, max_new_tokens=100)[0].tolist()))
 
-print(decode(model.generate(idx=idx, max_new_tokens=100)[0].tolist()))
+# print(model.is_generated('abc', 'abc'))
 
-print(model.is_generated('abc', 'abc'))
+for index, row in train_essays.iterrows():
+    t_id = row['id']
+
+    instructions = ''
+
+    for index2, row2 in train_prompts.iterrows():
+        if row2['prompt_id'] == row['prompt_id']:
+            instructions = row2['instructions']
+            break
+
+    model.is_generated(instructions, row['text'])
 
 
 def submit():
     ids = []
     generated = []
 
-    for index, row in test_data.iterrows():
-        t_id = test_data['id']
+    for index, row in test_essays.iterrows():
+        t_id = test_essays['id']
 
         instructions = ''
 
@@ -405,7 +428,7 @@ def submit():
                 instructions = row2['instructions']
                 break
 
-        model.is_generated(instructions, test_data['text'])
+        model.is_generated(instructions, test_essays['text'])
 
         ids.append(t_id)
 
