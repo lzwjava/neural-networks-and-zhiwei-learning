@@ -15,6 +15,14 @@ print(train_data.head())
 print(test_data.head())
 print(train_prompts.head())
 
+chars = sorted(list(set(text)))
+vocab_size = len(chars)
+
+stoi = {ch: i for i, ch in enumerate(chars)}
+itos = {i: ch for i, ch in enumerate(chars)}
+encode = lambda s: [stoi[c] for c in s]
+decode = lambda l: "".join(itos[i] for i in l)
+
 ids = test_data['id'].tolist()
 
 n = len(ids)
