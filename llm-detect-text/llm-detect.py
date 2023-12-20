@@ -15,7 +15,7 @@ print(train_data.head())
 print(test_data.head())
 print(train_prompts.head())
 
-text = ' '.join(train_data.loc[train_data['generated'] == 1, 'text'])
+text = ' '.join(train_data.loc[train_data['generated'] == 0, 'text'])
 
 chars = sorted(list(set(text)))
 vocab_size = len(chars)
