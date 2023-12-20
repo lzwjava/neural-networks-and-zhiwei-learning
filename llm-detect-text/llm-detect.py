@@ -271,6 +271,11 @@ class GPT(nn.Module):
 
         return idx
 
+    @torch.no_grad()
+    def is_generated(self, text):
+        print(text)
+        return True
+
 
 model = GPT()
 
@@ -301,9 +306,9 @@ optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta
 
 grad_clip = 1.0
 
-max_iters = 100
+max_iters = 1000
 
-eval_iters = 20
+eval_iters = 100
 
 
 @torch.no_grad()
