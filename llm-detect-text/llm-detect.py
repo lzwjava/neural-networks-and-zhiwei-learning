@@ -272,7 +272,8 @@ class GPT(nn.Module):
         return idx
 
     @torch.no_grad()
-    def is_generated(self, text):
+    def is_generated(self, prompt, text):
+
         print(text)
         return True
 
@@ -306,9 +307,9 @@ optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta
 
 grad_clip = 1.0
 
-max_iters = 1000
+max_iters = 10
 
-eval_iters = 100
+eval_iters = 2
 
 
 @torch.no_grad()
@@ -371,11 +372,26 @@ idx = idx.to(device)
 
 print(decode(model.generate(idx=idx, max_new_tokens=100)[0].tolist()))
 
-ids = test_data['id'].tolist()
+print(model.is_generated('abc', 'abc'))
 
-n = len(ids)
 
-generated = [0.5] * n
+def submit():
+    ids = []
+    generated = []
 
-output = pd.DataFrame({'id': ids, 'generated': generated})
-output.to_csv('submission.csv', index=False)
+    for index, row in test_data.iterrows():
+        t_id = test_data['id']
+
+        instructions = ''
+
+        for index2, row2 in train_prompts.iterrows():
+            if row2['prompt_id'] == row['prompt_id']:
+                instructions = row2['instructions']
+                break
+
+        model.is_generated(instructions, test_data['text'])
+
+        ids.append(t_id)
+
+    output = pd.DataFrame({'id': ids, 'generated': generated})
+    output.to_csv('submission.csv', index=False)
